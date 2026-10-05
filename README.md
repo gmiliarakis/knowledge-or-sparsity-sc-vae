@@ -1,4 +1,4 @@
-# Knowledge or sparsity? Gene-set masks in a single-cell VAE
+# Gene-set masks in a single-cell VAE: knowledge or sparsity?
 
 Knowledge-guided single-cell models tie each latent factor to a gene set so that it reads as a biological programme.
 For 29 *supervised* pathway-informed networks, structure-matched random pathways perform as well as real ones [1].
