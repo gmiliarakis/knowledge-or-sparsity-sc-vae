@@ -36,6 +36,19 @@ def stim_minus_ctrl(m):
     return np.asarray(score[stim].mean(axis=0) - score[~stim].mean(axis=0)).ravel()
 
 
+# readable set names for printing: "HALLMARK_IL6_JAK_STAT3_SIGNALING" -> "IL6 JAK STAT3 signaling";
+# gene symbols, words with digits and a few acronyms stay upper case, other acronyms end up lower case
+acronyms = {"DNA", "RNA", "UV", "NFKB", "TNFA", "PI3K", "TGF", "JAK", "AKT", "MTORC1", "G2M", "E2F", "UPR", "ER", "NK"}
+gene_symbols = set(symbol)
+
+
+def readable(set_id):
+    words = [w if w in gene_symbols or w in acronyms or any(c.isdigit() for c in w) else w.lower()
+             for w in set_id.split("_")[1:]]
+    text = " ".join(words)
+    return text[0].upper() + text[1:]
+
+
 levels = [0, 0.25, 0.5, 0.75, 1]
 seeds = range(10)
 
@@ -47,7 +60,8 @@ for name, gmt in [("hallmark", "h.all.v2024.1.Hs.symbols.gmt"), ("reactome", "c2
 
     mask = pd.DataFrame({s: symbol.isin(m).values for s, m in sets.items()}, index=genes)
     all_members = set().union(*sets.values())
-    print(f"\n{name}: {len(sets)} sets, {len(all_members)} genes, {len(all_members - set(symbol))} not found in our data")
+    missing = len(all_members - set(symbol))
+    print(f"\n{name}: {len(sets)} sets, {len(all_members)} genes, {missing} not among our QC genes (mostly not expressed in PBMCs)")
 
     mask = mask.loc[:, mask.sum() >= 12]
     real = mask.values
@@ -75,7 +89,8 @@ for name, gmt in [("hallmark", "h.all.v2024.1.Hs.symbols.gmt"), ("reactome", "c2
     # Known-answer check
     diff = pd.Series(stim_minus_ctrl(real.astype(np.float32)), index=mask.columns).sort_values(ascending=False)
     print("  sets most up in stim (real mask):")
-    print(diff.head(5).round(3).to_string())
+    for set_id, d in diff.head(5).items():
+        print(f"    {readable(set_id):<55} {d:.3f}")
     if name == "hallmark":
         ifn = mask.columns.get_loc("HALLMARK_INTERFERON_ALPHA_RESPONSE")
         shuffled = [stim_minus_ctrl(real[perms[-1, s]].astype(np.float32))[ifn] for s in seeds]

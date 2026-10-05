@@ -7,29 +7,40 @@ random pathways do as well as real ones. This project asks the same question for
 where it has not been tested.
 
 ## Questions
-- **Q1 (core):** does the knowledge itself help, or only the sparsity a gene-set mask imposes? Tested as a
-  dose-response: replace 0 / 25 / 50 / 75 / 100% of each gene set's genes (100% = fully shuffled).
-- **Q1b:** is learning more data-efficient with real knowledge? The dose-response repeated at several training sizes.
-- **Q2 / Q3 (evaluation):** do the explanations recover known biology (interferon response; B cell regulators
-  PRDM1, IRF4, XBP1, PAX5, BACH2) and agree with independently measured protein (CITE-seq)?
+- **Q1 (core):** does the knowledge itself help, or only the sparsity a gene-set mask imposes? A masked VAE with the
+  real Hallmark mask against the same model with a 100% shuffled mask (same set sizes and overlaps, wrong genes),
+  plus a plain VAE as reference and a co-expression null (groups the data finds by itself). Known answer: IFN-β
+  switches on the type I interferon programme.
+- **Q1b:** is learning more data-efficient with real knowledge? Black-box models are argued to be inefficient because they must re-discover well-known patterns from
+  scratch. Q1 repeated at smaller training sizes.
+- **Later:** Q2 (do explanations recover known B cell regulators?) and Q3 (do they agree with CITE-seq protein?),
+  each on a new dataset.
 
 ## Models
-plain VAE -> beta-TCVAE (interpretability from statistics, no biology) -> masked VAE (shuffled mask)
--> masked VAE (real mask). Hard (VEGA-style) mask first; soft/refining mask as a later step. PCA only as an optional
-supplementary line. Donors handled as a covariate.
+One architecture: encoder (shifted-log counts + donor → one hidden layer of 128 → 58 latents), linear decoder,
+negative binomial likelihood on raw counts. Variants: plain VAE (all latents reach all genes; this is LDVAE); masked
+VAE with the real mask, a 100% shuffled mask, or co-expression modules (50 named latents, one per Hallmark set,
+plus 8 free latents reaching only genes in no set). Donor is a covariate.
 
-Nulls: structure-matched shuffled gene sets, and data-derived co-expression modules size-matched to the real sets.
-Fair comparison: same tuning budget and several seeds for every model; results are reported as the spread over seeds.
+## Evaluation
+Labels are used only here, on test cells. Score A (primary): AUROC of stim vs ctrl for the named interferon-α latent,
+within each cell type (megakaryocytes excluded), sign set by the latent's own weights. Score B (secondary): the
+interferon-α and -γ latents together. Score C: all latents. Plain VAE: best latent chosen on validation cells.
+10 seeds per variant, compared pair by pair; real beats shuffled if the 95% interval of the difference excludes 0.
 
 ## Data
-Start: Kang et al. 2018 IFN-β-stimulated PBMCs (GSE96583), where the right answer (interferon programme up in
-stimulated cells) is known. Then: B cell compartments of the tonsil atlas (Massoni-Badosa et al. 2024), Demela et al.
-2026 IRF4/PRDM1 CRISPR data, tonsil CITE-seq. Preprocessing follows Heumos et al., single-cell best practices.
+Kang et al. 2018 IFN-β-stimulated PBMCs (GSE96583, batch 2). Preprocessing follows Heumos et al., single-cell best
+practices.
 
 ## Layout
-- `src/`: one script per stage (`download_kang.py`, `preprocess_kang.py`, later gene sets, models, evaluation)
+- `src/`: one script per stage, numbered in run order:
+  `01_download_kang.py`, `02_download_genesets.py`, `03_preprocess_kang.py`, `04_build_masks.py`,
+  `05_build_coexpression_null.py`, `06_fit.py` (one model run per call), `07_tune.sh` (learning-rate tuning),
+  `08_choose_settings.py` (picks the rate per variant), `09_experiment.sh` (10 seeds per variant)
+- `notebooks/hvg_inspection.py`: evidence for using all genes; needs the outputs of 02 and 03
 - `notebooks/`: exploration and figures
 - `data/raw`, `data/processed`: not in git; recreated by the scripts
+- `results/`: one folder per model run (not in git for now)
 - `reports/figures/`: output figures
 
 ## Setup
@@ -85,29 +96,43 @@ python3 -m venv .venv
 - Negative binomial likelihood on raw counts for all models (as in Makrodimitris et al. 2023, Brief Bioinform, and
   LDVAE); no zero inflation (Svensson 2020). Not Gaussian/MSE on log data: low counts are not Gaussian. No normalised
   layer is stored; it is computed where needed (figures, gene-set scores).
+- Sequencing depth: NB mean = observed total counts × predicted share; removed from the encoder input, restored in
+  the decoder. IFN-β raises the interferon genes' share of all counts to up to 25% (CD14+ monocytes), so after
+  scaling by totals other genes look up to ~18% lower; the softmax decoder models this as one effect.
 
 **Gene sets and mask**
 - Hallmark for the main analysis: all 50 sets keep ≥ 12 genes (median 117), no near-duplicate sets, one
-  unambiguous target latent (HALLMARK_INTERFERON_ALPHA_RESPONSE, type I IFN, 95 of 97 genes). Reactome as comparison
-  with VEGA, expiMap and OntoVAE, which used it on this dataset (1,010 usable sets, 1,416 near-duplicate pairs).
+  unambiguous target latent (the Hallmark interferon-α response, type I IFN, 95 of 97 genes). Reactome (used by VEGA,
+  expiMap and OntoVAE on this dataset; 1,010 usable sets, 1,416 near-duplicate pairs) is built but not used for now.
 - Symbols matched through Ensembl IDs to current HGNC symbols (dated HGNC table): recovers 110 Hallmark genes renamed
   since 2017, including WARS1 and TENT5A in the IFN-α set.
 - Sets with < 12 genes after filtering are dropped (as in expiMap).
-- Hard mask on a linear decoder: latent k may only use the genes of set k. Soft mask later.
-- ≤ 16 unmasked latents for genes in no set (74% of genes for Hallmark), the same number in every masked model
-  (VEGA's recommendation). Genes in no set are not dropped, so the knowledge does not choose the gene universe.
+- Linear decoder in every model (the plain VAE is LDVAE), so the mask is the only architectural difference.
+  Encoder: shifted-log counts + donor → one hidden layer of 128 → 58 latents; the loss is NB on raw counts.
+  Hard mask: latent k may only use the genes of set k.
+- 8 free latents in every masked model, reaching only the 8,847 genes in no set (74%), so set genes can only be
+  explained by named latents. First tried with free latents reaching all genes: they absorbed the stimulation
+  signal and the named latents switched off (4 of 50 active with the real mask, 0 with the shuffled one). The plain
+  VAE keeps 58 latents reaching all genes. Genes in no set stay in, so the knowledge does not choose the
+  gene universe.
 
 **Nulls and models**
 - Shuffled masks by permuting gene labels across the gene universe: set sizes and overlaps stay identical, only the
-  biology changes. 0 / 25 / 50 / 75 / 100% of labels permuted (nested, dose-response), 10 seeds, within 25 equal-size
+  biology changes. 100% of labels permuted (25 / 50 / 75% also built, not used for now), 10 seeds, within 25 equal-size
   expression bins (the finest that the precision of the gene means supports; scanpy's default for control genes).
-- Co-expression modules size-matched to the real sets, built on training cells only.
-- Plain VAE → beta-TCVAE → masked VAE (shuffled) → masked VAE (real); PCA optional. Donor is a covariate;
-  condition is the signal and stays out of the covariates. No batch integration (it could remove the stimulation effect).
+- Co-expression modules size-matched to the Hallmark sets (random seed gene + its most correlated genes, seeds
+  detected in ≥ 1% of cells), built on training cells only, 10 seeds.
+- Variants: plain VAE; masked VAE with the real mask, a 100% shuffled mask, or co-expression modules. Donor is a covariate in
+  encoder and decoder (it appears in both conditions, so it cannot absorb the IFN-β effect); condition is the
+  signal and stays out of the covariates. No batch integration (it could remove the stimulation effect).
+- Loss: NB likelihood + KL (KL weight 1, warm-up over ~38 epochs, as in Eltager, ..., Makrodimitris 2023).
+- Adam, batch 128, early stopping on validation loss after warm-up (patience 3 epochs, as in Eltager et al.);
+  encoder width fixed at 128 (chosen on the plain VAE before the seed runs: 1,920.8 vs 1,923.9 for 256); learning
+  rate {1e-3, 1e-4} tuned separately per variant by validation loss; 10 seeds per variant.
+- Dropped for simplicity: β-TCVAE, the 25/50/75% dose-response, Reactome, sensitivity checks, soft mask.
 - Same tuning budget and several seeds for every model; results are reported as the spread over seeds.
 
 ## Current state
-Kang data preprocessed (`data/processed/kang.h5ad`, 23,919 cells × 12,034 genes). Masks built
-(`data/processed/masks_hallmark.npz`: 50 sets; `masks_reactome.npz`: 1,010 sets), with shuffled versions at
-0-100% × 10 seeds. Known-answer check passes: the Hallmark IFN-α set rises by 0.262 in stimulated cells with the real
-mask and by 0.012 on average when fully shuffled. Next: co-expression null, then models.
+Data preprocessed (23,919 cells × 12,034 genes); masks and co-expression null built; `06_fit.py` trains all model
+variants; encoder width fixed at 128. Next: tune the learning rate and run 10 seeds per variant, then the evaluation
+script (scores A/B/C), then the learning curves (Q1b).

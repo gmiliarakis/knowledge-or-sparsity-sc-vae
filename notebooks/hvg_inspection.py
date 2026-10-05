@@ -10,7 +10,7 @@ import scanpy as sc
 adata = ad.read_h5ad("data/processed/kang.h5ad")
 train = adata[adata.obs["split"] == "train"].copy()
 
-# same symbol matching as build_masks.py
+# same symbol matching as 04_build_masks.py
 hgnc_file = sorted(Path("data/raw").glob("hgnc_complete_set_*.txt"))[-1]
 hgnc = pd.read_csv(hgnc_file, sep="\t", usecols=["symbol", "ensembl_gene_id"], dtype=str).dropna()
 hgnc = hgnc.drop_duplicates("ensembl_gene_id").set_index("ensembl_gene_id")["symbol"]
