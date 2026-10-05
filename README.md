@@ -1,3 +1,4 @@
+![Interferon-α and pair scores per seed, and paired differences](reports/figures/scores.png)
 # Gene-set masks in a single-cell VAE: knowledge or sparsity?
 
 Knowledge-guided single-cell models tie each latent factor to a gene set so that it reads as a biological programme.
