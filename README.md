@@ -3,9 +3,9 @@
 Knowledge-guided single-cell models wire gene sets into their architecture so that each latent factor reads as a
 biological programme. For 29 *supervised* pathway-informed networks, structure-matched random pathways perform as well
 as real ones [1]. This project asks the same question for an *unsupervised* single-cell model. A variational
-autoencoder (VAE) with a linear decoder is fit with four decoder masks: real Hallmark gene sets, the same sets with all
-gene labels shuffled, modules of co-expressed genes, and no mask. The data are PBMCs stimulated with interferon-β,
-where the answer is known: stimulation switches on the type I interferon programme.
+autoencoder (VAE) with a linear decoder is fit with four decoder masks, namely real Hallmark gene sets, the same sets
+with all gene labels shuffled, modules of co-expressed genes, and no mask. The data are PBMCs stimulated with
+interferon-β, where the answer is known because stimulation switches on the type I interferon programme.
 
 ## Questions
 
@@ -15,23 +15,25 @@ where the answer is known: stimulation switches on the type I interferon program
 
 ## Background
 
-Prior knowledge can enter a model in three ways [2]: as input features (gene-set or transcription-factor activity
-scores), as architecture (sparse or masked layers that mirror gene sets) or as a graph over gene interactions. This
-project tests the architecture route, where the claim of interpretability by design is most direct. In a masked linear
-decoder, latent k can reach only the genes of set k, so it reads as the activity of that set. VEGA [3], expiMap [4] and
-pmVAE [5] build single-cell VAEs this way, and linear factor models such as f-scLVM [6], PLIER [7] and Spectra [8] rest
-on the same idea.
+Prior knowledge can enter a model as input features, as architecture or as a graph over gene interactions [2]. This
+project tests the architecture route. In a masked linear decoder, latent k can reach only the genes of set k, so it
+reads as the activity of that set.
 
-None of these models has been compared with random gene sets. KPNN [9] used shuffled networks, but in a supervised
-model; recent preprints corrupt only part of each gene set [10] or have no random control [11]. A fully shuffled mask
-that keeps every set's size and overlaps separates the effect of the knowledge from the effect of the sparsity. A
-second control is needed because curated gene sets align with the main axes of expression more than size-matched
-random sets do [12]. Modules of co-expressed genes therefore separate "curated knowledge helps" from "any group of
-co-expressed genes helps".
+| Model | Kind | Random gene-set control |
+|---|---|---|
+| VEGA [3], expiMap [4], pmVAE [5] | single-cell VAE with a masked decoder | none |
+| f-scLVM [6], PLIER [7], Spectra [8] | linear factor model | none |
+| KPNN [9] | supervised neural network | shuffled networks |
+| MOFA-FLEX [10] | factor model | part of each gene set corrupted |
+| Moullet et al. [11] | self-supervised model | none |
 
-Knowledge-guided models are also said to be more data-efficient. expiMap integrated subsampled PBMC data better than
-the linear-decoder VAE LDVAE [13] when trained on few cells [4], but without a random-mask control, and on integration
-quality rather than recovery of a known programme.
+- **Knowledge vs sparsity.** No unsupervised model has been compared with fully random gene sets. A shuffled mask with
+  the same set sizes and overlaps keeps the sparsity and removes the knowledge.
+- **Co-expression.** Curated gene sets align with the main axes of expression more than size-matched random sets
+  do [12]. A null built from co-expressed genes separates curated knowledge from any group of co-expressed genes.
+- **Data efficiency.** expiMap integrated subsampled PBMC data better than the linear-decoder VAE LDVAE [13] when
+  trained on few cells [4], but without a random-mask control and on integration quality rather than recovery of a
+  known programme.
 
 ## Study design
 
@@ -39,8 +41,8 @@ quality rather than recovery of a known programme.
 flowchart TB
     A["Kang et al. 2018<br/>8 donors<br/>ctrl vs IFN-β"] --> B["Cell QC<br/>23,919 cells<br/>12,034 genes"]
     B --> C["Split<br/>train 70%<br/>validation 15%<br/>test 15%"]
-    C --> V["4 variants<br/>10 seeds each"]
-    V --> E["Interferon scores<br/>on test cells"]
+    C --> V["VAE variants<br/>vanilla<br/>real mask<br/>shuffled mask<br/>co-expression<br/>10 seeds each"]
+    V --> E["Test-cell scores<br/>interferon-α<br/>interferon pair"]
 ```
 
 The benchmark is four variants that share one architecture and one training setup, differ only in the decoder mask
@@ -49,7 +51,7 @@ more complex or knowledge-based models [14–17].
 
 | Variant | Decoder mask | Tests |
 |---|---|---|
-| Plain VAE (LDVAE [13]) | none | reference without knowledge |
+| Vanilla VAE (LDVAE [13]) | none | reference without knowledge |
 | Real mask | Hallmark gene sets | knowledge + sparsity |
 | Shuffled mask | Hallmark sets with gene labels permuted | sparsity alone |
 | Co-expression | modules of co-expressed genes, same sizes | data-derived structure |
@@ -113,7 +115,7 @@ The mask sets how many of the 697,972 weights in `w` can be trained:
 
 | Variant | Trainable decoder weights |
 |---|---|
-| Plain | 697,972 (no mask) |
+| Vanilla | 697,972 (no mask) |
 | Real | 76,344 (5,568 set memberships + 8 free latents × 8,847 genes in no set) |
 | Shuffled | 76,344 (same sizes and overlaps as real) |
 | Co-expression | 75,976–83,136 (by seed) |
@@ -141,29 +143,29 @@ with β rising linearly from 0 to 1 over the first ~38 epochs (KL warm-up).
 | Optimiser | Adam, learning rate 1e-3 for every variant |
 | Batch size | 128 |
 | Stopping | early stopping on validation loss, patience 3 epochs, counted after warm-up [15]; at most 2,000 epochs |
-| Encoder width | 128, chosen on the plain VAE |
+| Encoder width | 128, chosen on the vanilla VAE |
 | Seeds | 10 per variant |
 
 ## Evaluation
 
-Both scores measure how well the latents separate stimulated from control cells: the AUROC of stim vs ctrl on test
-cells, computed within each cell type and averaged unweighted over 7 cell types.
+Both scores measure how well the latents separate stimulated from control cells, as the AUROC of stim vs ctrl on
+test cells, computed within each cell type and averaged unweighted over 7 cell types.
 
 | Score | Latents | Read-out | Role |
 |---|---|---|---|
-| Interferon-α score | the interferon-α latent; for plain and co-expression, the best single latent | the oriented latent itself | primary |
-| Interferon pair score | the interferon-α and -γ latents (the two sets share 71 of the α set's 95 genes); for plain and co-expression, the best two latents | a logistic classifier on the two latents | secondary |
+| Interferon-α score | the interferon-α latent; for vanilla and co-expression, the best single latent | the oriented latent itself | primary |
+| Interferon pair score | the interferon-α and -γ latents (the two sets share 71 of the α set's 95 genes); for vanilla and co-expression, the best two latents | a logistic classifier on the two latents | secondary |
 
 - **Labels** never enter training. Validation labels choose latents for the variants without meaningful names and
   train the classifier; test labels are used only for the final scores.
 - **Orientation.** A masked latent is oriented so that its mean weight on its own genes is positive, without labels.
-  For the plain and co-expression variants, whose latents have no meaningful names, each latent gets its AUROC on
+  For the vanilla and co-expression variants, whose latents have no meaningful names, each latent gets its AUROC on
   validation cells; the latent with the largest max(AUROC, 1 − AUROC) is chosen with the sign that gives AUROC > 0.5,
   and the pair score uses the best two by the same measure. This favours these two variants over a single fixed
   latent.
 - **Inactive latents** (variance of posterior means across validation cells ≤ 0.01) get an interferon-α score of 0.5.
-- **Megakaryocytes** are excluded from the scores but kept in training: they are mostly platelets, which have no
-  nucleus.
+- **Megakaryocytes** are excluded from the scores but kept in training, because they are mostly platelets, which
+  have no nucleus.
 - **Classifier (pair score).** Logistic, L2 penalty (C = 1), trained on all validation cells pooled over cell types,
   with latents standardised by the validation mean and SD; its predicted scores on test cells give the AUROCs within
   cell type.
