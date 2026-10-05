@@ -32,6 +32,12 @@ best two) of all 58 and its sign chosen on validation cells, then scored on test
 of its means across validation cells ≤ 0.01) scores 0.5 in A; each run's activity is reported next to its score.
 10 seeds per variant, compared pair by pair. Primary test: score A, real vs shuffled; real beats shuffled if the 95%
 paired t-interval of the difference excludes 0 (Wilcoxon signed-rank alongside). Other comparisons are secondary.
+Per-cell-type AUROCs are averaged unweighted over the 7 cell types. Scores B and C use one logistic regression on
+validation cells (latents standardised, default L2), scored within cell type on test cells.
+
+**Learning curves (Q1b):** training sizes 500, 1k, 2k, 4k, 8k and full, nested subsamples of train stratified by
+donor × condition × cell type (val and test fixed); all 4 variants, 10 seeds each, learning rate from full size;
+KL warm-up 38 epochs and patience 3 epochs at every size; co-expression modules and shuffle bins rebuilt per size.
 
 ## Data
 Kang et al. 2018 IFN-β-stimulated PBMCs (GSE96583, batch 2). Preprocessing follows Heumos et al., single-cell best
@@ -131,7 +137,8 @@ python3 -m venv .venv
   encoder and decoder (it appears in both conditions, so it cannot absorb the IFN-β effect); condition is the
   signal and stays out of the covariates. No batch integration (it could remove the stimulation effect).
 - Loss: NB likelihood + KL (KL weight 1, warm-up over ~38 epochs, as in Eltager, ..., Makrodimitris 2023).
-- Adam, batch 128, early stopping on validation loss after warm-up (patience 3 epochs, as in Eltager et al.);
+- Adam, batch 128, early stopping on validation loss after warm-up (patience 3 epochs, as in Eltager et al.;
+  at most 2,000 epochs, and a run that reaches the cap fails);
   encoder width fixed at 128 (chosen on the plain VAE before the seed runs: 1,920.8 vs 1,923.9 for 256); learning
   rate {1e-3, 1e-4} tuned separately per variant by validation loss; 10 seeds per variant.
 - Dropped for simplicity: β-TCVAE, the 25/50/75% dose-response, Reactome, sensitivity checks, soft mask.

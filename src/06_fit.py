@@ -17,7 +17,7 @@ parser.add_argument("--mask", choices=["none", "real", "shuffled", "coexpression
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--width", type=int, default=128)
 parser.add_argument("--lr", type=float, default=1e-3)
-parser.add_argument("--max-epochs", type=int, default=400)
+parser.add_argument("--max-epochs", type=int, default=2000)
 args = parser.parse_args()
 
 # GPU when available (NVIDIA, then Apple), otherwise CPU, so the script runs on any machine
