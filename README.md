@@ -1,20 +1,63 @@
 # Does prior knowledge help interpretable single-cell models?
 
-Small public-data project (Oct 2026). Knowledge-guided single-cell models wire gene sets (pathways) into their
+A small project on public data. Knowledge-guided single-cell models wire gene sets (pathways) into their
 architecture so that each latent factor reads as a biological programme. Caranzano et al. 2026
 (Brief Bioinform, doi:10.1093/bib/bbag425) showed that for 29 *supervised* pathway-informed networks, structure-matched
 random pathways do as well as real ones. This project asks the same question for *unsupervised* single-cell models,
 where it has not been tested.
+
+## Background
+- **How knowledge enters a model** (Thapa et al. 2025, Patterns, doi:10.1016/j.patter.2025.101203): as input
+  features (gene-set or TF-activity scores, e.g. AUCell, decoupleR), as architecture (sparse or masked layers that
+  mirror gene sets) or as a graph (GNNs over interaction networks, e.g. GEARS). This project tests the architecture
+  route, where "interpretable by design" is most direct: a masked linear decoder makes latent k the activity of
+  gene set k (VEGA, expiMap, pmVAE; linear relatives: f-scLVM/slalom, PLIER, Spectra).
+- **The gap:** the full texts of VEGA, expiMap, pmVAE, Spectra and f-scLVM contain no random-annotation control.
+  KPNN (Fortelny & Bock 2020, Genome Biol, doi:10.1186/s13059-020-02100-5) used shuffled networks, but in a
+  supervised single-cell model. Recent preprints also lack it: MOFA-FLEX (Qoku et al. 2025, bioRxiv,
+  doi:10.1101/2025.11.03.686250) corrupts 30% of each set's genes and tests recovery; Tripso (Moullet et al. 2026,
+  bioRxiv) has no random-set control.
+- **Why a co-expression null:** in bulk TCGA, curated gene sets align with top expression PCs more than size-matched
+  random sets (Zhu et al. 2026, bioRxiv, doi:10.64898/2026.04.11.717907), i.e. real sets are co-expressed and random
+  ones are not. Modules built from the data separate "curated knowledge helps" from "any co-expressed group helps".
+- **Data efficiency (Q1b):** expiMap (Lotfollahi et al. 2023, Nat Cell Biol, doi:10.1038/s41556-022-01072-x,
+  Ext. Data Fig. 6b) reported more sample-efficient learning than LDVAE, but without random masks, so knowledge and
+  sparsity are confounded.
+- **Benchmark style:** simple baselines and structure-preserving controls, the same tuning budget and several seeds
+  for every model, reporting the spread over seeds. Precedents: random graphs or the identity matrix replacing
+  protein contact maps did not hurt a GCN (Villegas-Morcillo et al. 2021, Bioinformatics,
+  doi:10.1093/bioinformatics/btaa701); VAE validation loss did not predict downstream performance (Eltager et al.
+  2023, PLOS ONE, doi:10.1371/journal.pone.0292126); concatenated PCA was hard to beat for multi-omics embeddings
+  (Makrodimitris et al. 2024, Brief Bioinform, doi:10.1093/bib/bbad416); deep perturbation models did not beat
+  linear baselines (Ahlmann-Eltze et al. 2025, Nat Methods, doi:10.1038/s41592-025-02772-6).
 
 ## Questions
 - **Q1 (core):** does the knowledge itself help, or only the sparsity a gene-set mask imposes? A masked VAE with the
   real Hallmark mask against the same model with a 100% shuffled mask (same set sizes and overlaps, wrong genes),
   plus a plain VAE as reference and a co-expression null (groups the data finds by itself). Known answer: IFN-β
   switches on the type I interferon programme.
-- **Q1b:** is learning more data-efficient with real knowledge? Black-box models are argued to be inefficient because they must re-discover well-known patterns from
-  scratch. Q1 repeated at smaller training sizes.
-- **Later:** Q2 (do explanations recover known B cell regulators?) and Q3 (do they agree with CITE-seq protein?),
-  each on a new dataset.
+- **Q1b:** is learning more data-efficient with real knowledge? A common argument for knowledge-guided models is
+  that unconstrained models must re-discover well-known patterns from scratch, which wastes data. Q1 repeated at
+  smaller training sizes.
+- **Later, each on a new dataset:**
+  - **Q2:** do the explanations recover known regulators? In B cell → plasma cell differentiation PRDM1, IRF4 and
+    XBP1 go up and PAX5 and BACH2 go down; Demela et al. 2026 (Mol Syst Biol, doi:10.1038/s44320-026-00207-8) add
+    IRF4/PRDM1 CRISPR knockouts as perturbation ground truth. Using this biology as a benchmark for knowledge-guided
+    models is new.
+  - **Q3:** does RNA-based pathway activity agree with CITE-seq surface protein, an independent measurement?
+    Checking RNA-derived scores against the same RNA is circular; caveat: RNA-protein correlation is weak.
+  - **Q4 (extension):** the cost of imperfect or species-transferred knowledge (gene sets curated in human and
+    copied to mouse or plants by orthology), measured by corrupting a share of each set's genes; and soft masks
+    (expiMap, MOFA-FLEX): does a random starting mask refine to the same programmes?
+  - **Reactome** as a secondary collection on the Kang data (used there by VEGA, expiMap and OntoVAE).
+
+| Use | Dataset | Access |
+|---|---|---|
+| Q1, Q1b | Kang et al. 2018 IFN-β PBMC, Nat Biotechnol, doi:10.1038/nbt.4042 | GEO GSE96583 (batch 2) |
+| Q1/Q2, B cells | Tonsil atlas, Massoni-Badosa et al. 2024, Immunity, doi:10.1016/j.immuni.2024.01.006 | Zenodo 10.5281/zenodo.8373756 |
+| Q2, perturbation | Demela et al. 2026 B cell time course + IRF4/PRDM1 CRISPR | Zenodo 10.5281/zenodo.17984776 |
+| Q3, protein | Tonsil CITE-seq (same atlas); alternative: 10x `pbmc_10k_protein_v3` | Zenodo above; 10x website |
+| Q4 | Mouse gastrulation, Pijuan-Sala et al. 2019, Nature, doi:10.1038/s41586-019-0933-9 | ArrayExpress E-MTAB-6967 |
 
 ## Models
 One architecture: encoder (shifted-log counts + donor → one hidden layer of 128 → 58 latents), linear decoder,
@@ -51,7 +94,7 @@ practices.
 - `notebooks/hvg_inspection.py`: evidence for using all genes; needs the outputs of 02 and 03
 - `notebooks/`: exploration and figures
 - `data/raw`, `data/processed`: not in git; recreated by the scripts
-- `results/`: one folder per model run (not in git for now)
+- `results/`: one folder per model run (not in git)
 - `reports/figures/`: output figures
 
 ## Setup
@@ -63,9 +106,8 @@ python3 -m venv .venv
 ## Decisions
 
 **General**
-- Knowledge can enter models as features,
-  architecture or graphs (Thapa et al. 2025), and the masked decoder is used because it is the most direct form of
-  "interpretable by design".
+- Knowledge enters through the architecture (a masked linear decoder), the most direct form of "interpretable by
+  design" (see Background).
 - Python (scanpy, PyTorch, scikit-learn); own PyTorch models rather than packages. Preprocessing follows the
   sc-best-practices book (Heumos et al.) unless stated below. MSigDB pinned at v2024.1.
 - One plain script per stage; download separate from processing; checks are printed by the code on every run.
@@ -114,7 +156,7 @@ python3 -m venv .venv
 **Gene sets and mask**
 - Hallmark for the main analysis: all 50 sets keep ≥ 12 genes (median 117), no near-duplicate sets, one
   unambiguous target latent (the Hallmark interferon-α response, type I IFN, 95 of 97 genes). Reactome (used by VEGA,
-  expiMap and OntoVAE on this dataset; 1,010 usable sets, 1,416 near-duplicate pairs) is built but not used for now.
+  expiMap and OntoVAE on this dataset; 1,010 usable sets, 1,416 near-duplicate pairs) is built for a secondary analysis.
 - Symbols matched through Ensembl IDs to current HGNC symbols (dated HGNC table): recovers 110 Hallmark genes renamed
   since 2017, including WARS1 and TENT5A in the IFN-α set.
 - Sets with < 12 genes after filtering are dropped (as in expiMap).
@@ -129,22 +171,21 @@ python3 -m venv .venv
 
 **Nulls and models**
 - Shuffled masks by permuting gene labels across the gene universe: set sizes and overlaps stay identical, only the
-  biology changes. 100% of labels permuted (25 / 50 / 75% also built, not used for now), 10 seeds, within 25 equal-size
-  expression bins (the finest that the precision of the gene means supports; scanpy's default for control genes).
+  biology changes. 100% of labels permuted (25 / 50 / 75% versions are built but not used), 10 seeds, within 25
+  equal-size expression bins (the finest that the precision of the gene means supports; scanpy's default for
+  control genes).
 - Co-expression modules size-matched to the Hallmark sets (random seed gene + its most correlated genes, seeds
   detected in ≥ 1% of cells), built on training cells only, 10 seeds.
-- Variants: plain VAE; masked VAE with the real mask, a 100% shuffled mask, or co-expression modules. Donor is a covariate in
-  encoder and decoder (it appears in both conditions, so it cannot absorb the IFN-β effect); condition is the
+- Variants: plain VAE; masked VAE with the real mask, a 100% shuffled mask, or co-expression modules. Donor is a
+  covariate in encoder and decoder (it appears in both conditions, so it cannot absorb the IFN-β effect); condition is the
   signal and stays out of the covariates. No batch integration (it could remove the stimulation effect).
-- Loss: NB likelihood + KL (KL weight 1, warm-up over ~38 epochs, as in Eltager, ..., Makrodimitris 2023).
+- Loss: NB likelihood + KL (KL weight 1, warm-up over ~38 epochs, as in Eltager et al. 2023).
 - Adam, batch 128, early stopping on validation loss after warm-up (patience 3 epochs, as in Eltager et al.;
   at most 2,000 epochs, and a run that reaches the cap fails);
   encoder width fixed at 128 (chosen on the plain VAE before the seed runs: 1,920.8 vs 1,923.9 for 256); learning
   rate {1e-3, 1e-4} tuned separately per variant by validation loss; 10 seeds per variant.
-- Dropped for simplicity: β-TCVAE, the 25/50/75% dose-response, Reactome, sensitivity checks, soft mask.
+- Not included: β-TCVAE, the 25 / 50 / 75% dose-response, sensitivity checks, soft masks (see Q4).
 - Same tuning budget and several seeds for every model; results are reported as the spread over seeds.
 
-## Current state
-Data preprocessed (23,919 cells × 12,034 genes); masks and co-expression null built; `06_fit.py` trains all model
-variants; encoder width fixed at 128. Next: tune the learning rate and run 10 seeds per variant, then the evaluation
-script (scores A/B/C), then the learning curves (Q1b).
+## Status
+Work in progress: preprocessing, gene-set masks and nulls are complete; results for Q1 and Q1b will be added here.
