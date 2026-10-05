@@ -44,7 +44,7 @@ print(f"{len(idx['train'])} train, {len(idx['val'])} val, {len(idx['test'])} tes
 # the same seed as training. The last 8 latents reach only genes in no set, so set genes can only be explained by
 # named latents. The plain VAE has no mask: every latent reaches every gene.
 mask = np.ones((counts.shape[1], n_latent), dtype=np.float32)
-latent_ids = [f"latent {k}" for k in range(n_latent)]
+latent_ids = [f"latent {k + 1}" for k in range(n_latent)]
 if args.mask != "none":
     masks = np.load("data/processed/masks_hallmark.npz")
     assert (masks["genes"] == adata.var_names).all()
@@ -150,6 +150,7 @@ for epoch in range(1, args.max_epochs + 1):
             break
 
 assert best_loss < np.inf, "training ended before warm-up finished (~38 epochs); raise --max-epochs"
+assert stale >= patience, "reached --max-epochs before early stopping; raise --max-epochs"
 model.load_state_dict(best_state)
 model.eval()
 print(f"best epoch {best_epoch}, validation loss {best_loss:.1f}")

@@ -66,6 +66,7 @@ for name, gmt in [("hallmark", "h.all.v2024.1.Hs.symbols.gmt"), ("reactome", "c2
     mask = mask.loc[:, mask.sum() >= 12]
     real = mask.values
     print("sets with >= 12 genes:", real.shape[1], "| genes in at least one set:", real.any(axis=1).sum(), "of", len(genes))
+    print("set genes whose symbol another gene also has:", symbol[real.any(axis=1)].duplicated(keep=False).sum())
 
     # Shuffle by permuting gene labels inside each expression bin: every set keeps its size and its overlaps
     # with other sets, only which genes are in it changes. A gene at position i takes the memberships of

@@ -23,10 +23,15 @@ VAE with the real mask, a 100% shuffled mask, or co-expression modules (50 named
 plus 8 free latents reaching only genes in no set). Donor is a covariate.
 
 ## Evaluation
-Labels are used only here, on test cells. Score A (primary): AUROC of stim vs ctrl for the named interferon-α latent,
-within each cell type (megakaryocytes excluded), sign set by the latent's own weights. Score B (secondary): the
-interferon-α and -γ latents together. Score C: all latents. Plain VAE: best latent chosen on validation cells.
-10 seeds per variant, compared pair by pair; real beats shuffled if the 95% interval of the difference excludes 0.
+Labels never enter training. Validation labels pick the latent (and sign) for the plain VAE and co-expression
+models and fit the score B/C regressions; test labels are used only for the final scores. Score A (primary): AUROC
+of stim vs ctrl for the named interferon-α latent, within each cell type (megakaryocytes excluded), sign set by the
+latent's own weights (mean weight on its own genes positive). Score B (secondary): the interferon-α and -γ latents
+together. Score C: all latents. Plain VAE and co-expression modules (no meaningful names): the best latent (B: the
+best two) of all 58 and its sign chosen on validation cells, then scored on test cells. An inactive latent (variance
+of its means across validation cells ≤ 0.01) scores 0.5 in A; each run's activity is reported next to its score.
+10 seeds per variant, compared pair by pair. Primary test: score A, real vs shuffled; real beats shuffled if the 95%
+paired t-interval of the difference excludes 0 (Wilcoxon signed-rank alongside). Other comparisons are secondary.
 
 ## Data
 Kang et al. 2018 IFN-β-stimulated PBMCs (GSE96583, batch 2). Preprocessing follows Heumos et al., single-cell best
@@ -79,9 +84,9 @@ python3 -m venv .venv
   Per donor as well was rejected: groups of 4–20 cells give unstable MADs, and donors shared each 10x run.
 - Genes kept if detected in ≥ 20 cells.
 - Result: 24,673 labelled singlets → 23,919 cells (3.1% removed; 1–6% per cell type), 12,034 genes.
-- Open: megakaryocytes still lose ~20% with their own thresholds, so they are likely a mixed group (mostly platelets).
-  Platelets have no nucleus and should not mount a transcriptional IFN response: keep, drop, or use as a
-  non-responding control? Decide at evaluation.
+- Megakaryocytes still lose ~20% with their own thresholds, so they are likely a mixed group (mostly platelets).
+  Platelets have no nucleus and should not mount a transcriptional IFN response, so they are excluded from the
+  interferon score and kept in training.
 
 **Split**
 - 70 / 15 / 15 train / val / test, made inside every donor × condition × cell type group (seed 0), so every group
@@ -93,12 +98,12 @@ python3 -m venv .venv
   5,000 `seurat_v3` HVGs, missed IFN-induced genes (PSMB9, B2M, ranked > 11,000 of 12,034) and cut the Hallmark
   IFN-α set to 65 of 95 genes; the NB likelihood handles low-count genes, so selection is not needed.
   `notebooks/hvg_inspection.py` reproduces this and doubles as an HVG robustness check.
-- Negative binomial likelihood on raw counts for all models (as in Makrodimitris et al. 2023, Brief Bioinform, and
+- Negative binomial likelihood on raw counts for all models (as in Makrodimitris et al. 2024, Brief Bioinform, and
   LDVAE); no zero inflation (Svensson 2020). Not Gaussian/MSE on log data: low counts are not Gaussian. No normalised
   layer is stored; it is computed where needed (figures, gene-set scores).
 - Sequencing depth: NB mean = observed total counts × predicted share; removed from the encoder input, restored in
   the decoder. IFN-β raises the interferon genes' share of all counts to up to 25% (CD14+ monocytes), so after
-  scaling by totals other genes look up to ~18% lower; the softmax decoder models this as one effect.
+  scaling by totals other genes look up to ~20% lower; the softmax decoder models this as one effect.
 
 **Gene sets and mask**
 - Hallmark for the main analysis: all 50 sets keep ≥ 12 genes (median 117), no near-duplicate sets, one
