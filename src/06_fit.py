@@ -15,9 +15,8 @@ from tqdm import tqdm
 parser = argparse.ArgumentParser()
 parser.add_argument("--mask", choices=["none", "real", "shuffled", "coexpression"], default="none")
 parser.add_argument("--seed", type=int, default=0)
-parser.add_argument("--width", type=int, default=128)
-parser.add_argument("--lr", type=float, default=1e-3)
 parser.add_argument("--max-epochs", type=int, default=2000)
+parser.add_argument("--train-size", type=int, help="learning curves: train on a subsample")
 args = parser.parse_args()
 
 # GPU when available (NVIDIA, then Apple), otherwise CPU, so the script runs on any machine
@@ -26,9 +25,10 @@ torch.manual_seed(args.seed)
 rng = np.random.default_rng(args.seed)
 
 n_latent = 50 + 8  # one per Hallmark set + 8 free latents
+width = 128  # encoder width, chosen on the vanilla VAE (README)
+lr = 1e-3
 batch_size = 128
 patience = 3
-warmup_cells = 10_000 * 64  # Eltager et al.: 10,000 steps at batch 64, here as cells seen
 
 adata = ad.read_h5ad("data/processed/kang.h5ad")
 counts = adata.layers["counts"].tocsr().astype(np.float32)
@@ -36,6 +36,12 @@ total = np.asarray(counts.sum(axis=1)).ravel().astype(np.float32)
 donor = pd.get_dummies(adata.obs["donor"]).values.astype(np.float32)
 split = adata.obs["split"].values
 idx = {s: np.flatnonzero(split == s) for s in ["train", "val", "test"]}
+if args.train_size:
+    subsamples = np.load("data/processed/subsamples_hallmark.npz")
+    idx["train"] = subsamples[f"rows_{args.train_size}"][args.seed]
+# Eltager et al.: 10,000 steps at batch 64, here as cells seen (~38 epochs of the full training set); scaled with the
+# training set, so warm-up lasts the same number of epochs at every size
+warmup_cells = 10_000 * 64 * len(idx["train"]) / (split == "train").sum()
 median_total = float(np.median(total[idx["train"]]))
 print(f"{len(idx['train'])} train, {len(idx['val'])} val, {len(idx['test'])} test cells; device {device}")
 
@@ -50,10 +56,14 @@ if args.mask != "none":
     assert (masks["genes"] == adata.var_names).all()
     sets = masks["real"]
     latent_ids = list(masks["sets"])
+    # on a subsample, shuffle bins and co-expression modules are rebuilt from the subsample's cells
     if args.mask == "shuffled":
-        sets = sets[masks["perms"][list(masks["levels"]).index(1.0), args.seed]]
+        perm = masks["perms"][list(masks["levels"]).index(1.0), args.seed]
+        sets = sets[subsamples[f"perms_{args.train_size}"][args.seed] if args.train_size else perm]
     if args.mask == "coexpression":
-        sets = np.load("data/processed/coexpression_hallmark.npz")["modules"][args.seed]
+        modules = subsamples[f"modules_{args.train_size}"] if args.train_size else \
+            np.load("data/processed/coexpression_hallmark.npz")["modules"]
+        sets = modules[args.seed]
         latent_ids = [f"module {k + 1}" for k in range(50)]
     mask[:, :50] = sets
     mask[:, 50:] = ~sets.any(axis=1, keepdims=True)
@@ -111,8 +121,8 @@ def evaluate(rows):
     return sums / len(rows)  # loss, NB, KL per cell
 
 
-model = VAE(counts.shape[1], donor.shape[1], args.width, mask).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+model = VAE(counts.shape[1], donor.shape[1], width, mask).to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 cells_seen, best_loss, stale, history = 0, np.inf, 0, []
 for epoch in range(1, args.max_epochs + 1):
@@ -166,12 +176,12 @@ with torch.no_grad():
 test_loss = evaluate(idx["test"])[0]
 
 variant = {"none": "plain", "real": "real", "shuffled": "shuffled", "coexpression": "coexpression"}[args.mask]
-out = Path("results") / variant / f"seed{args.seed}_width{args.width}_lr{args.lr:g}"
+out = Path("results") / variant / (f"seed{args.seed}" + (f"_train{args.train_size}" if args.train_size else ""))
 out.mkdir(parents=True, exist_ok=True)
 np.savez(out / "model.npz", latents=latents, w=(model.w * model.mask).detach().cpu().numpy(),
          v=model.v.detach().cpu().numpy(), theta=torch.exp(model.log_theta).detach().cpu().numpy())
 pd.DataFrame(history).to_csv(out / "losses.csv", index=False)
 with open(out / "run.json", "w") as f:
-    json.dump({**vars(args), "latent_ids": latent_ids, "best_epoch": best_epoch, "val_loss": best_loss,
+    json.dump({**vars(args), "width": width, "lr": lr, "latent_ids": latent_ids, "best_epoch": best_epoch, "val_loss": best_loss,
                "test_loss": test_loss, "seconds_per_epoch": float(np.mean([h["seconds"] for h in history]))}, f, indent=2)
 print("saved", out)

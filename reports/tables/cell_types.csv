@@ -1,0 +1,561 @@
+variant,train_size,seed,score,cell_type,auroc
+vanilla,16749,0,ifn_alpha,B cells,0.999591
+vanilla,16749,0,ifn_alpha,CD14+ Monocytes,0.999423
+vanilla,16749,0,ifn_alpha,CD4 T cells,0.983084
+vanilla,16749,0,ifn_alpha,CD8 T cells,0.988923
+vanilla,16749,0,ifn_alpha,Dendritic cells,0.99582
+vanilla,16749,0,ifn_alpha,FCGR3A+ Monocytes,0.995782
+vanilla,16749,0,ifn_alpha,NK cells,0.990045
+vanilla,16749,0,ifn_pair,B cells,0.999942
+vanilla,16749,0,ifn_pair,CD14+ Monocytes,0.999962
+vanilla,16749,0,ifn_pair,CD4 T cells,0.993819
+vanilla,16749,0,ifn_pair,CD8 T cells,0.995703
+vanilla,16749,0,ifn_pair,Dendritic cells,1
+vanilla,16749,0,ifn_pair,FCGR3A+ Monocytes,0.998466
+vanilla,16749,0,ifn_pair,NK cells,0.991885
+vanilla,16749,1,ifn_alpha,B cells,0.993133
+vanilla,16749,1,ifn_alpha,CD14+ Monocytes,0.995891
+vanilla,16749,1,ifn_alpha,CD4 T cells,0.933622
+vanilla,16749,1,ifn_alpha,CD8 T cells,0.987013
+vanilla,16749,1,ifn_alpha,Dendritic cells,0.983281
+vanilla,16749,1,ifn_alpha,FCGR3A+ Monocytes,0.967403
+vanilla,16749,1,ifn_alpha,NK cells,0.957632
+vanilla,16749,1,ifn_pair,B cells,0.999036
+vanilla,16749,1,ifn_pair,CD14+ Monocytes,0.999906
+vanilla,16749,1,ifn_pair,CD4 T cells,0.984777
+vanilla,16749,1,ifn_pair,CD8 T cells,0.98539
+vanilla,16749,1,ifn_pair,Dendritic cells,0.962382
+vanilla,16749,1,ifn_pair,FCGR3A+ Monocytes,0.989799
+vanilla,16749,1,ifn_pair,NK cells,0.970653
+vanilla,16749,2,ifn_alpha,B cells,0.982615
+vanilla,16749,2,ifn_alpha,CD14+ Monocytes,0.9999
+vanilla,16749,2,ifn_alpha,CD4 T cells,0.975819
+vanilla,16749,2,ifn_alpha,CD8 T cells,0.980424
+vanilla,16749,2,ifn_alpha,Dendritic cells,0.990596
+vanilla,16749,2,ifn_alpha,FCGR3A+ Monocytes,0.979445
+vanilla,16749,2,ifn_alpha,NK cells,0.94159
+vanilla,16749,2,ifn_pair,B cells,0.992374
+vanilla,16749,2,ifn_pair,CD14+ Monocytes,0.999768
+vanilla,16749,2,ifn_pair,CD4 T cells,0.991871
+vanilla,16749,2,ifn_pair,CD8 T cells,0.985915
+vanilla,16749,2,ifn_pair,Dendritic cells,1
+vanilla,16749,2,ifn_pair,FCGR3A+ Monocytes,0.985504
+vanilla,16749,2,ifn_pair,NK cells,0.964378
+vanilla,16749,3,ifn_alpha,B cells,0.997925
+vanilla,16749,3,ifn_alpha,CD14+ Monocytes,0.999849
+vanilla,16749,3,ifn_alpha,CD4 T cells,0.983563
+vanilla,16749,3,ifn_alpha,CD8 T cells,0.944566
+vanilla,16749,3,ifn_alpha,Dendritic cells,0.968652
+vanilla,16749,3,ifn_alpha,FCGR3A+ Monocytes,0.997316
+vanilla,16749,3,ifn_alpha,NK cells,0.98108
+vanilla,16749,3,ifn_pair,B cells,0.99588
+vanilla,16749,3,ifn_pair,CD14+ Monocytes,0.999918
+vanilla,16749,3,ifn_pair,CD4 T cells,0.980031
+vanilla,16749,3,ifn_pair,CD8 T cells,0.978801
+vanilla,16749,3,ifn_pair,Dendritic cells,0.990596
+vanilla,16749,3,ifn_pair,FCGR3A+ Monocytes,0.999003
+vanilla,16749,3,ifn_pair,NK cells,0.988629
+vanilla,16749,4,ifn_alpha,B cells,0.893145
+vanilla,16749,4,ifn_alpha,CD14+ Monocytes,0.999824
+vanilla,16749,4,ifn_alpha,CD4 T cells,0.90953
+vanilla,16749,4,ifn_alpha,CD8 T cells,0.892762
+vanilla,16749,4,ifn_alpha,Dendritic cells,0.964472
+vanilla,16749,4,ifn_alpha,FCGR3A+ Monocytes,0.988955
+vanilla,16749,4,ifn_alpha,NK cells,0.90762
+vanilla,16749,4,ifn_pair,B cells,0.987085
+vanilla,16749,4,ifn_pair,CD14+ Monocytes,0.999994
+vanilla,16749,4,ifn_pair,CD4 T cells,0.958094
+vanilla,16749,4,ifn_pair,CD8 T cells,0.958222
+vanilla,16749,4,ifn_pair,Dendritic cells,1
+vanilla,16749,4,ifn_pair,FCGR3A+ Monocytes,0.997546
+vanilla,16749,4,ifn_pair,NK cells,0.974758
+vanilla,16749,5,ifn_alpha,B cells,0.982965
+vanilla,16749,5,ifn_alpha,CD14+ Monocytes,0.999843
+vanilla,16749,5,ifn_alpha,CD4 T cells,0.972692
+vanilla,16749,5,ifn_alpha,CD8 T cells,0.989687
+vanilla,16749,5,ifn_alpha,Dendritic cells,1
+vanilla,16749,5,ifn_alpha,FCGR3A+ Monocytes,0.991486
+vanilla,16749,5,ifn_alpha,NK cells,0.984477
+vanilla,16749,5,ifn_pair,B cells,0.999708
+vanilla,16749,5,ifn_pair,CD14+ Monocytes,0.999969
+vanilla,16749,5,ifn_pair,CD4 T cells,0.997061
+vanilla,16749,5,ifn_pair,CD8 T cells,0.997947
+vanilla,16749,5,ifn_pair,Dendritic cells,1
+vanilla,16749,5,ifn_pair,FCGR3A+ Monocytes,0.995245
+vanilla,16749,5,ifn_pair,NK cells,0.996037
+vanilla,16749,6,ifn_alpha,B cells,0.993104
+vanilla,16749,6,ifn_alpha,CD14+ Monocytes,0.869415
+vanilla,16749,6,ifn_alpha,CD4 T cells,0.955348
+vanilla,16749,6,ifn_alpha,CD8 T cells,0.990355
+vanilla,16749,6,ifn_alpha,Dendritic cells,0.913271
+vanilla,16749,6,ifn_alpha,FCGR3A+ Monocytes,0.851511
+vanilla,16749,6,ifn_alpha,NK cells,0.982968
+vanilla,16749,6,ifn_pair,B cells,0.931539
+vanilla,16749,6,ifn_pair,CD14+ Monocytes,0.983964
+vanilla,16749,6,ifn_pair,CD4 T cells,0.989274
+vanilla,16749,6,ifn_pair,CD8 T cells,0.989973
+vanilla,16749,6,ifn_pair,Dendritic cells,0.99791
+vanilla,16749,6,ifn_pair,FCGR3A+ Monocytes,0.964028
+vanilla,16749,6,ifn_pair,NK cells,0.989148
+vanilla,16749,7,ifn_alpha,B cells,0.997692
+vanilla,16749,7,ifn_alpha,CD14+ Monocytes,0.999975
+vanilla,16749,7,ifn_alpha,CD4 T cells,0.983477
+vanilla,16749,7,ifn_alpha,CD8 T cells,0.981952
+vanilla,16749,7,ifn_alpha,Dendritic cells,0.998955
+vanilla,16749,7,ifn_alpha,FCGR3A+ Monocytes,0.992944
+vanilla,16749,7,ifn_alpha,NK cells,0.963765
+vanilla,16749,7,ifn_pair,B cells,0.999299
+vanilla,16749,7,ifn_pair,CD14+ Monocytes,0.999686
+vanilla,16749,7,ifn_pair,CD4 T cells,0.984867
+vanilla,16749,7,ifn_pair,CD8 T cells,0.984721
+vanilla,16749,7,ifn_pair,Dendritic cells,1
+vanilla,16749,7,ifn_pair,FCGR3A+ Monocytes,0.985274
+vanilla,16749,7,ifn_pair,NK cells,0.989856
+vanilla,16749,8,ifn_alpha,B cells,0.952431
+vanilla,16749,8,ifn_alpha,CD14+ Monocytes,0.978355
+vanilla,16749,8,ifn_alpha,CD4 T cells,0.844953
+vanilla,16749,8,ifn_alpha,CD8 T cells,0.954545
+vanilla,16749,8,ifn_alpha,Dendritic cells,0.989551
+vanilla,16749,8,ifn_alpha,FCGR3A+ Monocytes,0.907348
+vanilla,16749,8,ifn_alpha,NK cells,0.867563
+vanilla,16749,8,ifn_pair,B cells,0.98241
+vanilla,16749,8,ifn_pair,CD14+ Monocytes,0.999103
+vanilla,16749,8,ifn_pair,CD4 T cells,0.947928
+vanilla,16749,8,ifn_pair,CD8 T cells,0.976843
+vanilla,16749,8,ifn_pair,Dendritic cells,0.994775
+vanilla,16749,8,ifn_pair,FCGR3A+ Monocytes,0.981209
+vanilla,16749,8,ifn_pair,NK cells,0.975372
+vanilla,16749,9,ifn_alpha,B cells,0.907755
+vanilla,16749,9,ifn_alpha,CD14+ Monocytes,0.99717
+vanilla,16749,9,ifn_alpha,CD4 T cells,0.904343
+vanilla,16749,9,ifn_alpha,CD8 T cells,0.954498
+vanilla,16749,9,ifn_alpha,Dendritic cells,0.978056
+vanilla,16749,9,ifn_alpha,FCGR3A+ Monocytes,0.982129
+vanilla,16749,9,ifn_alpha,NK cells,0.927389
+vanilla,16749,9,ifn_pair,B cells,0.990095
+vanilla,16749,9,ifn_pair,CD14+ Monocytes,0.999592
+vanilla,16749,9,ifn_pair,CD4 T cells,0.986818
+vanilla,16749,9,ifn_pair,CD8 T cells,0.990355
+vanilla,16749,9,ifn_pair,Dendritic cells,0.99791
+vanilla,16749,9,ifn_pair,FCGR3A+ Monocytes,0.996165
+vanilla,16749,9,ifn_pair,NK cells,0.993442
+real,16749,0,ifn_alpha,B cells,0.997195
+real,16749,0,ifn_alpha,CD14+ Monocytes,0.999937
+real,16749,0,ifn_alpha,CD4 T cells,0.997807
+real,16749,0,ifn_alpha,CD8 T cells,0.997756
+real,16749,0,ifn_alpha,Dendritic cells,1
+real,16749,0,ifn_alpha,FCGR3A+ Monocytes,0.99977
+real,16749,0,ifn_alpha,NK cells,0.993583
+real,16749,0,ifn_pair,B cells,0.99775
+real,16749,0,ifn_pair,CD14+ Monocytes,0.999962
+real,16749,0,ifn_pair,CD4 T cells,0.9983
+real,16749,0,ifn_pair,CD8 T cells,0.998281
+real,16749,0,ifn_pair,Dendritic cells,1
+real,16749,0,ifn_pair,FCGR3A+ Monocytes,1
+real,16749,0,ifn_pair,NK cells,0.994102
+real,16749,1,ifn_alpha,B cells,0.991439
+real,16749,1,ifn_alpha,CD14+ Monocytes,0.999404
+real,16749,1,ifn_alpha,CD4 T cells,0.993484
+real,16749,1,ifn_alpha,CD8 T cells,0.992504
+real,16749,1,ifn_alpha,Dendritic cells,1
+real,16749,1,ifn_alpha,FCGR3A+ Monocytes,0.990489
+real,16749,1,ifn_alpha,NK cells,0.983204
+real,16749,1,ifn_pair,B cells,0.99962
+real,16749,1,ifn_pair,CD14+ Monocytes,1
+real,16749,1,ifn_pair,CD4 T cells,0.998658
+real,16749,1,ifn_pair,CD8 T cells,0.996944
+real,16749,1,ifn_pair,Dendritic cells,1
+real,16749,1,ifn_pair,FCGR3A+ Monocytes,0.997622
+real,16749,1,ifn_pair,NK cells,0.993112
+real,16749,2,ifn_alpha,B cells,0.997312
+real,16749,2,ifn_alpha,CD14+ Monocytes,0.99995
+real,16749,2,ifn_alpha,CD4 T cells,0.997235
+real,16749,2,ifn_alpha,CD8 T cells,0.995846
+real,16749,2,ifn_alpha,Dendritic cells,1
+real,16749,2,ifn_alpha,FCGR3A+ Monocytes,0.995551
+real,16749,2,ifn_alpha,NK cells,0.992734
+real,16749,2,ifn_pair,B cells,0.997429
+real,16749,2,ifn_pair,CD14+ Monocytes,0.999975
+real,16749,2,ifn_pair,CD4 T cells,0.997728
+real,16749,2,ifn_pair,CD8 T cells,0.996896
+real,16749,2,ifn_pair,Dendritic cells,1
+real,16749,2,ifn_pair,FCGR3A+ Monocytes,0.997239
+real,16749,2,ifn_pair,NK cells,0.9933
+real,16749,3,ifn_alpha,B cells,0.996698
+real,16749,3,ifn_alpha,CD14+ Monocytes,0.999987
+real,16749,3,ifn_alpha,CD4 T cells,0.997096
+real,16749,3,ifn_alpha,CD8 T cells,0.995703
+real,16749,3,ifn_alpha,Dendritic cells,1
+real,16749,3,ifn_alpha,FCGR3A+ Monocytes,0.997929
+real,16749,3,ifn_alpha,NK cells,0.991272
+real,16749,3,ifn_pair,B cells,0.99702
+real,16749,3,ifn_pair,CD14+ Monocytes,0.999987
+real,16749,3,ifn_pair,CD4 T cells,0.997805
+real,16749,3,ifn_pair,CD8 T cells,0.997469
+real,16749,3,ifn_pair,Dendritic cells,1
+real,16749,3,ifn_pair,FCGR3A+ Monocytes,0.998696
+real,16749,3,ifn_pair,NK cells,0.99146
+real,16749,4,ifn_alpha,B cells,0.998101
+real,16749,4,ifn_alpha,CD14+ Monocytes,0.999912
+real,16749,4,ifn_alpha,CD4 T cells,0.996496
+real,16749,4,ifn_alpha,CD8 T cells,0.997995
+real,16749,4,ifn_alpha,Dendritic cells,1
+real,16749,4,ifn_alpha,FCGR3A+ Monocytes,0.994554
+real,16749,4,ifn_alpha,NK cells,0.990753
+real,16749,4,ifn_pair,B cells,0.998539
+real,16749,4,ifn_pair,CD14+ Monocytes,0.999962
+real,16749,4,ifn_pair,CD4 T cells,0.997052
+real,16749,4,ifn_pair,CD8 T cells,0.998281
+real,16749,4,ifn_pair,Dendritic cells,1
+real,16749,4,ifn_pair,FCGR3A+ Monocytes,0.997009
+real,16749,4,ifn_pair,NK cells,0.991272
+real,16749,5,ifn_alpha,B cells,0.998072
+real,16749,5,ifn_alpha,CD14+ Monocytes,0.999956
+real,16749,5,ifn_alpha,CD4 T cells,0.996196
+real,16749,5,ifn_alpha,CD8 T cells,0.996515
+real,16749,5,ifn_alpha,Dendritic cells,1
+real,16749,5,ifn_alpha,FCGR3A+ Monocytes,0.993557
+real,16749,5,ifn_alpha,NK cells,0.988582
+real,16749,5,ifn_pair,B cells,0.998422
+real,16749,5,ifn_pair,CD14+ Monocytes,0.999994
+real,16749,5,ifn_pair,CD4 T cells,0.997614
+real,16749,5,ifn_pair,CD8 T cells,0.998615
+real,16749,5,ifn_pair,Dendritic cells,1
+real,16749,5,ifn_pair,FCGR3A+ Monocytes,0.995168
+real,16749,5,ifn_pair,NK cells,0.991083
+real,16749,6,ifn_alpha,B cells,0.99886
+real,16749,6,ifn_alpha,CD14+ Monocytes,0.999987
+real,16749,6,ifn_alpha,CD4 T cells,0.997745
+real,16749,6,ifn_alpha,CD8 T cells,0.998329
+real,16749,6,ifn_alpha,Dendritic cells,1
+real,16749,6,ifn_alpha,FCGR3A+ Monocytes,0.997776
+real,16749,6,ifn_alpha,NK cells,0.993678
+real,16749,6,ifn_pair,B cells,0.99889
+real,16749,6,ifn_pair,CD14+ Monocytes,0.999994
+real,16749,6,ifn_pair,CD4 T cells,0.998121
+real,16749,6,ifn_pair,CD8 T cells,0.99852
+real,16749,6,ifn_pair,Dendritic cells,1
+real,16749,6,ifn_pair,FCGR3A+ Monocytes,0.998619
+real,16749,6,ifn_pair,NK cells,0.993489
+real,16749,7,ifn_alpha,B cells,0.99588
+real,16749,7,ifn_alpha,CD14+ Monocytes,0.999925
+real,16749,7,ifn_alpha,CD4 T cells,0.997403
+real,16749,7,ifn_alpha,CD8 T cells,0.998615
+real,16749,7,ifn_alpha,Dendritic cells,1
+real,16749,7,ifn_alpha,FCGR3A+ Monocytes,0.997699
+real,16749,7,ifn_alpha,NK cells,0.991743
+real,16749,7,ifn_pair,B cells,0.996464
+real,16749,7,ifn_pair,CD14+ Monocytes,0.999981
+real,16749,7,ifn_pair,CD4 T cells,0.997968
+real,16749,7,ifn_pair,CD8 T cells,0.999141
+real,16749,7,ifn_pair,Dendritic cells,1
+real,16749,7,ifn_pair,FCGR3A+ Monocytes,0.999003
+real,16749,7,ifn_pair,NK cells,0.991885
+real,16749,8,ifn_alpha,B cells,0.997078
+real,16749,8,ifn_alpha,CD14+ Monocytes,0.999981
+real,16749,8,ifn_alpha,CD4 T cells,0.997582
+real,16749,8,ifn_alpha,CD8 T cells,0.993602
+real,16749,8,ifn_alpha,Dendritic cells,1
+real,16749,8,ifn_alpha,FCGR3A+ Monocytes,0.999847
+real,16749,8,ifn_alpha,NK cells,0.987639
+real,16749,8,ifn_pair,B cells,0.997809
+real,16749,8,ifn_pair,CD14+ Monocytes,0.999994
+real,16749,8,ifn_pair,CD4 T cells,0.998128
+real,16749,8,ifn_pair,CD8 T cells,0.995416
+real,16749,8,ifn_pair,Dendritic cells,1
+real,16749,8,ifn_pair,FCGR3A+ Monocytes,0.999847
+real,16749,8,ifn_pair,NK cells,0.98929
+real,16749,9,ifn_alpha,B cells,0.998481
+real,16749,9,ifn_alpha,CD14+ Monocytes,0.999969
+real,16749,9,ifn_alpha,CD4 T cells,0.997172
+real,16749,9,ifn_alpha,CD8 T cells,0.995751
+real,16749,9,ifn_alpha,Dendritic cells,1
+real,16749,9,ifn_alpha,FCGR3A+ Monocytes,0.999156
+real,16749,9,ifn_alpha,NK cells,0.992074
+real,16749,9,ifn_pair,B cells,0.998597
+real,16749,9,ifn_pair,CD14+ Monocytes,0.999981
+real,16749,9,ifn_pair,CD4 T cells,0.997359
+real,16749,9,ifn_pair,CD8 T cells,0.99618
+real,16749,9,ifn_pair,Dendritic cells,1
+real,16749,9,ifn_pair,FCGR3A+ Monocytes,0.999463
+real,16749,9,ifn_pair,NK cells,0.992121
+shuffled,16749,0,ifn_alpha,B cells,0.979985
+shuffled,16749,0,ifn_alpha,CD14+ Monocytes,0.995702
+shuffled,16749,0,ifn_alpha,CD4 T cells,0.934562
+shuffled,16749,0,ifn_alpha,CD8 T cells,0.889133
+shuffled,16749,0,ifn_alpha,Dendritic cells,0.964472
+shuffled,16749,0,ifn_alpha,FCGR3A+ Monocytes,0.961037
+shuffled,16749,0,ifn_alpha,NK cells,0.862609
+shuffled,16749,0,ifn_pair,B cells,0.982965
+shuffled,16749,0,ifn_pair,CD14+ Monocytes,0.996505
+shuffled,16749,0,ifn_pair,CD4 T cells,0.936136
+shuffled,16749,0,ifn_pair,CD8 T cells,0.876719
+shuffled,16749,0,ifn_pair,Dendritic cells,0.946708
+shuffled,16749,0,ifn_pair,FCGR3A+ Monocytes,0.974843
+shuffled,16749,0,ifn_pair,NK cells,0.873272
+shuffled,16749,1,ifn_alpha,B cells,0.909391
+shuffled,16749,1,ifn_alpha,CD14+ Monocytes,0.978618
+shuffled,16749,1,ifn_alpha,CD4 T cells,0.756043
+shuffled,16749,1,ifn_alpha,CD8 T cells,0.832315
+shuffled,16749,1,ifn_alpha,Dendritic cells,0.952978
+shuffled,16749,1,ifn_alpha,FCGR3A+ Monocytes,0.890627
+shuffled,16749,1,ifn_alpha,NK cells,0.80401
+shuffled,16749,1,ifn_pair,B cells,0.950269
+shuffled,16749,1,ifn_pair,CD14+ Monocytes,0.991718
+shuffled,16749,1,ifn_pair,CD4 T cells,0.815415
+shuffled,16749,1,ifn_pair,CD8 T cells,0.871133
+shuffled,16749,1,ifn_pair,Dendritic cells,0.994775
+shuffled,16749,1,ifn_pair,FCGR3A+ Monocytes,0.948228
+shuffled,16749,1,ifn_pair,NK cells,0.836141
+shuffled,16749,2,ifn_alpha,B cells,0.996377
+shuffled,16749,2,ifn_alpha,CD14+ Monocytes,0.999385
+shuffled,16749,2,ifn_alpha,CD4 T cells,0.973478
+shuffled,16749,2,ifn_alpha,CD8 T cells,0.973358
+shuffled,16749,2,ifn_alpha,Dendritic cells,0.985371
+shuffled,16749,2,ifn_alpha,FCGR3A+ Monocytes,0.978754
+shuffled,16749,2,ifn_alpha,NK cells,0.971314
+shuffled,16749,2,ifn_pair,B cells,0.992666
+shuffled,16749,2,ifn_pair,CD14+ Monocytes,0.998833
+shuffled,16749,2,ifn_pair,CD4 T cells,0.959571
+shuffled,16749,2,ifn_pair,CD8 T cells,0.966148
+shuffled,16749,2,ifn_pair,Dendritic cells,0.983281
+shuffled,16749,2,ifn_pair,FCGR3A+ Monocytes,0.990413
+shuffled,16749,2,ifn_pair,NK cells,0.972069
+shuffled,16749,3,ifn_alpha,B cells,0.331639
+shuffled,16749,3,ifn_alpha,CD14+ Monocytes,0.517416
+shuffled,16749,3,ifn_alpha,CD4 T cells,0.389744
+shuffled,16749,3,ifn_alpha,CD8 T cells,0.436068
+shuffled,16749,3,ifn_alpha,Dendritic cells,0.339603
+shuffled,16749,3,ifn_alpha,FCGR3A+ Monocytes,0.283096
+shuffled,16749,3,ifn_alpha,NK cells,0.372022
+shuffled,16749,3,ifn_pair,B cells,0.867608
+shuffled,16749,3,ifn_pair,CD14+ Monocytes,0.961302
+shuffled,16749,3,ifn_pair,CD4 T cells,0.706919
+shuffled,16749,3,ifn_pair,CD8 T cells,0.798176
+shuffled,16749,3,ifn_pair,Dendritic cells,0.947753
+shuffled,16749,3,ifn_pair,FCGR3A+ Monocytes,0.879429
+shuffled,16749,3,ifn_pair,NK cells,0.738051
+shuffled,16749,4,ifn_alpha,B cells,0.950327
+shuffled,16749,4,ifn_alpha,CD14+ Monocytes,0.980356
+shuffled,16749,4,ifn_alpha,CD4 T cells,0.851513
+shuffled,16749,4,ifn_alpha,CD8 T cells,0.751767
+shuffled,16749,4,ifn_alpha,Dendritic cells,0.951933
+shuffled,16749,4,ifn_alpha,FCGR3A+ Monocytes,0.932198
+shuffled,16749,4,ifn_alpha,NK cells,0.792357
+shuffled,16749,4,ifn_pair,B cells,0.959677
+shuffled,16749,4,ifn_pair,CD14+ Monocytes,0.9918
+shuffled,16749,4,ifn_pair,CD4 T cells,0.818145
+shuffled,16749,4,ifn_pair,CD8 T cells,0.784473
+shuffled,16749,4,ifn_pair,Dendritic cells,0.962382
+shuffled,16749,4,ifn_pair,FCGR3A+ Monocytes,0.939791
+shuffled,16749,4,ifn_pair,NK cells,0.803586
+shuffled,16749,5,ifn_alpha,B cells,0.592946
+shuffled,16749,5,ifn_alpha,CD14+ Monocytes,0.66151
+shuffled,16749,5,ifn_alpha,CD4 T cells,0.555835
+shuffled,16749,5,ifn_alpha,CD8 T cells,0.530271
+shuffled,16749,5,ifn_alpha,Dendritic cells,0.376176
+shuffled,16749,5,ifn_alpha,FCGR3A+ Monocytes,0.495782
+shuffled,16749,5,ifn_alpha,NK cells,0.535834
+shuffled,16749,5,ifn_pair,B cells,0.736355
+shuffled,16749,5,ifn_pair,CD14+ Monocytes,0.817511
+shuffled,16749,5,ifn_pair,CD4 T cells,0.69624
+shuffled,16749,5,ifn_pair,CD8 T cells,0.773778
+shuffled,16749,5,ifn_pair,Dendritic cells,0.702194
+shuffled,16749,5,ifn_pair,FCGR3A+ Monocytes,0.7449
+shuffled,16749,5,ifn_pair,NK cells,0.76787
+shuffled,16749,6,ifn_alpha,B cells,0.894606
+shuffled,16749,6,ifn_alpha,CD14+ Monocytes,0.879723
+shuffled,16749,6,ifn_alpha,CD4 T cells,0.893461
+shuffled,16749,6,ifn_alpha,CD8 T cells,0.917924
+shuffled,16749,6,ifn_alpha,Dendritic cells,0.628004
+shuffled,16749,6,ifn_alpha,FCGR3A+ Monocytes,0.725955
+shuffled,16749,6,ifn_alpha,NK cells,0.920783
+shuffled,16749,6,ifn_pair,B cells,0.814721
+shuffled,16749,6,ifn_pair,CD14+ Monocytes,0.733133
+shuffled,16749,6,ifn_pair,CD4 T cells,0.80879
+shuffled,16749,6,ifn_pair,CD8 T cells,0.840384
+shuffled,16749,6,ifn_pair,Dendritic cells,0.551724
+shuffled,16749,6,ifn_pair,FCGR3A+ Monocytes,0.597944
+shuffled,16749,6,ifn_pair,NK cells,0.889502
+shuffled,16749,7,ifn_alpha,B cells,0.995033
+shuffled,16749,7,ifn_alpha,CD14+ Monocytes,0.999962
+shuffled,16749,7,ifn_alpha,CD4 T cells,0.965097
+shuffled,16749,7,ifn_alpha,CD8 T cells,0.961516
+shuffled,16749,7,ifn_alpha,Dendritic cells,1
+shuffled,16749,7,ifn_alpha,FCGR3A+ Monocytes,0.997622
+shuffled,16749,7,ifn_alpha,NK cells,0.970701
+shuffled,16749,7,ifn_pair,B cells,0.993163
+shuffled,16749,7,ifn_pair,CD14+ Monocytes,0.999925
+shuffled,16749,7,ifn_pair,CD4 T cells,0.969478
+shuffled,16749,7,ifn_pair,CD8 T cells,0.958938
+shuffled,16749,7,ifn_pair,Dendritic cells,0.998955
+shuffled,16749,7,ifn_pair,FCGR3A+ Monocytes,0.99908
+shuffled,16749,7,ifn_pair,NK cells,0.977825
+shuffled,16749,8,ifn_alpha,B cells,0.350602
+shuffled,16749,8,ifn_alpha,CD14+ Monocytes,0.704109
+shuffled,16749,8,ifn_alpha,CD4 T cells,0.568373
+shuffled,16749,8,ifn_alpha,CD8 T cells,0.477177
+shuffled,16749,8,ifn_alpha,Dendritic cells,0.498433
+shuffled,16749,8,ifn_alpha,FCGR3A+ Monocytes,0.717748
+shuffled,16749,8,ifn_alpha,NK cells,0.592828
+shuffled,16749,8,ifn_pair,B cells,0.848703
+shuffled,16749,8,ifn_pair,CD14+ Monocytes,0.933954
+shuffled,16749,8,ifn_pair,CD4 T cells,0.634533
+shuffled,16749,8,ifn_pair,CD8 T cells,0.740212
+shuffled,16749,8,ifn_pair,Dendritic cells,0.892372
+shuffled,16749,8,ifn_pair,FCGR3A+ Monocytes,0.78463
+shuffled,16749,8,ifn_pair,NK cells,0.693135
+shuffled,16749,9,ifn_alpha,B cells,0.670085
+shuffled,16749,9,ifn_alpha,CD14+ Monocytes,0.68067
+shuffled,16749,9,ifn_alpha,CD4 T cells,0.591577
+shuffled,16749,9,ifn_alpha,CD8 T cells,0.639706
+shuffled,16749,9,ifn_alpha,Dendritic cells,0.551724
+shuffled,16749,9,ifn_alpha,FCGR3A+ Monocytes,0.476914
+shuffled,16749,9,ifn_alpha,NK cells,0.569144
+shuffled,16749,9,ifn_pair,B cells,0.908368
+shuffled,16749,9,ifn_pair,CD14+ Monocytes,0.991693
+shuffled,16749,9,ifn_pair,CD4 T cells,0.855451
+shuffled,16749,9,ifn_pair,CD8 T cells,0.793592
+shuffled,16749,9,ifn_pair,Dendritic cells,0.724138
+shuffled,16749,9,ifn_pair,FCGR3A+ Monocytes,0.948535
+shuffled,16749,9,ifn_pair,NK cells,0.860769
+coexpression,16749,0,ifn_alpha,B cells,0.99851
+coexpression,16749,0,ifn_alpha,CD14+ Monocytes,1
+coexpression,16749,0,ifn_alpha,CD4 T cells,0.998803
+coexpression,16749,0,ifn_alpha,CD8 T cells,0.998424
+coexpression,16749,0,ifn_alpha,Dendritic cells,1
+coexpression,16749,0,ifn_alpha,FCGR3A+ Monocytes,0.997162
+coexpression,16749,0,ifn_alpha,NK cells,0.991979
+coexpression,16749,0,ifn_pair,B cells,0.997399
+coexpression,16749,0,ifn_pair,CD14+ Monocytes,0.999987
+coexpression,16749,0,ifn_pair,CD4 T cells,0.998317
+coexpression,16749,0,ifn_pair,CD8 T cells,0.998472
+coexpression,16749,0,ifn_pair,Dendritic cells,1
+coexpression,16749,0,ifn_pair,FCGR3A+ Monocytes,0.996779
+coexpression,16749,0,ifn_pair,NK cells,0.991932
+coexpression,16749,1,ifn_alpha,B cells,0.99851
+coexpression,16749,1,ifn_alpha,CD14+ Monocytes,0.999994
+coexpression,16749,1,ifn_alpha,CD4 T cells,0.998286
+coexpression,16749,1,ifn_alpha,CD8 T cells,0.997947
+coexpression,16749,1,ifn_alpha,Dendritic cells,1
+coexpression,16749,1,ifn_alpha,FCGR3A+ Monocytes,0.998313
+coexpression,16749,1,ifn_alpha,NK cells,0.992026
+coexpression,16749,1,ifn_pair,B cells,0.999445
+coexpression,16749,1,ifn_pair,CD14+ Monocytes,0.999962
+coexpression,16749,1,ifn_pair,CD4 T cells,0.997184
+coexpression,16749,1,ifn_pair,CD8 T cells,0.998233
+coexpression,16749,1,ifn_pair,Dendritic cells,1
+coexpression,16749,1,ifn_pair,FCGR3A+ Monocytes,0.996549
+coexpression,16749,1,ifn_pair,NK cells,0.991743
+coexpression,16749,2,ifn_alpha,B cells,0.999036
+coexpression,16749,2,ifn_alpha,CD14+ Monocytes,0.999975
+coexpression,16749,2,ifn_alpha,CD4 T cells,0.9986
+coexpression,16749,2,ifn_alpha,CD8 T cells,0.998424
+coexpression,16749,2,ifn_alpha,Dendritic cells,1
+coexpression,16749,2,ifn_alpha,FCGR3A+ Monocytes,0.99279
+coexpression,16749,2,ifn_alpha,NK cells,0.987686
+coexpression,16749,2,ifn_pair,B cells,0.998451
+coexpression,16749,2,ifn_pair,CD14+ Monocytes,0.99995
+coexpression,16749,2,ifn_pair,CD4 T cells,0.998274
+coexpression,16749,2,ifn_pair,CD8 T cells,0.997469
+coexpression,16749,2,ifn_pair,Dendritic cells,1
+coexpression,16749,2,ifn_pair,FCGR3A+ Monocytes,0.998389
+coexpression,16749,2,ifn_pair,NK cells,0.99231
+coexpression,16749,3,ifn_alpha,B cells,0.998597
+coexpression,16749,3,ifn_alpha,CD14+ Monocytes,0.999981
+coexpression,16749,3,ifn_alpha,CD4 T cells,0.997938
+coexpression,16749,3,ifn_alpha,CD8 T cells,0.997804
+coexpression,16749,3,ifn_alpha,Dendritic cells,1
+coexpression,16749,3,ifn_alpha,FCGR3A+ Monocytes,0.996779
+coexpression,16749,3,ifn_alpha,NK cells,0.99231
+coexpression,16749,3,ifn_pair,B cells,0.998597
+coexpression,16749,3,ifn_pair,CD14+ Monocytes,0.999981
+coexpression,16749,3,ifn_pair,CD4 T cells,0.99801
+coexpression,16749,3,ifn_pair,CD8 T cells,0.997851
+coexpression,16749,3,ifn_pair,Dendritic cells,1
+coexpression,16749,3,ifn_pair,FCGR3A+ Monocytes,0.996932
+coexpression,16749,3,ifn_pair,NK cells,0.992404
+coexpression,16749,4,ifn_alpha,B cells,0.996494
+coexpression,16749,4,ifn_alpha,CD14+ Monocytes,0.999987
+coexpression,16749,4,ifn_alpha,CD4 T cells,0.998365
+coexpression,16749,4,ifn_alpha,CD8 T cells,0.997422
+coexpression,16749,4,ifn_alpha,Dendritic cells,1
+coexpression,16749,4,ifn_alpha,FCGR3A+ Monocytes,0.997776
+coexpression,16749,4,ifn_alpha,NK cells,0.99264
+coexpression,16749,4,ifn_pair,B cells,0.998831
+coexpression,16749,4,ifn_pair,CD14+ Monocytes,0.999969
+coexpression,16749,4,ifn_pair,CD4 T cells,0.996212
+coexpression,16749,4,ifn_pair,CD8 T cells,0.998186
+coexpression,16749,4,ifn_pair,Dendritic cells,1
+coexpression,16749,4,ifn_pair,FCGR3A+ Monocytes,0.999463
+coexpression,16749,4,ifn_pair,NK cells,0.993678
+coexpression,16749,5,ifn_alpha,B cells,0.998597
+coexpression,16749,5,ifn_alpha,CD14+ Monocytes,0.999969
+coexpression,16749,5,ifn_alpha,CD4 T cells,0.998261
+coexpression,16749,5,ifn_alpha,CD8 T cells,0.997278
+coexpression,16749,5,ifn_alpha,Dendritic cells,1
+coexpression,16749,5,ifn_alpha,FCGR3A+ Monocytes,0.997009
+coexpression,16749,5,ifn_alpha,NK cells,0.992262
+coexpression,16749,5,ifn_pair,B cells,0.99737
+coexpression,16749,5,ifn_pair,CD14+ Monocytes,0.999918
+coexpression,16749,5,ifn_pair,CD4 T cells,0.998086
+coexpression,16749,5,ifn_pair,CD8 T cells,0.994175
+coexpression,16749,5,ifn_pair,Dendritic cells,1
+coexpression,16749,5,ifn_pair,FCGR3A+ Monocytes,0.997162
+coexpression,16749,5,ifn_pair,NK cells,0.991696
+coexpression,16749,6,ifn_alpha,B cells,0.998773
+coexpression,16749,6,ifn_alpha,CD14+ Monocytes,0.999994
+coexpression,16749,6,ifn_alpha,CD4 T cells,0.998381
+coexpression,16749,6,ifn_alpha,CD8 T cells,0.997851
+coexpression,16749,6,ifn_alpha,Dendritic cells,1
+coexpression,16749,6,ifn_alpha,FCGR3A+ Monocytes,0.998083
+coexpression,16749,6,ifn_alpha,NK cells,0.993159
+coexpression,16749,6,ifn_pair,B cells,0.998977
+coexpression,16749,6,ifn_pair,CD14+ Monocytes,0.999987
+coexpression,16749,6,ifn_pair,CD4 T cells,0.997956
+coexpression,16749,6,ifn_pair,CD8 T cells,0.997422
+coexpression,16749,6,ifn_pair,Dendritic cells,1
+coexpression,16749,6,ifn_pair,FCGR3A+ Monocytes,0.998466
+coexpression,16749,6,ifn_pair,NK cells,0.9933
+coexpression,16749,7,ifn_alpha,B cells,0.997312
+coexpression,16749,7,ifn_alpha,CD14+ Monocytes,0.99995
+coexpression,16749,7,ifn_alpha,CD4 T cells,0.998758
+coexpression,16749,7,ifn_alpha,CD8 T cells,0.997326
+coexpression,16749,7,ifn_alpha,Dendritic cells,1
+coexpression,16749,7,ifn_alpha,FCGR3A+ Monocytes,0.998926
+coexpression,16749,7,ifn_alpha,NK cells,0.992451
+coexpression,16749,7,ifn_pair,B cells,0.996932
+coexpression,16749,7,ifn_pair,CD14+ Monocytes,0.999975
+coexpression,16749,7,ifn_pair,CD4 T cells,0.998574
+coexpression,16749,7,ifn_pair,CD8 T cells,0.997469
+coexpression,16749,7,ifn_pair,Dendritic cells,1
+coexpression,16749,7,ifn_pair,FCGR3A+ Monocytes,1
+coexpression,16749,7,ifn_pair,NK cells,0.992734
+coexpression,16749,8,ifn_alpha,B cells,0.997604
+coexpression,16749,8,ifn_alpha,CD14+ Monocytes,0.999975
+coexpression,16749,8,ifn_alpha,CD4 T cells,0.997863
+coexpression,16749,8,ifn_alpha,CD8 T cells,0.998806
+coexpression,16749,8,ifn_alpha,Dendritic cells,1
+coexpression,16749,8,ifn_alpha,FCGR3A+ Monocytes,0.996395
+coexpression,16749,8,ifn_alpha,NK cells,0.992923
+coexpression,16749,8,ifn_pair,B cells,0.996786
+coexpression,16749,8,ifn_pair,CD14+ Monocytes,0.999969
+coexpression,16749,8,ifn_pair,CD4 T cells,0.997449
+coexpression,16749,8,ifn_pair,CD8 T cells,0.99852
+coexpression,16749,8,ifn_pair,Dendritic cells,1
+coexpression,16749,8,ifn_pair,FCGR3A+ Monocytes,0.996932
+coexpression,16749,8,ifn_pair,NK cells,0.992026
+coexpression,16749,9,ifn_alpha,B cells,0.998597
+coexpression,16749,9,ifn_alpha,CD14+ Monocytes,0.999994
+coexpression,16749,9,ifn_alpha,CD4 T cells,0.999072
+coexpression,16749,9,ifn_alpha,CD8 T cells,0.997231
+coexpression,16749,9,ifn_alpha,Dendritic cells,1
+coexpression,16749,9,ifn_alpha,FCGR3A+ Monocytes,0.996932
+coexpression,16749,9,ifn_alpha,NK cells,0.99264
+coexpression,16749,9,ifn_pair,B cells,0.998101
+coexpression,16749,9,ifn_pair,CD14+ Monocytes,0.999975
+coexpression,16749,9,ifn_pair,CD4 T cells,0.998219
+coexpression,16749,9,ifn_pair,CD8 T cells,0.997135
+coexpression,16749,9,ifn_pair,Dendritic cells,1
+coexpression,16749,9,ifn_pair,FCGR3A+ Monocytes,0.999617
+coexpression,16749,9,ifn_pair,NK cells,0.991743

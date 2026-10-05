@@ -1,0 +1,7 @@
+train_size,score,comparison,pairs,mean_difference,ci_low,ci_high,wilcoxon_p,primary
+16749,ifn_alpha,real - shuffled,10,0.238759,0.0826234,0.394895,0.00195312,True
+16749,ifn_alpha,real - vanilla,10,0.0311184,0.0130164,0.0492204,0.00195312,False
+16749,ifn_alpha,real - coexpression,10,-0.00091977,-0.00200682,0.000167278,0.0371094,False
+16749,ifn_pair,real - shuffled,10,0.126275,0.0632373,0.189312,0.00195312,False
+16749,ifn_pair,real - vanilla,10,0.00930025,0.00424846,0.014352,0.00390625,False
+16749,ifn_pair,real - coexpression,10,1.4212e-05,-0.000282347,0.000310771,0.845703,False
