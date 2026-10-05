@@ -1,191 +1,231 @@
 # Does prior knowledge help interpretable single-cell models?
 
-A small project on public data. Knowledge-guided single-cell models wire gene sets (pathways) into their
-architecture so that each latent factor reads as a biological programme. Caranzano et al. 2026
-(Brief Bioinform, doi:10.1093/bib/bbag425) showed that for 29 *supervised* pathway-informed networks, structure-matched
-random pathways do as well as real ones. This project asks the same question for *unsupervised* single-cell models,
-where it has not been tested.
+Knowledge-guided single-cell models wire gene sets (pathways) into their architecture so that each latent factor reads
+as a biological programme. For 29 *supervised* pathway-informed networks, structure-matched random pathways perform as
+well as real ones [1]. This project asks the same question for *unsupervised* single-cell models, where it has not
+been tested.
 
 ## Background
-- **How knowledge enters a model** (Thapa et al. 2025, Patterns, doi:10.1016/j.patter.2025.101203): as input
-  features (gene-set or TF-activity scores, e.g. AUCell, decoupleR), as architecture (sparse or masked layers that
-  mirror gene sets) or as a graph (GNNs over interaction networks, e.g. GEARS). This project tests the architecture
-  route, where "interpretable by design" is most direct: a masked linear decoder makes latent k the activity of
-  gene set k (VEGA, expiMap, pmVAE; linear relatives: f-scLVM/slalom, PLIER, Spectra).
-- **The gap:** the full texts of VEGA, expiMap, pmVAE, Spectra and f-scLVM contain no random-annotation control.
-  KPNN (Fortelny & Bock 2020, Genome Biol, doi:10.1186/s13059-020-02100-5) used shuffled networks, but in a
-  supervised single-cell model. Recent preprints also lack it: MOFA-FLEX (Qoku et al. 2025, bioRxiv,
-  doi:10.1101/2025.11.03.686250) corrupts 30% of each set's genes and tests recovery; Tripso (Moullet et al. 2026,
-  bioRxiv) has no random-set control.
-- **Why a co-expression null:** in bulk TCGA, curated gene sets align with top expression PCs more than size-matched
-  random sets (Zhu et al. 2026, bioRxiv, doi:10.64898/2026.04.11.717907), i.e. real sets are co-expressed and random
-  ones are not. Modules built from the data separate "curated knowledge helps" from "any co-expressed group helps".
-- **Data efficiency (Q1b):** expiMap (Lotfollahi et al. 2023, Nat Cell Biol, doi:10.1038/s41556-022-01072-x,
-  Ext. Data Fig. 6b) reported more sample-efficient learning than LDVAE, but without random masks, so knowledge and
-  sparsity are confounded.
-- **Benchmark style:** simple baselines and structure-preserving controls, the same tuning budget and several seeds
-  for every model, reporting the spread over seeds. Precedents: random graphs or the identity matrix replacing
-  protein contact maps did not hurt a GCN (Villegas-Morcillo et al. 2021, Bioinformatics,
-  doi:10.1093/bioinformatics/btaa701); VAE validation loss did not predict downstream performance (Eltager et al.
-  2023, PLOS ONE, doi:10.1371/journal.pone.0292126); concatenated PCA was hard to beat for multi-omics embeddings
-  (Makrodimitris et al. 2024, Brief Bioinform, doi:10.1093/bib/bbad416); deep perturbation models did not beat
-  linear baselines (Ahlmann-Eltze et al. 2025, Nat Methods, doi:10.1038/s41592-025-02772-6).
+- **How knowledge enters a model** [2]: as input features (gene-set or TF-activity scores), as architecture (sparse or
+  masked layers that mirror gene sets) or as a graph (networks over gene interactions). This project tests the
+  architecture route, where "interpretable by design" is most direct: a masked linear decoder makes latent k the
+  activity of gene set k, as in VEGA [3], expiMap [4] and pmVAE [5], and in linear factor models such as f-scLVM [6],
+  PLIER [7] and Spectra [8].
+- **The gap:** none of [3–8] includes a random-annotation control. KPNN [9] used shuffled networks, but in a supervised
+  model; recent preprints corrupt part of each gene set [10] or have no random control [11].
+- **Co-expression:** curated gene sets align with the main axes of expression more than size-matched random sets [12].
+  A null built from co-expressed genes therefore separates "curated knowledge helps" from "any co-expressed group
+  helps".
+- **Data efficiency:** expiMap integrated subsampled PBMC data better than the linear-decoder VAE LDVAE [13] when
+  trained on few cells [4], without a random-mask control and on integration quality rather than recovery of a known
+  programme.
+- **Benchmarking practice:** simple baselines and structure-preserving controls often match more complex or
+  knowledge-based models [14–17], so every model here gets the same tuning budget and several seeds.
 
 ## Questions
-- **Q1 (core):** does the knowledge itself help, or only the sparsity a gene-set mask imposes? A masked VAE with the
-  real Hallmark mask against the same model with a 100% shuffled mask (same set sizes and overlaps, wrong genes),
-  plus a plain VAE as reference and a co-expression null (groups the data finds by itself). Known answer: IFN-β
-  switches on the type I interferon programme.
-- **Q1b:** is learning more data-efficient with real knowledge? A common argument for knowledge-guided models is
-  that unconstrained models must re-discover well-known patterns from scratch, which wastes data. Q1 repeated at
-  smaller training sizes.
-- **Later, each on a new dataset:**
-  - **Q2:** do the explanations recover known regulators? In B cell → plasma cell differentiation PRDM1, IRF4 and
-    XBP1 go up and PAX5 and BACH2 go down; Demela et al. 2026 (Mol Syst Biol, doi:10.1038/s44320-026-00207-8) add
-    IRF4/PRDM1 CRISPR knockouts as perturbation ground truth. Using this biology as a benchmark for knowledge-guided
-    models is new.
-  - **Q3:** does RNA-based pathway activity agree with CITE-seq surface protein, an independent measurement?
-    Checking RNA-derived scores against the same RNA is circular; caveat: RNA-protein correlation is weak.
-  - **Q4 (extension):** the cost of imperfect or species-transferred knowledge (gene sets curated in human and
-    copied to mouse or plants by orthology), measured by corrupting a share of each set's genes; and soft masks
-    (expiMap, MOFA-FLEX): does a random starting mask refine to the same programmes?
-  - **Reactome** as a secondary collection on the Kang data (used there by VEGA, expiMap and OntoVAE).
+- **Q1:** does the knowledge itself help, or only the sparsity a gene-set mask imposes? The known answer: IFN-β switches
+  on the type I interferon programme.
+- **Q1b:** is learning more data-efficient with real knowledge? Knowledge-guided models are argued to need fewer
+  cells because they need not re-discover known patterns.
 
-| Use | Dataset | Access |
+## Study design
+
+```mermaid
+flowchart TB
+    A["Kang et al. 2018<br/>8 donors, ctrl vs IFN-β"] --> B["Cell QC<br/>23,919 cells × 12,034 genes"]
+    B --> C["Split<br/>70 / 15 / 15"]
+    C --> P["Plain"] & R["Real mask"] & S["Shuffled"] & X["Co-expression"]
+    P & R & S & X --> T["10 seeds each"]
+    T --> E["Scores A, B, C<br/>on test cells"]
+```
+
+Four variants share one architecture and differ only in the decoder mask:
+
+| Variant | Decoder mask | Tests |
 |---|---|---|
-| Q1, Q1b | Kang et al. 2018 IFN-β PBMC, Nat Biotechnol, doi:10.1038/nbt.4042 | GEO GSE96583 (batch 2) |
-| Q1/Q2, B cells | Tonsil atlas, Massoni-Badosa et al. 2024, Immunity, doi:10.1016/j.immuni.2024.01.006 | Zenodo 10.5281/zenodo.8373756 |
-| Q2, perturbation | Demela et al. 2026 B cell time course + IRF4/PRDM1 CRISPR | Zenodo 10.5281/zenodo.17984776 |
-| Q3, protein | Tonsil CITE-seq (same atlas); alternative: 10x `pbmc_10k_protein_v3` | Zenodo above; 10x website |
-| Q4 | Mouse gastrulation, Pijuan-Sala et al. 2019, Nature, doi:10.1038/s41586-019-0933-9 | ArrayExpress E-MTAB-6967 |
-
-## Models
-One architecture: encoder (shifted-log counts + donor → one hidden layer of 128 → 58 latents), linear decoder,
-negative binomial likelihood on raw counts. Variants: plain VAE (all latents reach all genes; this is LDVAE); masked
-VAE with the real mask, a 100% shuffled mask, or co-expression modules (50 named latents, one per Hallmark set,
-plus 8 free latents reaching only genes in no set). Donor is a covariate.
-
-## Evaluation
-Labels never enter training. Validation labels pick the latent (and sign) for the plain VAE and co-expression
-models and fit the score B/C regressions; test labels are used only for the final scores. Score A (primary): AUROC
-of stim vs ctrl for the named interferon-α latent, within each cell type (megakaryocytes excluded), sign set by the
-latent's own weights (mean weight on its own genes positive). Score B (secondary): the interferon-α and -γ latents
-together. Score C: all latents. Plain VAE and co-expression modules (no meaningful names): the best latent (B: the
-best two) of all 58 and its sign chosen on validation cells, then scored on test cells. An inactive latent (variance
-of its means across validation cells ≤ 0.01) scores 0.5 in A; each run's activity is reported next to its score.
-10 seeds per variant, compared pair by pair. Primary test: score A, real vs shuffled; real beats shuffled if the 95%
-paired t-interval of the difference excludes 0 (Wilcoxon signed-rank alongside). Other comparisons are secondary.
-Per-cell-type AUROCs are averaged unweighted over the 7 cell types. Scores B and C use one logistic regression on
-validation cells (latents standardised, default L2), scored within cell type on test cells.
-
-**Learning curves (Q1b):** training sizes 500, 1k, 2k, 4k, 8k and full, nested subsamples of train stratified by
-donor × condition × cell type (val and test fixed); all 4 variants, 10 seeds each, learning rate from full size;
-KL warm-up 38 epochs and patience 3 epochs at every size; co-expression modules and shuffle bins rebuilt per size.
+| Plain VAE (LDVAE [13]) | none | reference without knowledge |
+| Real mask | Hallmark gene sets | knowledge + sparsity |
+| Shuffled mask | Hallmark sets with gene labels permuted | sparsity alone |
+| Co-expression | modules of co-expressed genes, same sizes | data-derived structure |
 
 ## Data
-Kang et al. 2018 IFN-β-stimulated PBMCs (GSE96583, batch 2). Preprocessing follows Heumos et al., single-cell best
-practices.
+- **Dataset:** Kang et al. [18], GEO GSE96583 batch 2: PBMCs from 8 donors cultured for 6 h without (ctrl) or with
+  IFN-β (stim), pooled in one 10x run per condition. Every donor appears in both conditions. The authors' count matrices,
+  genotype-based (demuxlet) singlet calls and cell-type labels are used.
+- **Cell QC** (following [19], with scanpy [20]): outliers beyond 5 median absolute deviations in log total counts, log
+  detected genes or share of counts in the top 20 genes, with thresholds per condition × cell type. Thresholds per
+  condition alone flagged up to 27% of monocytes, dendritic cells and megakaryocytes, whose RNA profiles differ from
+  lymphocytes.
+- **Genes:** detected in ≥ 20 cells. All 12,034 genes are modelled: selecting 5,000 highly variable genes drops
+  interferon-induced genes such as PSMB9 and B2M and a third of the Hallmark interferon-α set
+  (`notebooks/hvg_inspection.py`).
+- **Result:** 24,673 labelled singlets → 23,919 cells (3.1% removed, 1–6% per cell type).
+- **Split:** 70 / 15 / 15 train / validation / test within every donor × condition × cell type group.
+- **Not applied:** ambient-RNA correction (no empty droplets are deposited) and a mitochondrial filter
+  (mitochondrial genes have no counts in the deposited matrices).
 
-## Layout
-- `src/`: one script per stage, numbered in run order:
-  `01_download_kang.py`, `02_download_genesets.py`, `03_preprocess_kang.py`, `04_build_masks.py`,
-  `05_build_coexpression_null.py`, `06_fit.py` (one model run per call), `07_tune.sh` (learning-rate tuning),
-  `08_choose_settings.py` (picks the rate per variant), `09_experiment.sh` (10 seeds per variant)
-- `notebooks/hvg_inspection.py`: evidence for using all genes; needs the outputs of 02 and 03
-- `notebooks/`: exploration and figures
-- `data/raw`, `data/processed`: not in git; recreated by the scripts
-- `results/`: one folder per model run (not in git)
-- `reports/figures/`: output figures
+## Gene sets and nulls
+- **Hallmark** gene sets [21] (MSigDB v2024.1): 50 sets of ≥ 12 genes (median 117), no near-duplicates, and one
+  unambiguous target, the interferon-α response (95 of its 97 genes present). Gene symbols are matched through
+  Ensembl IDs to current HGNC symbols [22].
+- **Shuffled masks:** gene labels are permuted within 25 expression bins, so every set keeps its size, its overlaps
+  with other sets and its expression level; only its biology changes. 10 seeds.
+- **Co-expression modules:** for each Hallmark set of size n, a random seed gene (detected in ≥ 1% of training cells)
+  and its n − 1 most correlated genes, computed on training cells only. 10 seeds.
 
-## Setup
+## Model
+
+```mermaid
+flowchart LR
+    subgraph enc["Encoder"]
+        direction TB
+        X["Raw counts<br/>12,034 genes"] --> L["Shifted log"]
+        L --> H["Hidden layer<br/>128 units"]
+        D1["Donor"] --> H
+        H --> Z["58 latents"]
+    end
+    subgraph dec["Decoder"]
+        direction TB
+        IN["58 latents"] --> W["Linear, masked<br/>latent k → genes of set k"]
+        W --> SM["Softmax<br/>share of each gene"]
+        D2["Donor"] --> W
+        SM --> MU["Mean =<br/>total counts × share"]
+        MU --> NB["Negative binomial<br/>likelihood"]
+    end
+    enc --> dec
+```
+
+- **Linear decoder in every variant**, so each latent's effect on each gene is one weight and the mask is the only
+  architectural difference.
+- **Masked variants:** latents 1–50 may only use the genes of their set; 8 free latents may only use the 8,847 genes
+  in no set (74%). Free latents reaching all genes absorb the stimulation signal and switch the named latents off.
+- **Donor** is a covariate in encoder and decoder; condition is never a covariate.
+- **Likelihood:** negative binomial on raw counts with a dispersion per gene and the observed total counts as library
+  size; no zero inflation [23].
+- **Training:** evidence lower bound with KL warm-up over ~38 epochs, Adam, batch 128, early stopping on validation loss
+  (patience 3 epochs) [15]. Encoder width 128 (chosen on the plain VAE) and learning rate 1e-3 for
+  every variant, so the mask is the only difference between variants. Seed k of the shuffled and co-expression
+  variants uses mask k.
+
+## Evaluation
+- **Labels** never enter training. Validation labels choose latents for the variants without meaningful names and fit
+  the regressions of scores B and C; test labels are used only for the final scores.
+- **Score A (primary):** AUROC of stim vs ctrl for the interferon-α latent on test cells, within each cell type and
+  averaged unweighted over 7 cell types. Megakaryocytes are excluded: they are mostly platelets, which have no nucleus.
+- **Orientation:** a masked latent is oriented so that its mean weight on its own genes is positive. For the plain VAE
+  and co-expression variants, the best of the 58 latents and its sign are chosen on validation cells.
+- **Inactive latents** (variance of posterior means across validation cells ≤ 0.01) score 0.5.
+- **Score B:** the interferon-α and -γ latents together (the two Hallmark sets share 71 of the α set's 95 genes); the
+  best two latents for the variants without names.
+- **Score C:** all 58 latents, separating information from interpretability.
+- **Regression (B, C):** logistic regression on validation cells, standardised latents, L2 penalty (C = 1).
+- **Statistics:** 10 seeds per variant, paired by seed. Primary test: score A, real vs shuffled; real beats shuffled
+  if the 95% paired t-interval of the difference excludes 0, with a Wilcoxon signed-rank test alongside. All other
+  comparisons are secondary.
+
+## Learning curves (Q1b)
+- **Training sizes:** 500, 1,000, 2,000, 4,000, 8,000 and all ~16,700 training cells; nested subsamples stratified by
+  donor × condition × cell type. Validation and test sets stay fixed.
+- **Training:** KL warm-up over 38 epochs, patience 3 epochs and learning rate 1e-3 at every size. All four variants,
+  10 seeds per size.
+- **Nulls:** co-expression modules and shuffle expression bins are rebuilt on each subsample.
+
+## Future work
+- **Q2:** do the explanations recover known regulators? In B cell → plasma cell differentiation PRDM1, IRF4 and XBP1
+  go up and PAX5 and BACH2 go down; IRF4 and PRDM1 knockouts give perturbation ground truth [24, 25].
+- **Q3:** does RNA-based pathway activity agree with CITE-seq surface protein, an independent measurement? RNA–protein
+  correlation is weak, so protein is a noisy reference [25].
+- **Q4:** the cost of incomplete or species-transferred gene sets, for example human sets applied to mouse
+  gastrulation data [26], and whether a soft mask started from random sets refines to the same programmes.
+- **Reactome** [27] as a second collection on the Kang data, as used there by [3, 4, 28].
+
+| Question | Dataset | Access |
+|---|---|---|
+| Q1, Q1b | Kang et al. 2018 [18] | GEO GSE96583 (batch 2) |
+| Q1, Q2 | Human tonsil atlas, B cell compartments [25] | Zenodo 10.5281/zenodo.8373756 |
+| Q2 | B cell time course with IRF4 / PRDM1 CRISPR [24] | Zenodo 10.5281/zenodo.17984776 |
+| Q3 | Tonsil CITE-seq [25]; 10x `pbmc_10k_protein_v3` | Zenodo 10.5281/zenodo.8373756; 10x Genomics |
+| Q4 | Mouse gastrulation [26] | ArrayExpress E-MTAB-6967 |
+
+## Reproducing
+
 ```
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
+.venv/bin/python src/01_download_kang.py
+.venv/bin/python src/02_download_genesets.py
+.venv/bin/python src/03_preprocess_kang.py
+.venv/bin/python src/04_build_masks.py
+.venv/bin/python src/05_build_coexpression_null.py
+bash src/07_experiment.sh
 ```
 
-## Decisions
-
-**General**
-- Knowledge enters through the architecture (a masked linear decoder), the most direct form of "interpretable by
-  design" (see Background).
-- Python (scanpy, PyTorch, scikit-learn); own PyTorch models rather than packages. Preprocessing follows the
-  sc-best-practices book (Heumos et al.) unless stated below. MSigDB pinned at v2024.1.
-- One plain script per stage; download separate from processing; checks are printed by the code on every run.
-
-**Data**
-- Batch 2 of GSE96583 only (ctrl vs 6 h IFN-β, same 8 donors pooled in each 10x run); batch 1 is unstimulated lupus
-  samples. Starting from the authors' Cell Ranger 1.2 / hg19 count matrices (SRA has only 2 × ~23 GB BAMs, and the
-  donor, cell-type and doublet labels exist only in the GEO metadata). Only the six batch-2 files are downloaded;
-  `GSE96583_RAW.tar` also bundles batch 1.
-- Genes indexed by Ensembl ID: 2,697 gene symbols are repeats in this annotation.
-- 313 barcodes occur in both runs; the authors' metadata names the stim copies `-11`, and we follow it.
-
-**Cell QC**
-- Doublets: demuxlet calls (genotype-based) instead of a computational doublet detector. Same-donor doublets
-  (~2%, estimated) are not caught.
-- No ambient-RNA correction: it needs the empty droplets, and GEO has only the cell-called matrices.
-- No mitochondrial filter: the 13 MT- genes have zero counts in the deposited matrices.
-- Not done: re-clustering or re-annotation (authors' labels used), scaling / regress-out, cell-cycle correction.
-- Outliers at 5 MADs (sc-best-practices) on log total counts, log detected genes and % counts in the top 20 genes.
-  Thresholds per condition × cell type: with thresholds per condition only, normal monocytes (much RNA in a few
-  genes), dendritic cells (large, many genes) and megakaryocytes were removed as damaged (up to 27% of a type).
-  Per donor as well was rejected: groups of 4–20 cells give unstable MADs, and donors shared each 10x run.
-- Genes kept if detected in ≥ 20 cells.
-- Result: 24,673 labelled singlets → 23,919 cells (3.1% removed; 1–6% per cell type), 12,034 genes.
-- Megakaryocytes still lose ~20% with their own thresholds, so they are likely a mixed group (mostly platelets).
-  Platelets have no nucleus and should not mount a transcriptional IFN response, so they are excluded from the
-  interferon score and kept in training.
-
-**Split**
-- 70 / 15 / 15 train / val / test, made inside every donor × condition × cell type group (seed 0), so every group
-  is in all three sets; at least one val and one test cell per group (smallest group: 4 cells).
-- Fitted on train, tuned and latent-matched on val, scored once on test. Learning curves subsample train only.
-
-**Genes and likelihood**
-- Gene universe: all 12,034 QC genes, no HVG selection; the same for every model and training size. The first plan,
-  5,000 `seurat_v3` HVGs, missed IFN-induced genes (PSMB9, B2M, ranked > 11,000 of 12,034) and cut the Hallmark
-  IFN-α set to 65 of 95 genes; the NB likelihood handles low-count genes, so selection is not needed.
-  `notebooks/hvg_inspection.py` reproduces this and doubles as an HVG robustness check.
-- Negative binomial likelihood on raw counts for all models (as in Makrodimitris et al. 2024, Brief Bioinform, and
-  LDVAE); no zero inflation (Svensson 2020). Not Gaussian/MSE on log data: low counts are not Gaussian. No normalised
-  layer is stored; it is computed where needed (figures, gene-set scores).
-- Sequencing depth: NB mean = observed total counts × predicted share; removed from the encoder input, restored in
-  the decoder. IFN-β raises the interferon genes' share of all counts to up to 25% (CD14+ monocytes), so after
-  scaling by totals other genes look up to ~20% lower; the softmax decoder models this as one effect.
-
-**Gene sets and mask**
-- Hallmark for the main analysis: all 50 sets keep ≥ 12 genes (median 117), no near-duplicate sets, one
-  unambiguous target latent (the Hallmark interferon-α response, type I IFN, 95 of 97 genes). Reactome (used by VEGA,
-  expiMap and OntoVAE on this dataset; 1,010 usable sets, 1,416 near-duplicate pairs) is built for a secondary analysis.
-- Symbols matched through Ensembl IDs to current HGNC symbols (dated HGNC table): recovers 110 Hallmark genes renamed
-  since 2017, including WARS1 and TENT5A in the IFN-α set.
-- Sets with < 12 genes after filtering are dropped (as in expiMap).
-- Linear decoder in every model (the plain VAE is LDVAE), so the mask is the only architectural difference.
-  Encoder: shifted-log counts + donor → one hidden layer of 128 → 58 latents; the loss is NB on raw counts.
-  Hard mask: latent k may only use the genes of set k.
-- 8 free latents in every masked model, reaching only the 8,847 genes in no set (74%), so set genes can only be
-  explained by named latents. First tried with free latents reaching all genes: they absorbed the stimulation
-  signal and the named latents switched off (4 of 50 active with the real mask, 0 with the shuffled one). The plain
-  VAE keeps 58 latents reaching all genes. Genes in no set stay in, so the knowledge does not choose the
-  gene universe.
-
-**Nulls and models**
-- Shuffled masks by permuting gene labels across the gene universe: set sizes and overlaps stay identical, only the
-  biology changes. 100% of labels permuted (25 / 50 / 75% versions are built but not used), 10 seeds, within 25
-  equal-size expression bins (the finest that the precision of the gene means supports; scanpy's default for
-  control genes).
-- Co-expression modules size-matched to the Hallmark sets (random seed gene + its most correlated genes, seeds
-  detected in ≥ 1% of cells), built on training cells only, 10 seeds.
-- Variants: plain VAE; masked VAE with the real mask, a 100% shuffled mask, or co-expression modules. Donor is a
-  covariate in encoder and decoder (it appears in both conditions, so it cannot absorb the IFN-β effect); condition is the
-  signal and stays out of the covariates. No batch integration (it could remove the stimulation effect).
-- Loss: NB likelihood + KL (KL weight 1, warm-up over ~38 epochs, as in Eltager et al. 2023).
-- Adam, batch 128, early stopping on validation loss after warm-up (patience 3 epochs, as in Eltager et al.;
-  at most 2,000 epochs, and a run that reaches the cap fails);
-  encoder width fixed at 128 (chosen on the plain VAE before the seed runs: 1,920.8 vs 1,923.9 for 256); learning
-  rate {1e-3, 1e-4} tuned separately per variant by validation loss; 10 seeds per variant.
-- Not included: β-TCVAE, the 25 / 50 / 75% dose-response, sensitivity checks, soft masks (see Q4).
-- Same tuning budget and several seeds for every model; results are reported as the spread over seeds.
+- `src/`: one script per stage in run order; `06_fit.py` trains one model per call and is run by `07_experiment.sh`.
+- `notebooks/hvg_inspection.py`: highly-variable-gene analysis supporting the use of all genes.
+- `data/`, `results/`: created by the scripts, not tracked.
+- `reports/figures/`: figures.
 
 ## Status
 Work in progress: preprocessing, gene-set masks and nulls are complete; results for Q1 and Q1b will be added here.
+
+## References
+1. Caranzano I, et al. Sparsity is all you need: rethinking biologically informed neural networks. *Brief Bioinform*
+   (2026). [doi:10.1093/bib/bbag425](https://doi.org/10.1093/bib/bbag425)
+2. Thapa K, et al. Strategies to include prior knowledge in omics analysis with deep neural networks. *Patterns*
+   (2025). [doi:10.1016/j.patter.2025.101203](https://doi.org/10.1016/j.patter.2025.101203)
+3. Seninge L, et al. VEGA is an interpretable generative model for inferring biological network activity in
+   single-cell transcriptomics. *Nat Commun* (2021).
+   [doi:10.1038/s41467-021-26017-0](https://doi.org/10.1038/s41467-021-26017-0)
+4. Lotfollahi M, et al. Biologically informed deep learning to query gene programs in single-cell atlases.
+   *Nat Cell Biol* (2023). [doi:10.1038/s41556-022-01072-x](https://doi.org/10.1038/s41556-022-01072-x)
+5. Gut G, et al. pmVAE: learning interpretable single-cell representations with pathway modules. *bioRxiv* (2021).
+   [doi:10.1101/2021.01.28.428664](https://doi.org/10.1101/2021.01.28.428664)
+6. Buettner F, et al. f-scLVM: scalable and versatile factor analysis for single-cell RNA-seq. *Genome Biol* (2017).
+   [doi:10.1186/s13059-017-1334-8](https://doi.org/10.1186/s13059-017-1334-8)
+7. Mao W, et al. Pathway-level information extractor (PLIER) for gene expression data. *Nat Methods* (2019).
+   [doi:10.1038/s41592-019-0456-1](https://doi.org/10.1038/s41592-019-0456-1)
+8. Kunes RZ, et al. Supervised discovery of interpretable gene programs from single-cell data. *Nat Biotechnol*
+   (2024). [doi:10.1038/s41587-023-01940-3](https://doi.org/10.1038/s41587-023-01940-3)
+9. Fortelny N, Bock C. Knowledge-primed neural networks enable biologically interpretable deep learning on
+   single-cell sequencing data. *Genome Biol* (2020).
+   [doi:10.1186/s13059-020-02100-5](https://doi.org/10.1186/s13059-020-02100-5)
+10. Qoku A, et al. MOFA-FLEX: a factor model framework for integrating omics data with prior knowledge. *bioRxiv*
+    (2025). [doi:10.1101/2025.11.03.686250](https://doi.org/10.1101/2025.11.03.686250)
+11. Moullet M, et al. Self-supervised learning for a gene program-centric view of cell states. *bioRxiv* (2026).
+    [doi:10.64898/2026.03.24.713961](https://doi.org/10.64898/2026.03.24.713961)
+12. Zhu Y, et al. A residual-ratio framework for auditing transcriptomic gene signatures against background
+    expression structure. *bioRxiv* (2026). [doi:10.64898/2026.04.11.717907](https://doi.org/10.64898/2026.04.11.717907)
+13. Svensson V, et al. Interpretable factor models of single-cell RNA-seq via variational autoencoders.
+    *Bioinformatics* (2020). [doi:10.1093/bioinformatics/btaa169](https://doi.org/10.1093/bioinformatics/btaa169)
+14. Villegas-Morcillo A, et al. Unsupervised protein embeddings outperform hand-crafted sequence and structure
+    features at predicting molecular function. *Bioinformatics* (2021).
+    [doi:10.1093/bioinformatics/btaa701](https://doi.org/10.1093/bioinformatics/btaa701)
+15. Eltager M, et al. Benchmarking variational autoencoders on cancer transcriptomics data. *PLoS One* (2023).
+    [doi:10.1371/journal.pone.0292126](https://doi.org/10.1371/journal.pone.0292126)
+16. Makrodimitris S, et al. An in-depth comparison of linear and non-linear joint embedding methods for bulk and
+    single-cell multi-omics. *Brief Bioinform* (2024). [doi:10.1093/bib/bbad416](https://doi.org/10.1093/bib/bbad416)
+17. Ahlmann-Eltze C, et al. Deep-learning-based gene perturbation effect prediction does not yet outperform simple
+    linear baselines. *Nat Methods* (2025). [doi:10.1038/s41592-025-02772-6](https://doi.org/10.1038/s41592-025-02772-6)
+18. Kang HM, et al. Multiplexed droplet single-cell RNA-sequencing using natural genetic variation. *Nat Biotechnol*
+    (2018). [doi:10.1038/nbt.4042](https://doi.org/10.1038/nbt.4042)
+19. Heumos L, et al. Best practices for single-cell analysis across modalities. *Nat Rev Genet* (2023).
+    [doi:10.1038/s41576-023-00586-w](https://doi.org/10.1038/s41576-023-00586-w)
+20. Wolf FA, et al. SCANPY: large-scale single-cell gene expression data analysis. *Genome Biol* (2018).
+    [doi:10.1186/s13059-017-1382-0](https://doi.org/10.1186/s13059-017-1382-0)
+21. Liberzon A, et al. The Molecular Signatures Database (MSigDB) hallmark gene set collection. *Cell Syst* (2015).
+    [doi:10.1016/j.cels.2015.12.004](https://doi.org/10.1016/j.cels.2015.12.004)
+22. Seal RL, et al. Genenames.org: the HGNC resources in 2023. *Nucleic Acids Res* (2023).
+    [doi:10.1093/nar/gkac888](https://doi.org/10.1093/nar/gkac888)
+23. Svensson V. Droplet scRNA-seq is not zero-inflated. *Nat Biotechnol* (2020).
+    [doi:10.1038/s41587-019-0379-5](https://doi.org/10.1038/s41587-019-0379-5)
+24. Demela P, et al. Competing gene regulatory networks drive naive and memory B cell differentiation. *Mol Syst Biol*
+    (2026). [doi:10.1038/s44320-026-00207-8](https://doi.org/10.1038/s44320-026-00207-8)
+25. Massoni-Badosa R, et al. An atlas of cells in the human tonsil. *Immunity* (2024).
+    [doi:10.1016/j.immuni.2024.01.006](https://doi.org/10.1016/j.immuni.2024.01.006)
+26. Pijuan-Sala B, et al. A single-cell molecular map of mouse gastrulation and early organogenesis. *Nature* (2019).
+    [doi:10.1038/s41586-019-0933-9](https://doi.org/10.1038/s41586-019-0933-9)
+27. Milacic M, et al. The Reactome Pathway Knowledgebase 2024. *Nucleic Acids Res* (2024).
+    [doi:10.1093/nar/gkad1025](https://doi.org/10.1093/nar/gkad1025)
+28. Doncevic D, Herrmann C. Biologically informed variational autoencoders allow predictive modeling of genetic and
+    drug-induced perturbations. *Bioinformatics* (2023).
+    [doi:10.1093/bioinformatics/btad387](https://doi.org/10.1093/bioinformatics/btad387)
