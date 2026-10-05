@@ -1,24 +1,23 @@
-# Does prior knowledge help interpretable single-cell models?
+# Knowledge or sparsity? Gene-set masks in a single-cell VAE
 
 Knowledge-guided single-cell models tie each latent factor to a gene set so that it reads as a biological programme.
 For 29 *supervised* pathway-informed networks, structure-matched random pathways perform as well as real ones [1].
-This project tests whether the same holds for an *unsupervised* single-cell model.
-
-- **Model.** A variational autoencoder (VAE) with a linear decoder masked by gene sets.
-- **Comparison.** Real Hallmark gene sets vs the same sets with shuffled gene labels, with a vanilla VAE and a
-  co-expression null as references.
-- **Data.** Peripheral blood mononuclear cells (PBMCs) with and without interferon-β (IFN-β) stimulation.
-- **Known answer.** Stimulation switches on the type I interferon programme, so a good model should show it in the
-  interferon latent.
-- **Finding.** The real mask put the stimulation response in its named interferon-α latent in all 10 seeds (AUROC
-  0.997, against 0.758 for the shuffled mask). It matched the best co-expression module, which can only be found
-  with labels.
-
-## Questions
+This project asks two questions about an *unsupervised* model, judging each by whether a named latent captures a
+known programme.
 
 - **Q1.** Does the knowledge in a gene-set mask help, or only the sparsity the mask imposes?
 - **Q1b.** Is learning more data-efficient with real knowledge? Knowledge-guided models are argued to need fewer cells
   because they need not re-discover known patterns.
+
+The model is a variational autoencoder (VAE) whose linear decoder is masked by Hallmark gene sets. It is fit to
+peripheral blood mononuclear cells (PBMCs) with and without interferon-β (IFN-β) stimulation. The stimulation switches
+on the type I interferon programme, a known answer that the interferon latent should recover. The real mask is
+compared with the same sets after shuffling their gene labels, with a vanilla VAE and a co-expression mask as
+references.
+
+For Q1, the real mask put the stimulation response in its named interferon-α latent in all 10 seeds, while a
+shuffled mask with the same structure did so unreliably. A co-expression mask did as well as the real one, but only the
+labels reveal which of its latents carries the response.
 
 ## Background
 
@@ -62,7 +61,7 @@ Earlier work leaves three questions open, and each one sets a part of the design
 flowchart TB
     A["Kang et al. 2018<br/>8 donors<br/>ctrl vs IFN-β"] --> B["Cell QC<br/>23,919 cells<br/>12,034 genes"]
     B --> C["Split<br/>train 70%<br/>validation 15%<br/>test 15%"]
-    C --> V["VAE variants<br/>vanilla<br/>real mask<br/>shuffled mask<br/>co-expression<br/>10 seeds each"]
+    C --> V["VAE variants<br/>vanilla<br/>real mask<br/>shuffled mask<br/>co-expression mask<br/>10 seeds each"]
     V --> E["Test-cell scores<br/>interferon-α<br/>interferon pair"]
 ```
 
@@ -75,7 +74,7 @@ more complex or knowledge-based models [14–17]. Each variant answers a differe
 | Vanilla VAE (LDVAE [13]) | none | reference without knowledge |
 | Real mask | Hallmark gene sets | knowledge + sparsity |
 | Shuffled mask | Hallmark sets with gene labels permuted | sparsity alone |
-| Co-expression | modules of co-expressed genes, same sizes | data-derived structure |
+| Co-expression mask | modules of co-expressed genes, same sizes | data-derived structure |
 
 ## Data
 
@@ -98,49 +97,47 @@ Three choices differ from a default pipeline.
 - **No ambient-RNA correction or mitochondrial filter.** No empty droplets are deposited, and mitochondrial genes have
   no counts in the deposited matrices.
 
-## Gene sets and nulls
+## Gene sets and masks
 
 The real mask uses the Hallmark collection [21] from MSigDB v2024.1. It has 50 sets of at least 12 genes (median
 117.5) and no near-duplicate sets: the largest overlap, between the early and late estrogen responses, is a Jaccard
 index of 0.34. Its one unambiguous target for this data is the interferon-α response, with 95 of its 97 genes present.
 Gene symbols are matched through Ensembl IDs to current symbols of the HUGO Gene Nomenclature Committee (HGNC) [22].
 
-Two nulls replace the Hallmark sets with sets of the same sizes, each with 10 seeds. Seed k of the shuffled and
-co-expression variants uses mask k.
+Two nulls replace the Hallmark sets with sets of the same sizes. Each is built 10 times, and the run with seed k uses
+version k.
 
-**Shuffled mask** (`04_build_masks.py`). Genes are put into 25 bins of equal size (481–482 genes) by their mean count
-in training cells. Gene labels are then permuted within each bin, so each gene takes over the set memberships of
-another gene from its bin. Every set keeps its size, its overlaps with other sets and its expression level, and only its
-biology changes. A full shuffle changes 98% of set members; the rest land on a member of their own set.
+- **Shuffled mask** (`04_build_masks.py`). Genes are put into 25 bins of equal size (481–482 genes) by their mean
+  count in training cells. Gene labels are then permuted within each bin, so each gene takes over the set memberships
+  of another gene from its bin. Every set keeps its size, its overlaps with other sets and its expression level, and
+  only its biology changes. A full shuffle changes 98% of set members; the rest land on a member of their own set.
+- **Co-expression mask** (`05_build_coexpression_null.py`). This null asks whether curated sets add anything beyond
+  genes that are simply expressed together. The modules are built from the data alone, without condition or cell-type
+  labels.
 
-**Co-expression modules** (`05_build_coexpression_null.py`). This null asks whether curated sets add anything beyond
-genes that are simply expressed together. The modules are built from the data alone, without condition or cell-type
-labels.
+  1. **Expression.** Training cells only, stimulated and control together. Counts are scaled to the median total
+     count and log-transformed (ln(1 + x)), the same transform the encoder reads.
+  2. **Correlation.** Pearson correlation between all 12,034 genes. A gene with no variance in training cells has
+     correlation 0 with every other gene.
+  3. **Seed genes.** For each seed, 50 distinct seed genes are drawn at random from the 6,753 genes detected in ≥ 1%
+     of training cells. Rarer genes are excluded, because their nearest neighbours are noise.
+  4. **Modules.** Module j is seed gene j plus the n − 1 genes most positively correlated with it, where n is the
+     size of Hallmark set j (12–197 genes). Module j takes only the size of Hallmark set j, not its biology, so its
+     latent is called "module j". Modules are built independently and may share genes.
 
-1. **Expression.** Training cells only, stimulated and control together. Counts are scaled to the median total count
-   and log-transformed (ln(1 + x)), the same transform the encoder reads.
-2. **Correlation.** Pearson correlation between all 12,034 genes. A gene with no variance in training cells has
-   correlation 0 with every other gene.
-3. **Seed genes.** For each seed, 50 distinct seed genes are drawn at random from the 6,753 genes detected in ≥ 1% of
-   training cells. Rarer genes are excluded, because their nearest neighbours are noise.
-4. **Modules.** Module j is seed gene j plus the n − 1 genes most positively correlated with it, where n is the size
-   of Hallmark set j (12–197 genes). Module j takes only the size of Hallmark set j, not its biology, so its latent is
-   called "module j". Modules are built independently and may share genes.
+  Three properties of the modules matter for reading the results.
 
-Three properties of the modules matter for reading the results.
-
-- **Coherence.** The median within-set correlation is 0.096 for modules and 0.003 for Hallmark sets. In single PBMCs
-  most members of a Hallmark set barely co-vary, while a module is built to co-vary, so the null is a demanding
-  competitor.
-- **Overlap.** Modules have the same 5,568 memberships as the Hallmark sets but cover 2,338–3,233 genes (Hallmark:
-  3,187). The overlap concentrates on genes correlated with many others. Ribosomal-protein genes (RPS6, RPL3, …) and
-  PTMA are in up to 28 modules per seed, whereas no Hallmark gene is in more than 10 sets. Several modules therefore
-  partly describe the same ribosomal axis. The 8 free latents reach the 8,801–9,696 genes in no module.
-- **Interferon.** The modules were checked against the stimulation labels after they were built. In every seed, the
-  module most raised by IFN-β is enriched for Hallmark interferon genes: 19–89% of its genes, against a base rate of
-  1.8%. In one
-  seed it grew around UBE2L6 and contains ISG15, IFI6, IFIT1, IFIT3, MX1, IRF7 and OAS1. The data alone recover the
-  core interferon response, so curated knowledge has to add more than that.
+  - **Coherence.** The median within-set correlation is 0.096 for modules and 0.003 for Hallmark sets. In single
+    PBMCs most members of a Hallmark set barely co-vary, while a module is built to co-vary, so the null is a
+    demanding competitor.
+  - **Overlap.** Modules have the same 5,568 memberships as the Hallmark sets but cover 2,338–3,233 genes (Hallmark:
+    3,187). The overlap concentrates on genes correlated with many others. Ribosomal-protein genes (RPS6, RPL3, …)
+    and PTMA are in up to 28 modules per seed, whereas no Hallmark gene is in more than 10 sets. Several modules
+    therefore partly describe the same ribosomal axis. The 8 free latents reach the 8,801–9,696 genes in no module.
+  - **Interferon.** The modules were checked against the stimulation labels after they were built. In every seed,
+    the module most raised by IFN-β is enriched for Hallmark interferon genes: 19–89% of its genes, against a base
+    rate of 1.8%. In one seed it grew around UBE2L6 and contains ISG15, IFI6, IFIT1, IFIT3, MX1, IRF7 and OAS1. The
+    data alone recover the core interferon response, so curated knowledge has to add more than that.
 
 ## Model
 
@@ -158,8 +155,8 @@ VAE(
 )
 ```
 
-The encoder input is the 12,034 genes after a shifted-log transform plus a one-hot code for the 8 donors. The decoder
-has no layers of its own, only the three parameters `w`, `v` and `log_theta` listed below.
+The encoder input is the 12,034 genes after a shifted-log transform (below) plus a one-hot code for the 8 donors. The
+decoder has no layers of its own, only the three parameters `w`, `v` and `log_theta` listed below.
 
 | Parameter | Shape | Role | Count |
 |---|---|---|---|
@@ -174,21 +171,59 @@ The mask decides how many of the 697,972 weights in `w` can be trained.
 
 | Variant | Trainable decoder weights |
 |---|---|
-| Vanilla | 697,972 (no mask) |
-| Real | 76,344 (5,568 set memberships + 8 free latents × 8,847 genes in no set) |
-| Shuffled | 76,344 (same sizes and overlaps as real) |
-| Co-expression | 75,976–83,136 (by seed) |
+| Vanilla VAE | 697,972 (no mask) |
+| Real mask | 76,344 (5,568 set memberships + 8 free latents × 8,847 genes in no set) |
+| Shuffled mask | 76,344 (same sizes and overlaps as real) |
+| Co-expression mask | 75,976–83,136 (by seed) |
 
-Take a cell with latents z, donor one-hot d, raw counts x and total counts ℓ. The decoder predicts each gene's share
-of the counts, and the counts follow a negative binomial (NB) with mean total counts × share.
+The equations below follow one cell from its counts to the loss.
+
+**Reading the cell.** The encoder first puts the cell's counts on a common scale. Each count x_g is divided by the
+cell's total count ℓ, scaled to the median total m of the training cells and log-transformed, so deeply and shallowly
+sequenced cells look alike.
+
+$$\tilde{x}_g = \ln\big(1 + x_g \cdot m / \ell\big)$$
+
+From these values and the donor code d, the encoder proposes where the cell sits in the latent space: a mean and a
+variance for each of the 58 latents. This proposal is the posterior q(z | x, d). During training a point z is drawn
+from it, and the evaluation uses its mean.
+
+**Predicting the counts.** The decoder turns z back into expression. Each latent raises or lowers the genes that the
+mask lets it reach, by its weights in w, and the donor adds its offsets v. A softmax over genes turns these scores
+into shares that sum to 1: the fraction of the cell's counts each gene should receive.
 
 $$\mathrm{share} = \mathrm{softmax}\big((w \odot \mathrm{mask})\,z + v\,d\big)$$
 
+The expected count of gene g is the cell's total count times its share. The observed count scatters around it as a
+negative binomial (NB), whose dispersion θ_g lets each gene be noisier than a Poisson count.
+
 $$x_g \sim \mathrm{NB}\big(\mu_g = \ell \cdot \mathrm{share}_g,\ \theta_g\big)$$
+
+**Scoring the fit.** The loss has two parts. The reconstruction term measures how unlikely the observed counts are
+under the prediction. The Kullback–Leibler (KL) term pulls each cell's posterior towards a standard normal prior, which
+keeps the latents on a common scale and lets latents the data do not need switch off.
 
 $$\mathcal{L} = -\log p_{\mathrm{NB}}(x \mid \mu, \theta) + \beta \cdot \mathrm{KL}\big(q(z \mid x, d)\ \|\ \mathcal{N}(0, I)\big)$$
 
-The weight β of the Kullback–Leibler (KL) term rises linearly from 0 to 1 over the first ~38 epochs (KL warm-up).
+The weight β starts at 0, so the model first learns to reconstruct, and reaches 1 after ~38 epochs.
+
+The terms, for one cell:
+
+- **x̃_g, m**: the encoder's input for gene g, and the median total count of the training cells.
+- **z**: the 58 latent values. During training they are drawn from the encoder's posterior
+  q(z | x, d) = N(mean, exp(log_var)); the evaluation uses the posterior means.
+- **d**: the donor one-hot code (8 values).
+- **w**: the 12,034 × 58 latent → gene weights. **mask** has the same shape, with 1 where latent k may reach gene g
+  and 0 elsewhere, and ⊙ multiplies the two elementwise.
+- **v**: the 12,034 × 8 donor offsets, which also set each gene's baseline.
+- **softmax**: taken over genes, so the shares are positive and sum to 1.
+- **x_g**: the raw count of gene g. **ℓ** is the cell's total count, and **μ_g = ℓ · share_g** is the expected count.
+- **θ_g**: the dispersion of gene g (`exp(log_theta)`). The variance of x_g is μ_g + μ_g² / θ_g.
+- **−log p_NB(x | μ, θ)**: the reconstruction term, the negative log-likelihood summed over genes.
+- **KL(q ‖ N(0, I))**: the KL divergence of the posterior from a standard normal prior, summed over
+  latents.
+- **β**: the KL weight. It rises linearly from 0 to 1 over the first ~38 epochs (KL warm-up) and then stays at 1.
+- **ℒ**: the loss per cell, averaged over each batch. With β = 1 it is the negative evidence lower bound (ELBO).
 
 Four design choices keep the variants comparable and the latents readable.
 
@@ -215,14 +250,14 @@ All variants are trained with the same settings.
 ## Evaluation
 
 The evaluation asks whether the latents capture the known answer. Both scores measure how well latents separate
-stimulated from control test cells, as the area under the receiver operating characteristic curve (AUROC) of stim vs
-ctrl. The AUROC is computed within each cell type,
-so a latent cannot score by separating cell types, and averaged unweighted over 7 cell types.
+stimulated from control test cells, as the area under the receiver operating characteristic curve (AUROC). The AUROC
+is computed within each cell type, so a latent cannot score by separating cell types, and averaged unweighted over 7
+cell types.
 
 | Score | Latents | Read-out | Role |
 |---|---|---|---|
-| Interferon-α score | the interferon-α latent; for vanilla and co-expression, the best single latent | the oriented latent itself | primary |
-| Interferon pair score | the interferon-α and -γ latents; for vanilla and co-expression, the best two latents | a logistic classifier on the two latents | secondary |
+| Interferon-α score | the interferon-α latent; for the vanilla VAE and co-expression mask, the best single latent | the oriented latent itself | primary |
+| Interferon pair score | the interferon-α and -γ latents; for the vanilla VAE and co-expression mask, the best two latents | a logistic classifier on the two latents | secondary |
 
 The pair score is included because the interferon-α and -γ sets share 71 of the α set's 95 genes, so the stimulation
 signal may land in either latent. The rules below fix how latents are chosen and how scores are compared.
@@ -231,7 +266,7 @@ signal may land in either latent. The rules below fix how latents are chosen and
   and train the classifier, and test labels are used only for the final scores.
 - **Orientation.** A latent's sign is arbitrary. A masked latent is oriented without labels, so that its mean weight on
   its own genes is positive.
-- **Latent choice without names.** In the vanilla and co-expression variants the latents have no meaningful names.
+- **Latent choice without names.** In the vanilla VAE and the co-expression mask the latents have no meaningful names.
   Each active latent gets its AUROC on validation cells. The one with the largest max(AUROC, 1 − AUROC) is chosen,
   with the sign that gives AUROC > 0.5, and the pair score uses the best two by the same measure. This favours these
   two variants, which get the best of their active latents instead of one fixed latent.
@@ -261,29 +296,6 @@ smaller training sets and scored as above.
 - **Nulls.** Co-expression modules and shuffle expression bins are rebuilt on each subsample. With few cells,
   correlations are noisier: modules overlap less and cover ~4,100 genes at 500 cells.
 
-## Biology in the code
-
-Each choice below builds biological knowledge or an assumption about the cells into the pipeline.
-
-| Step | Script | Choice | Reason |
-|---|---|---|---|
-| Cell identity | `03` | the authors' demuxlet singlet calls and cell-type labels, used as given | genotype-based calls are independent of expression |
-| Cell QC | `03` | thresholds per condition × cell type | monocytes, dendritic cells and megakaryocytes differ in RNA content, and stimulation shifts it |
-| Genes | `03` | all genes detected in ≥ 20 cells; no highly-variable-gene selection | selection drops interferon-induced genes |
-| Split | `03` | stratified by donor × condition × cell type | every group appears in train, validation and test |
-| Gene identity | `04` | Ensembl IDs mapped to current HGNC symbols (1,256 symbols changed since 2017; 427 genes HGNC no longer lists keep their 2017 symbol) | gene-set symbols are current |
-| Gene sets | `04` | Hallmark, sets of ≥ 12 genes (all 50) | one unambiguous target, the interferon-α response |
-| Shuffled null | `04` | labels permuted within expression bins | random genes are as highly expressed as the genes they replace |
-| Co-expression null | `05` | modules of correlated genes, sizes matched to Hallmark | see Gene sets and nulls |
-| Free latents | `06` | reach only genes in no set | when they reached all genes, they absorbed the stimulation signal |
-| Covariates | `06` | donor in encoder and decoder; condition never | the stimulation is the signal the latents should find |
-| Likelihood | `06` | negative binomial on raw counts, observed total counts as library size | droplet counts are not zero-inflated [23] |
-| Target latent | `08` | HALLMARK_INTERFERON_ALPHA_RESPONSE; with HALLMARK_INTERFERON_GAMMA_RESPONSE for the pair | IFN-β is a type I interferon; the γ set shares 71 of the α set's 95 genes |
-| Orientation | `08` | sign set so the latent's mean weight on its own genes is positive | an active programme raises its genes |
-| Scoring | `08` | AUROC within cell type, unweighted mean over 7 types | every cell type responds to IFN-β, and cell types should not score by themselves |
-| Megakaryocytes | `08` | excluded from scores, kept in training | mostly platelets, which have no nucleus |
-| Subsamples | `learning_curves/01` | stratified by donor × condition × cell type; nulls rebuilt per subsample | no null sees more cells than its model |
-
 ## Results
 
 All 40 runs (4 variants × 10 seeds) stopped early. In every run the latent behind the interferon-α score was active,
@@ -294,14 +306,14 @@ so the inactivity rule set no score to 0.5. Values are means ± SD over 10 seeds
 | Vanilla VAE | 0.966 ± 0.025 | 0.988 ± 0.007 | 34–56 | 1,920 |
 | Real mask | 0.997 ± 0.002 | 0.998 ± 0.0004 | 36–38 | 1,963 |
 | Shuffled mask | 0.758 ± 0.218 | 0.871 ± 0.088 | 33–37 | 1,966 |
-| Co-expression | 0.998 ± 0.0004 | 0.998 ± 0.0003 | 28–37 | 1,951 |
+| Co-expression mask | 0.998 ± 0.0004 | 0.998 ± 0.0003 | 28–37 | 1,951 |
 
 ![Interferon-α and pair scores per seed, and paired differences](reports/figures/scores.png)
 
 *(a, b) One dot per seed, bar at the mean; grey lines join real and shuffled runs of the same seed; hollow dots mark
 inactive latents (none here). (c) Mean paired difference with 95% t-interval; the primary comparison in black.*
 
-**The real mask places the stimulation response in its named latent.** The interferon-α latent of the real mask
+**Q1: the real mask places the stimulation response in its named latent.** The interferon-α latent of the real mask
 separated stimulated from control test cells almost perfectly (0.997 ± 0.002). Under the shuffled mask, the latent at
 the same position scored 0.758 ± 0.218, between 0.38 and 0.98 depending on the seed. Both masks share every set's
 size, overlaps and expression level, so they differ only in which genes each set holds. The real mask scored higher
@@ -314,7 +326,7 @@ away from the response.
 |---|---|---|
 | Real − shuffled | +0.239 (+0.083 to +0.395), p = 0.002 | +0.126 (+0.063 to +0.189), p = 0.002 |
 | Real − vanilla | +0.031 (+0.013 to +0.049), p = 0.002 | +0.009 (+0.004 to +0.014), p = 0.004 |
-| Real − co-expression | −0.0009 (−0.0020 to +0.0002), p = 0.04 | 0.0000 (−0.0003 to +0.0003), p = 0.85 |
+| Real − co-expression mask | −0.0009 (−0.0020 to +0.0002), p = 0.04 | 0.0000 (−0.0003 to +0.0003), p = 0.85 |
 
 Mean difference, 95% paired t-interval and Wilcoxon signed-rank p over 10 seeds.
 
@@ -322,12 +334,12 @@ The reference variants also scored highly, but only through latents chosen on va
 
 - **Vanilla VAE.** Its best latent scored 0.966 ± 0.025, and the real mask scored higher in all 10 seeds (+0.031,
   95% interval +0.013 to +0.049).
-- **Co-expression.** The best module matched the real mask at 0.998 ± 0.0004. It led by about 0.001 in 7 of 10 seeds,
-  with an interval that included zero (−0.0009, −0.0020 to +0.0002; Wilcoxon p = 0.04). Modules built from the data
-  capture the response as well as curated sets do, but the module has to be found with labels. The real mask names
-  its latent before training.
+- **Co-expression mask.** Its best module matched the real mask at 0.998 ± 0.0004. It led by about 0.001 in 7 of 10
+  seeds, with an interval that included zero (−0.0009, −0.0020 to +0.0002; Wilcoxon p = 0.04). Modules built from the
+  data capture the response as well as curated sets do, but the module has to be found with labels. The real mask
+  names its latent before training.
 - **Pair score.** Combining the α and γ latents raised the shuffled mask to 0.871 ± 0.088, still below the real mask
-  in all 10 seeds (+0.126, +0.063 to +0.189). The vanilla VAE (0.988) and co-expression (0.998) kept their order.
+  in all 10 seeds (+0.126, +0.063 to +0.189). The vanilla VAE (0.988) and co-expression mask (0.998) kept their order.
 
 ![AUROC per cell type](reports/figures/cell_types.png)
 
@@ -341,7 +353,7 @@ lowest. The shuffled mask averaged between 0.73 and 0.84 in each cell type, so i
 *One line per seed; dots mark the best epoch; shading marks the KL warm-up.*
 
 The masks cost reconstruction. Validation loss per cell was 1,920 for the vanilla VAE and 1,951–1,966 for the masked
-variants. Real and shuffled masks, with the same sparsity, differed by about 4. Co-expression modules reconstructed
+variants. Real and shuffled masks, with the same sparsity, differed by about 4. The co-expression mask reconstructed
 better than either. The masked variants also kept fewer latents active, 34–37 of 58 on average against 47 for the
 vanilla VAE.
 
@@ -351,16 +363,40 @@ vanilla VAE.
 
 ## Conclusion
 
-- **Knowledge, not sparsity.** In an unsupervised VAE of IFN-β-stimulated PBMCs, the real Hallmark mask placed the
-  stimulation response in the named interferon-α latent in every seed. A shuffled mask with identical structure did
-  so unreliably, and in one seed with the opposite sign. Supervised pathway-informed networks predict as well with
-  random pathways [1]. Here the measure is whether a named latent carries a known programme, and on that measure
-  real gene sets matter.
-- **Curation adds the name, not the signal.** Co-expression modules built from correlation alone captured the
-  response equally well. The real mask identified the right latent before training, whereas the module had to be
-  found with labels.
-- **Scope.** One dataset, one gene-set collection and one programme with a very strong signal. Q1b asks whether the
-  advantage of real knowledge grows when cells are scarce.
+The answer to Q1 is the knowledge. In an unsupervised VAE of IFN-β-stimulated PBMCs, a Hallmark mask placed the
+stimulation response in the named interferon-α latent in every seed. A shuffled mask with identical structure did so
+unreliably, and in one seed with the opposite sign. Supervised pathway-informed networks perform as well with random
+pathways [1]. Here the measure is whether a named latent carries a known programme, and on that measure real gene
+sets matter.
+
+Curation added the name, not the signal. A co-expression mask built from correlation alone captured the response
+equally well, but its latent had to be found with labels, whereas the real mask named it before training.
+
+These results come from one dataset, one gene-set collection and one programme with a very strong signal. Q1b asks
+whether the advantage of real knowledge grows when cells are scarce.
+
+## Biology in the code
+
+Each choice below builds biological knowledge or an assumption about the cells into the pipeline.
+
+| Step | Script | Choice | Reason |
+|---|---|---|---|
+| Cell identity | `03` | the authors' demuxlet singlet calls and cell-type labels, used as given | genotype-based calls are independent of expression |
+| Cell QC | `03` | thresholds per condition × cell type | monocytes, dendritic cells and megakaryocytes differ in RNA content, and stimulation shifts it |
+| Genes | `03` | all genes detected in ≥ 20 cells; no highly-variable-gene selection | selection drops interferon-induced genes |
+| Split | `03` | stratified by donor × condition × cell type | every group appears in train, validation and test |
+| Gene identity | `04` | Ensembl IDs mapped to current HGNC symbols (1,256 symbols changed since 2017; 427 genes HGNC no longer lists keep their 2017 symbol) | gene-set symbols are current |
+| Gene sets | `04` | Hallmark, sets of ≥ 12 genes (all 50) | one unambiguous target, the interferon-α response |
+| Shuffled null | `04` | labels permuted within expression bins | random genes are as highly expressed as the genes they replace |
+| Co-expression mask | `05` | modules of correlated genes, sizes matched to Hallmark | see Gene sets and masks |
+| Free latents | `06` | reach only genes in no set | when they reached all genes, they absorbed the stimulation signal |
+| Covariates | `06` | donor in encoder and decoder; condition never | the stimulation is the signal the latents should find |
+| Likelihood | `06` | negative binomial on raw counts, observed total counts as library size | droplet counts are not zero-inflated [23] |
+| Target latent | `08` | HALLMARK_INTERFERON_ALPHA_RESPONSE; with HALLMARK_INTERFERON_GAMMA_RESPONSE for the pair | IFN-β is a type I interferon; the γ set shares 71 of the α set's 95 genes |
+| Orientation | `08` | sign set so the latent's mean weight on its own genes is positive | an active programme raises its genes |
+| Scoring | `08` | AUROC within cell type, unweighted mean over 7 types | every cell type responds to IFN-β, and cell types should not score by themselves |
+| Megakaryocytes | `08` | excluded from scores, kept in training | mostly platelets, which have no nucleus |
+| Subsamples | `learning_curves/01` | stratified by donor × condition × cell type; nulls rebuilt per subsample | no null sees more cells than its model |
 
 ## Reproducing
 
@@ -401,12 +437,12 @@ bash src/learning_curves/02_run.sh
 
 The same comparison can be extended to harder questions and other data.
 
-- **Q2. Known regulators.** Do the explanations recover known regulators? In B cell → plasma cell differentiation
+- **Q2 (known regulators).** Do the explanations recover known regulators? In B cell → plasma cell differentiation
   PRDM1, IRF4 and XBP1 go up and PAX5 and BACH2 go down, and IRF4 and PRDM1 knockouts give perturbation ground
   truth [24, 25].
-- **Q3. Protein as reference.** Does RNA-based pathway activity agree with CITE-seq surface protein, an independent
+- **Q3 (protein as reference).** Does RNA-based pathway activity agree with CITE-seq surface protein, an independent
   measurement? RNA–protein correlation is weak, so protein is a noisy reference [25].
-- **Q4. Imperfect gene sets.** What is the cost of incomplete or species-transferred gene sets, for example human sets
+- **Q4 (imperfect gene sets).** What is the cost of incomplete or species-transferred gene sets, for example human sets
   applied to mouse gastrulation data [26]? And does a soft mask started from random sets refine to the same
   programmes?
 - **Reactome.** Reactome [27] as a second gene-set collection on the Kang data, as used there by [3, 4, 28].

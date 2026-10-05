@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 
 surface, ink, secondary, muted, grid, baseline = "#fcfcfb", "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7"
 colors = {"vanilla": "#999999", "real": "#0072B2", "shuffled": "#D55E00", "coexpression": "#009E73"}  # Okabe-Ito, colourblind-safe
-names = {"vanilla": "vanilla VAE", "real": "real mask", "shuffled": "shuffled mask", "coexpression": "co-expression"}
-ticks = {"vanilla": "vanilla\nVAE", "real": "real\nmask", "shuffled": "shuffled\nmask", "coexpression": "co-\nexpression"}
+names = {"vanilla": "vanilla VAE", "real": "real mask", "shuffled": "shuffled mask", "coexpression": "co-expression mask"}
+ticks = {"vanilla": "vanilla\nVAE", "real": "real\nmask", "shuffled": "shuffled\nmask", "coexpression": "co-expression\nmask"}
 folders = {"vanilla": "plain", "real": "real", "shuffled": "shuffled", "coexpression": "coexpression"}
 order = list(colors)
 plt.rcParams.update({
