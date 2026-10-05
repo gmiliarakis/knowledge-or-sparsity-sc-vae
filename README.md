@@ -1,11 +1,15 @@
 # Does prior knowledge help interpretable single-cell models?
 
-Knowledge-guided single-cell models wire gene sets into their architecture so that each latent factor reads as a
-biological programme. For 29 *supervised* pathway-informed networks, structure-matched random pathways perform as well
-as real ones [1]. This project asks the same question for an *unsupervised* single-cell model. A variational
-autoencoder (VAE) with a linear decoder is fit with four decoder masks, namely real Hallmark gene sets, the same sets
-with all gene labels shuffled, modules of co-expressed genes, and no mask. The data are PBMCs stimulated with
-interferon-β, where the answer is known because stimulation switches on the type I interferon programme.
+Knowledge-guided single-cell models tie each latent factor to a gene set so that it reads as a biological programme.
+For 29 *supervised* pathway-informed networks, structure-matched random pathways perform as well as real ones [1].
+This project tests whether the same holds for an *unsupervised* single-cell model.
+
+- **Model.** A variational autoencoder (VAE) with a linear decoder masked by gene sets.
+- **Comparison.** Real Hallmark gene sets vs the same sets with shuffled gene labels, with a vanilla VAE and a
+  co-expression null as references.
+- **Data.** Blood immune cells (PBMCs) with and without interferon-β stimulation.
+- **Known answer.** Stimulation switches on the type I interferon programme, so a good model should show it in the
+  interferon latent.
 
 ## Questions
 
@@ -15,9 +19,14 @@ interferon-β, where the answer is known because stimulation switches on the typ
 
 ## Background
 
-Prior knowledge can enter a model as input features, as architecture or as a graph over gene interactions [2]. This
-project tests the architecture route. In a masked linear decoder, latent k can reach only the genes of set k, so it
-reads as the activity of that set.
+Prior knowledge can enter a model in three ways [2]. It can be given as input features, such as gene-set or
+transcription-factor activity scores; built into the architecture, as sparse or masked layers that mirror gene sets;
+or supplied as a graph of gene interactions. This project tests the architecture route, because there the claim of
+interpretability by design is most direct. In a masked linear decoder, latent k can reach only the genes of set k, so
+its value in a cell reads as the activity of that gene set.
+
+Several published models are built this way, and others use gene sets in related ways. Few compare real gene sets with
+random ones, and none does so fully in an unsupervised model.
 
 | Model | Kind | Random gene-set control |
 |---|---|---|
@@ -27,13 +36,17 @@ reads as the activity of that set.
 | MOFA-FLEX [10] | factor model | part of each gene set corrupted |
 | Moullet et al. [11] | self-supervised model | none |
 
-- **Knowledge vs sparsity.** No unsupervised model has been compared with fully random gene sets. A shuffled mask with
-  the same set sizes and overlaps keeps the sparsity and removes the knowledge.
-- **Co-expression.** Curated gene sets align with the main axes of expression more than size-matched random sets
-  do [12]. A null built from co-expressed genes separates curated knowledge from any group of co-expressed genes.
-- **Data efficiency.** expiMap integrated subsampled PBMC data better than the linear-decoder VAE LDVAE [13] when
+Earlier work leaves three questions open, and each one sets a part of the design.
+
+- **Knowledge or sparsity?** A gene-set mask removes most decoder weights, so any gain over a vanilla model could come
+  from the sparsity alone. A shuffled mask keeps every set's size and overlaps but not its biology, which isolates the
+  effect of the knowledge.
+- **Curated knowledge or any co-expression?** Curated gene sets align with the main axes of expression more than
+  size-matched random sets do [12]. A real mask could therefore beat a shuffled one only because its genes are
+  co-expressed. Modules of co-expressed genes of the same sizes test whether curation adds anything beyond that.
+- **Less data needed?** expiMap integrated subsampled PBMC data better than the linear-decoder VAE LDVAE [13] when
   trained on few cells [4], but without a random-mask control and on integration quality rather than recovery of a
-  known programme.
+  known programme. Learning curves with all four variants test this directly (Q1b).
 
 ## Study design
 
