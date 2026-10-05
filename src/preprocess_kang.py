@@ -1,4 +1,4 @@
-# Raw counts -> cell QC -> train/val/test split -> HVGs. Choices are explained in the README.
+# Raw counts -> cell QC -> train/val/test split. Choices are explained in the README.
 from pathlib import Path
 
 import anndata as ad
@@ -93,12 +93,6 @@ for idx in groups.values():
     split[idx[n_val : n_val + n_test]] = "test"
 adata.obs["split"] = pd.Categorical(split, categories=["train", "val", "test"])
 print(pd.crosstab([adata.obs["cell_type"], adata.obs["condition"]], adata.obs["split"]))
-
-# HVGs on training cells only; flagged, not removed
-train = adata[adata.obs["split"] == "train"].copy()
-sc.pp.highly_variable_genes(train, flavor="seurat_v3", layer="counts", n_top_genes=5000, batch_key="donor")
-adata.var["highly_variable"] = train.var["highly_variable"]
-adata.var["highly_variable_rank"] = train.var["highly_variable_rank"]
 
 Path("data/processed").mkdir(exist_ok=True)
 adata.write_h5ad("data/processed/kang.h5ad")
