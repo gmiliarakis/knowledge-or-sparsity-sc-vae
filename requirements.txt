@@ -6,3 +6,4 @@ matplotlib>=3.8
 scikit-learn>=1.4
 leidenalg>=0.10
 requests>=2.31
+scikit-misc>=0.3
