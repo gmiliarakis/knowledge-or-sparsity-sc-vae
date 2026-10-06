@@ -214,11 +214,11 @@ The terms, for one cell:
 
 - $x_g$, $\tilde{x}_g$: the raw count of gene $g$ and its encoder input. $\ell = \sum_g x_g$ is the total count of the cell
   and $m$ the median total count of the training cells.
-- $d \in \{0,1\}^{8}$: the donor one-hot code.
+- $d \in \lbrace 0,1\rbrace ^{8}$: the donor one-hot code.
 - $z \in \mathbb{R}^{58}$: the latent values. Training draws them from
   $q(z \mid x, d) = \mathcal{N}\big(\mathrm{mean},\ \mathrm{diag}\,\exp(\mathrm{log\_var})\big)$; the evaluation uses the
   posterior means.
-- $W \in \mathbb{R}^{12034 \times 58}$: the latent → gene weights (`w` in the code). $M \in \{0,1\}^{12034 \times 58}$ is
+- $W \in \mathbb{R}^{12034 \times 58}$: the latent → gene weights (`w` in the code). $M \in \lbrace 0,1\rbrace ^{12034 \times 58}$ is
   the mask, with 1 where latent $k$ may reach gene $g$ and 0 elsewhere. The product $\odot$ is elementwise.
 - $V \in \mathbb{R}^{12034 \times 8}$: the donor offsets (`v`), which also set the baseline of each gene.
 - $\pi_g$: the share of gene $g$. The softmax is taken over genes, so the shares are positive and sum to 1.
@@ -276,7 +276,7 @@ This probability is the Wilcoxon (Mann–Whitney) statistic scaled to [0, 1]. Fi
 cell type. Cell types differ far more from each other than stimulation does, and a latent that only separates cell types
 must not score.
 
-**Definition.** Let $z_{ik}$ be the posterior mean of latent $k$ for test cell $i$ and $\sigma_k \in \{-1, +1\}$ its
+**Definition.** Let $z_{ik}$ be the posterior mean of latent $k$ for test cell $i$ and $\sigma_k \in \lbrace -1, +1\rbrace $ its
 orientation, and let $s_i = \sigma_k z_{ik}$. For cell type $t$, with stimulated test cells $S_t$ and control test cells
 $C_t$:
 
@@ -292,23 +292,20 @@ The test sets per cell type range from 29 control and 33 stimulated cells (dendr
 **Which latent, and which sign.** The sign of a latent is arbitrary, so $\sigma_k$ is fixed without labels where the latent
 has a name.
 
-- **Hallmark and random mask.** The latent $k$ is the one named `HALLMARK_INTERFERON_ALPHA_RESPONSE` (the same position
-  holds random genes in the random mask). Its orientation is the sign of the mean decoder weight on its own genes
-  $G_k = \{g : M_{gk} = 1\}$, so that a higher $z_{ik}$ raises those genes:
+*Hallmark and random mask.* The latent $k$ is the one named `HALLMARK_INTERFERON_ALPHA_RESPONSE` (the same position
+holds random genes in the random mask). Its orientation is the sign of the mean decoder weight on its own genes, the
+genes $g$ with $M_{gk} = 1$, so that a higher $z_{ik}$ raises those genes. With $G_k$ the set of these genes:
 
-  ```math
-  \sigma_k = \mathrm{sign}\Big(\tfrac{1}{|G_k|} \sum_{g \in G_k} W_{gk}\Big)
-  ```
-- **No mask and co-expression mask.** The latents have no names. Let $A_k$ be the mean over the 7 cell types of the
-  AUROC of latent $k$ on validation cells. The chosen latent is the active one furthest from 0.5:
+$$\sigma_k = \mathrm{sign}\Big(\frac{1}{|G_k|} \sum_{g \in G_k} W_{gk}\Big)$$
 
-  ```math
-  k^{*} = \arg\max_{k\ \text{active}} \left| A_k - 0.5 \right|
-  ```
+*No mask and co-expression mask.* The latents have no names. Let $A_k$ be the mean over the 7 cell types of the
+AUROC of latent $k$ on validation cells. The chosen latent is the active one furthest from 0.5:
 
-  Its orientation is $\sigma = +1$ if $A_{k^{*}} > 0.5$ and $\sigma = -1$ otherwise. It is then scored on
-  test cells. This rule gives these two variants the best of their active latents, where the other two variants get one
-  fixed latent.
+$$k^{*} = \arg\max_{k \in \mathrm{active}} \big| A_k - 0.5 \big|$$
+
+Its orientation is $\sigma = +1$ if $A_{k^{*}} > 0.5$ and $\sigma = -1$ otherwise. It is then scored on
+test cells. This rule gives these two variants the best of their active latents, where the other two variants get one
+fixed latent.
 
 **Code** (`src/08_evaluate.py`, abridged; `z` holds the posterior means, `w` the masked decoder weights):
 
