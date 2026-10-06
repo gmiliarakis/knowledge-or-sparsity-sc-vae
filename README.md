@@ -295,11 +295,18 @@ has a name.
 - **Hallmark and random mask.** The latent $k$ is the one named `HALLMARK_INTERFERON_ALPHA_RESPONSE` (the same position
   holds random genes in the random mask). Its orientation is the sign of the mean decoder weight on its own genes
   $G_k = \{g : M_{gk} = 1\}$, so that a higher $z_{ik}$ raises those genes:
-  $\sigma_k = \mathrm{sign}\big(\tfrac{1}{|G_k|} \sum_{g \in G_k} W_{gk}\big)$.
-- **No mask and co-expression mask.** The latents have no names. Let $\overline{\mathrm{AUROC}}_k^{\mathrm{val}}$ be the
-  mean over the 7 cell types of the AUROC of latent $k$ on validation cells. The chosen latent is
-  $k^{*} = \arg\max_{k\ \mathrm{active}} \big|\overline{\mathrm{AUROC}}_k^{\mathrm{val}} - 0.5\big|$, with
-  $\sigma_{k^{*}} = +1$ if $\overline{\mathrm{AUROC}}_{k^{*}}^{\mathrm{val}} > 0.5$ and $-1$ otherwise. It is then scored on
+
+  ```math
+  \sigma_k = \mathrm{sign}\Big(\tfrac{1}{|G_k|} \sum_{g \in G_k} W_{gk}\Big)
+  ```
+- **No mask and co-expression mask.** The latents have no names. Let $A_k$ be the mean over the 7 cell types of the
+  AUROC of latent $k$ on validation cells. The chosen latent is the active one furthest from 0.5:
+
+  ```math
+  k^{*} = \arg\max_{k\ \text{active}} \left| A_k - 0.5 \right|
+  ```
+
+  Its orientation is $\sigma = +1$ if $A_{k^{*}} > 0.5$ and $\sigma = -1$ otherwise. It is then scored on
   test cells. This rule gives these two variants the best of their active latents, where the other two variants get one
   fixed latent.
 
