@@ -214,11 +214,11 @@ The terms, for one cell:
 
 - $x_g$, $\tilde{x}_g$: the raw count of gene $g$ and its encoder input. $\ell = \sum_g x_g$ is the total count of the cell
   and $m$ the median total count of the training cells.
-- $d \in \lbrace 0,1\rbrace ^{8}$: the donor one-hot code.
+- $d \in \lbrace 0,1\rbrace^{8}$: the donor one-hot code.
 - $z \in \mathbb{R}^{58}$: the latent values. Training draws them from
   $q(z \mid x, d) = \mathcal{N}\big(\mathrm{mean},\ \mathrm{diag}\,\exp(\mathrm{log\_var})\big)$; the evaluation uses the
   posterior means.
-- $W \in \mathbb{R}^{12034 \times 58}$: the latent → gene weights (`w` in the code). $M \in \lbrace 0,1\rbrace ^{12034 \times 58}$ is
+- $W \in \mathbb{R}^{12034 \times 58}$: the latent → gene weights (`w` in the code). $M \in \lbrace 0,1\rbrace^{12034 \times 58}$ is
   the mask, with 1 where latent $k$ may reach gene $g$ and 0 elsewhere. The product $\odot$ is elementwise.
 - $V \in \mathbb{R}^{12034 \times 8}$: the donor offsets (`v`), which also set the baseline of each gene.
 - $\pi_g$: the share of gene $g$. The softmax is taken over genes, so the shares are positive and sum to 1.
@@ -276,7 +276,7 @@ This probability is the Wilcoxon (Mann–Whitney) statistic scaled to [0, 1]. Fi
 cell type. Cell types differ far more from each other than stimulation does, and a latent that only separates cell types
 must not score.
 
-**Definition.** Let $z_{ik}$ be the posterior mean of latent $k$ for test cell $i$ and $\sigma_k \in \lbrace -1, +1\rbrace $ its
+**Definition.**  Let $z_{ik}$ be the posterior mean of latent $k$ for test cell $i$ and $\sigma_k = \pm 1$ its
 orientation, and let $s_i = \sigma_k z_{ik}$. For cell type $t$, with stimulated test cells $S_t$ and control test cells
 $C_t$:
 
@@ -285,7 +285,7 @@ $$\mathrm{AUROC}_t = \frac{1}{|S_t|\,|C_t|} \sum_{i \in S_t} \sum_{j \in C_t} \B
 The interferon-α score $A$ is the unweighted mean over the 7 cell types (megakaryocytes excluded). A latent counts as
 inactive when the variance of its posterior means over the validation cells is at most 0.01, and then $A = 0.5$:
 
-$$A = \begin{cases} \dfrac{1}{7} \sum_{t=1}^{7} \mathrm{AUROC}_t & \mathrm{Var}_{i \in \mathrm{val}}(z_{ik}) > 0.01 \\[2ex] 0.5  \end{cases}$$
+$$A = \begin{cases} \dfrac{1}{7} \sum_{t=1}^{7} \mathrm{AUROC}_t & \mathrm{Var}_{i \in \mathrm{val}}(z_{ik}) > 0.01 \\\\ 0.5 & \end{cases}$$
 
 The test sets per cell type range from 29 control and 33 stimulated cells (dendritic cells) to 746 and 764 (CD4 T cells).
 
