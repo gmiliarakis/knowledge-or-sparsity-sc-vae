@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 
 surface, ink, secondary, muted, grid, baseline = "#fcfcfb", "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7"
 colors = {"vanilla": "#cfcfcf", "real": "#0072B2", "shuffled": "#D55E00", "coexpression": "#009E73"}  # Okabe-Ito, colourblind-safe
-names = {"vanilla": "no mask", "real": "Hallmark mask", "shuffled": "random mask", "coexpression": "co-expression mask"}
-ticks = {"vanilla": "no\nmask", "real": "Hallmark\nmask", "shuffled": "random\nmask", "coexpression": "co-expression\nmask"}
+names = {"vanilla": "no mask", "real": "Hallmark", "shuffled": "random", "coexpression": "co-expression"}
+ticks = {"vanilla": "no\nmask", "real": "Hallmark", "shuffled": "random", "coexpression": "co-expression"}
 folders = {"vanilla": "plain", "real": "real", "shuffled": "shuffled", "coexpression": "coexpression"}
 order = list(colors)
 plt.rcParams.update({
@@ -229,7 +229,7 @@ for _, r in comparisons[comparisons["score"] == "ifn_alpha"].iterrows():
     ax.scatter(diff, y + diff.index.map(offset), s=7, color=color, alpha=0.45, lw=0, zorder=2)
     ax.plot([r["ci_low"], r["ci_high"]], [y, y], color=color, lw=0.9, zorder=3)
     ax.scatter(r["mean_difference"], y, s=size, color=color, edgecolor=surface, lw=0.6, zorder=4)
-    rows.append((y, r["comparison"].replace(" - ", " − ").replace("coexpression", "co-expression")
+    rows.append((y, r["comparison"].replace(" - ", "−").replace("coexpression", "co-expression")
                  .replace("real", "Hallmark").replace("shuffled", "random").replace("vanilla", "no mask")))
     y += 1
 ax.axvline(0, color=baseline, lw=0.8, zorder=0)
@@ -310,7 +310,7 @@ if (tables / "learning_curves_scores.csv").exists():
     ax.vlines(d["train_size"], d["ci_low"], d["ci_high"], color=ink, lw=0.9, zorder=3)
     ax.scatter(d["train_size"], d["mean_difference"], s=16, color=ink, edgecolor=surface, lw=0.5, zorder=4)
     ax.axhline(0, color=baseline, lw=0.8, zorder=0)
-    ax.set(title="b  Hallmark − random, 95% CI", ylabel="difference in AUROC")
+    ax.set(title="b  Hallmark−random, 95% CI", ylabel="difference in AUROC")
     for ax in axes:
         ax.set_xscale("log")
         ax.set_xticks(sizes, [f"{n:,}" for n in sizes], fontsize=6, rotation=45, ha="right")

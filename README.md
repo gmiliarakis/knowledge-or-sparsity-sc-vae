@@ -72,9 +72,9 @@ and are each fit with 10 seeds. Baselines and structure-preserving controls are 
 | Variant | Decoder mask | Tests |
 |---|---|---|
 | No mask (vanilla VAE, LDVAE [13]) | none | reference without knowledge |
-| Hallmark mask | Hallmark gene sets | knowledge + sparsity |
-| Random mask | Hallmark sets with gene labels randomly permuted | sparsity alone |
-| Co-expression mask | modules of co-expressed genes, same sizes | data-derived structure |
+| Hallmark | Hallmark gene sets | knowledge + sparsity |
+| Random | Hallmark sets with gene labels randomly permuted | sparsity alone |
+| Co-expression | modules of co-expressed genes, same sizes | data-derived structure |
 
 The pipeline has eight steps: data (blue), design (orange), model (purple) and evaluation (teal).
 
@@ -177,9 +177,9 @@ The mask decides how many of the 697,972 weights in `w` can be trained.
 | Variant | Trainable decoder weights |
 |---|---|
 | No mask | 697,972 |
-| Hallmark mask | 76,344 (5,568 set memberships + 8 free latents × 8,847 genes in no set) |
-| Random mask | 76,344 (same sizes and overlaps as the Hallmark mask) |
-| Co-expression mask | 75,976–83,136 (by seed) |
+| Hallmark | 76,344 (5,568 set memberships + 8 free latents × 8,847 genes in no set) |
+| Random | 76,344 (same sizes and overlaps as the Hallmark mask) |
+| Co-expression | 75,976–83,136 (by seed) |
 
 The encoder first puts the counts of a cell on a common scale. Each count $x_g$ is divided by the
 total count of the cell $\ell$, multiplied by the median total $m$ of the training cells and log-transformed. Deeply and
@@ -384,22 +384,22 @@ mean ± SD over 10 seeds; differences are paired by seed.
 | Variant | Interferon-α score | Active latents out of 58 | Validation loss per cell |
 |---|---|---|---|
 | No mask | 0.966 ± 0.025 | 34–56 | 1,920 |
-| Hallmark mask | 0.997 ± 0.002 | 36–38 | 1,963 |
-| Random mask | 0.758 ± 0.218 | 33–37 | 1,966 |
-| Co-expression mask | 0.998 ± 0.0004 | 28–37 | 1,951 |
+| Hallmark | 0.997 ± 0.002 | 36–38 | 1,963 |
+| Random | 0.758 ± 0.218 | 33–37 | 1,966 |
+| Co-expression | 0.998 ± 0.0004 | 28–37 | 1,951 |
 
 ![Interferon-α score and active latents per run, and paired differences](reports/figures/scores.png)
 
 *(a) One dot per seed, bar at the mean; grey lines join Hallmark and random runs of the same seed; hollow dots would mark
 inactive latents (none here). (b) Active latents per run: a latent is active if the variance of its posterior means across
 validation cells exceeds 0.01. (c) Per-seed paired differences (dots), their mean and 95% t-interval; the primary
-comparison, Hallmark − random, in black.*
+comparison, Hallmark−random, in black.*
 
 | Comparison | Interferon-α score |
 |---|---|
-| Hallmark − random | +0.239 (+0.083 to +0.395), p = 0.002 |
-| Hallmark − no mask | +0.031 (+0.013 to +0.049), p = 0.002 |
-| Hallmark − co-expression | −0.0009 (−0.0020 to +0.0002), p = 0.04 |
+| Hallmark−random | +0.239 (+0.083 to +0.395), p = 0.002 |
+| Hallmark−no mask | +0.031 (+0.013 to +0.049), p = 0.002 |
+| Hallmark−co-expression | −0.0009 (−0.0020 to +0.0002), p = 0.04 |
 
 Mean difference, 95% paired t-interval and Wilcoxon signed-rank p over 10 seeds.
 
@@ -425,7 +425,7 @@ Mean difference, 95% paired t-interval and Wilcoxon signed-rank p over 10 seeds.
 - **The result holds in every cell type.** The Hallmark mask reached at least 0.991 in each of the 7 cell types (NK
   cells lowest). The random mask averaged 0.73 to 0.84 in each.
 - **The result holds in every donor.** The named latent scored 0.993 or higher in each of the 8 donors for the Hallmark
-  mask and 0.73 to 0.78 for the random mask. The Hallmark − random difference was +0.22 to +0.27 in every
+  mask and 0.73 to 0.78 for the random mask. The Hallmark−random difference was +0.22 to +0.27 in every
   donor. The test cells come from the same 8 donors as the training cells. This does not show generalisation to new
   donors.
 - **Masks cost reconstruction.** Validation loss per cell was 1,920 for the no-mask VAE and 1,951–1,966 for the
@@ -443,7 +443,7 @@ Mean difference, 95% paired t-interval and Wilcoxon signed-rank p over 10 seeds.
 
 Interferon-α score, mean over 10 seeds at each training size.
 
-| Training cells | No mask | Hallmark mask | Random mask | Co-expression mask | Hallmark − random |
+| Training cells | No mask | Hallmark | Random | Co-expression | Hallmark−random |
 |---|---|---|---|---|---|
 | 500 | 0.992 | 0.996 | 0.482 | 0.993 | +0.514 |
 | 1,000 | 0.987 | 0.997 | 0.636 | 0.996 | +0.362 |
@@ -454,7 +454,7 @@ Interferon-α score, mean over 10 seeds at each training size.
 
 ![Learning curves](reports/figures/learning_curves.png)
 
-*(a) Mean over 10 seeds with a 95% t-interval band. (b) Per-seed Hallmark − random differences (dots), mean and 95%
+*(a) Mean over 10 seeds with a 95% t-interval band. (b) Per-seed Hallmark−random differences (dots), mean and 95%
 t-interval.*
 
 - **On this target, Hallmark knowledge does not make learning more data-efficient.** With 500 cells the Hallmark mask already scored
@@ -534,7 +534,7 @@ The table lists where biological knowledge or an assumption about the cells ente
 | Gene identity | `04` | Ensembl IDs mapped to current HGNC symbols (1,256 symbols changed since 2017; 427 genes HGNC no longer lists keep their 2017 symbol) | gene set symbols are current |
 | Gene sets | `04` | Hallmark, sets of ≥ 12 genes (all 50) | one unambiguous target, the interferon-α response |
 | Random null | `04` | labels permuted within expression bins | random genes are as highly expressed as the genes they replace |
-| Co-expression mask | `05` | modules of correlated genes, sizes matched to Hallmark | see Gene sets and masks |
+| Co-expression | `05` | modules of correlated genes, sizes matched to Hallmark | see Gene sets and masks |
 | Free latents | `06` | reach only genes in no set | when they reached all genes, they absorbed the stimulation signal |
 | Covariates | `06` | donor in encoder and decoder; condition never | the stimulation is the signal the latents should find |
 | Likelihood | `06` | negative binomial on raw counts, observed total counts as library size | droplet counts are not zero-inflated [22] |
