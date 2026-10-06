@@ -1,6 +1,6 @@
 ![From stimulated cells to a masked VAE: the four decoder masks and the interferon-α score each one reached](reports/figures/overview.png)
 
-# Gene set masks in a single-cell VAE: knowledge or sparsity?
+# Knowledge or sparsity? Gene set masks in a single-cell VAE
 
 In knowledge-guided single-cell models, each latent variable (a hidden factor that the model infers for every cell) is tied
 to a gene set. Its value then reads as the activity of a known pathway.
