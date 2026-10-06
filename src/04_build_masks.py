@@ -1,4 +1,4 @@
-# Gene-set masks (genes x sets, True = gene in set) and their shuffled versions. Choices are explained in the README.
+# Gene set masks (genes x sets, True = gene in set) and their shuffled versions. Choices are explained in the README.
 from pathlib import Path
 
 import anndata as ad

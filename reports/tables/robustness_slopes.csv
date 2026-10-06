@@ -1,0 +1,4 @@
+comparison,seeds,slope_per_doubling,ci_low,ci_high,wilcoxon_p
+real - shuffled,10,-0.0338854,-0.0744052,0.00663449,0.105469
+real - vanilla,10,0.00526969,0.00259632,0.00794306,0.00195312
+real - coexpression,10,-0.000709965,-0.00129033,-0.000129596,0.00976562
