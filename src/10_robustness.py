@@ -2,7 +2,6 @@
 # A. The random mask scored like the no-mask VAE: the best active latent, chosen on validation cells.
 # B. Per-donor scores of the same latents (test cells), to see whether the result holds in every donor.
 # C. Slope of the real - other difference on log2(training size), per seed, for the learning curves (Q1b).
-# D. Equivalence of the Hallmark and co-expression masks: 90% paired t-interval against a margin of +-0.005.
 # Tables go to reports/tables/robustness_*.csv.
 import json
 from pathlib import Path
@@ -14,7 +13,7 @@ from scipy import stats
 from sklearn.metrics import roc_auc_score
 
 alpha_name = "HALLMARK_INTERFERON_ALPHA_RESPONSE"
-min_variance, margin = 0.01, 0.005
+min_variance = 0.01
 out = Path("reports/tables")
 
 obs = ad.read_h5ad("data/processed/kang.h5ad", backed="r").obs
@@ -93,15 +92,3 @@ for other in ["shuffled", "vanilla", "coexpression"]:
 slopes = pd.DataFrame(slopes)
 slopes.to_csv(out / "robustness_slopes.csv", index=False, float_format="%.6g")
 print(slopes.round(4).to_string(index=False))
-
-# D ---------------------------------------------------------------------------------------------------------------
-equivalence = []
-for size, g in wide.groupby(level=1):
-    diff = (g["real"] - g["coexpression"]).dropna()
-    half = stats.t.ppf(0.95, len(diff) - 1) * diff.std() / np.sqrt(len(diff))
-    lo, hi = diff.mean() - half, diff.mean() + half
-    equivalence.append({"train_size": size, "mean_difference": diff.mean(), "ci90_low": lo, "ci90_high": hi,
-                        "equivalent_within_margin": bool(lo > -margin and hi < margin)})
-equivalence = pd.DataFrame(equivalence)
-equivalence.to_csv(out / "robustness_equivalence.csv", index=False, float_format="%.6g")
-print(equivalence.round(4).to_string(index=False))

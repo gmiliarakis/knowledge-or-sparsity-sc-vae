@@ -10,16 +10,14 @@ import anndata as ad
 import numpy as np
 import pandas as pd
 from scipy import stats
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
-from sklearn.preprocessing import StandardScaler
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--learning-curves", action="store_true")
 args = parser.parse_args()
 
 variants = {"plain": "vanilla", "real": "real", "shuffled": "shuffled", "coexpression": "coexpression"}
-alpha_name, gamma_name = "HALLMARK_INTERFERON_ALPHA_RESPONSE", "HALLMARK_INTERFERON_GAMMA_RESPONSE"
+alpha_name = "HALLMARK_INTERFERON_ALPHA_RESPONSE"
 min_variance = 0.01  # a latent whose posterior means vary less across validation cells is inactive
 
 obs = ad.read_h5ad("data/processed/kang.h5ad", backed="r").obs
@@ -49,45 +47,37 @@ for folder, variant in variants.items():
         active = activity > min_variance
 
         if folder in ("real", "shuffled"):
-            # named latents, oriented without labels: mean weight on the set's own genes made positive
-            alpha, gamma = ids.index(alpha_name), ids.index(gamma_name)
+            # named latent, oriented without labels: mean weight on the set's own genes made positive
+            alpha = ids.index(alpha_name)
             sign = np.sign(w[w[:, alpha] != 0, alpha].mean())
-            pair = [alpha, gamma]
         else:
             # no meaningful names: rank active latents by validation AUROC, either direction
             val_auc = np.array([auroc(z[:, k], "val").mean() for k in range(z.shape[1])])
             order = [k for k in np.argsort(-np.abs(val_auc - 0.5)) if active[k]]
-            alpha, pair = order[0], order[:2]
+            alpha = order[0]
             sign = 1.0 if val_auc[alpha] > 0.5 else -1.0
 
         measured = auroc(sign * z[:, alpha], "test")
         alpha_auc = measured if active[alpha] else pd.Series(0.5, index=types)
-
-        scaler = StandardScaler().fit(z[rows["val"]][:, pair])
-        classifier = LogisticRegression().fit(scaler.transform(z[rows["val"]][:, pair]), stim[rows["val"]])
-        pair_auc = auroc(classifier.decision_function(scaler.transform(z[:, pair])), "test")
 
         seed, size = info["seed"], info.get("train_size") or full
         scores.append({
             "variant": variant, "train_size": size, "seed": seed,
             "ifn_alpha": alpha_auc.mean(), "ifn_alpha_measured": measured.mean(), "ifn_alpha_latent": ids[alpha],
             "ifn_alpha_sign": int(sign), "ifn_alpha_activity": activity[alpha], "ifn_alpha_active": active[alpha],
-            "ifn_pair": pair_auc.mean(), "pair_latents": "; ".join(ids[k] for k in pair),
-            "pair_activity": "; ".join(f"{activity[k]:.3g}" for k in pair),
             "active_latents": int(active.sum()), "best_epoch": info["best_epoch"],
             "val_loss": info["val_loss"], "test_loss": info["test_loss"],
         })
-        for score, values in [("ifn_alpha", alpha_auc), ("ifn_pair", pair_auc)]:
-            per_type += [{"variant": variant, "train_size": size, "seed": seed, "score": score, "cell_type": t, "auroc": a}
-                         for t, a in values.items()]
+        per_type += [{"variant": variant, "train_size": size, "seed": seed, "score": "ifn_alpha", "cell_type": t, "auroc": a}
+                     for t, a in alpha_auc.items()]
 
 scores = pd.DataFrame(scores).sort_values("train_size", kind="stable")
-print(scores.groupby(["train_size", "variant"], sort=False)[["ifn_alpha", "ifn_pair", "active_latents"]].agg(["mean", "count"]).round(3))
+print(scores.groupby(["train_size", "variant"], sort=False)[["ifn_alpha", "active_latents"]].agg(["mean", "count"]).round(3))
 
 # Paired by seed. One primary test (interferon-alpha score, real vs shuffled, all training cells); everything else is
 # descriptive.
 comparisons = []
-for size, score in [(n, s) for n in scores["train_size"].unique() for s in ["ifn_alpha", "ifn_pair"]]:
+for size, score in [(n, "ifn_alpha") for n in scores["train_size"].unique()]:
     wide = scores[scores["train_size"] == size].pivot(index="seed", columns="variant", values=score)
     for other in ["shuffled", "vanilla", "coexpression"]:
         if "real" not in wide or other not in wide:
