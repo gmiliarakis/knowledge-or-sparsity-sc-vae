@@ -369,7 +369,7 @@ python src/11_tests.py
 `10_checks.py` reads the scored runs and adds the robustness checks, the reference scores, the gene-removal check and the probe, and `11_tests.py` runs every hypothesis test with its multiplicity correction. The
 tables label the no-mask VAE `vanilla`, and its results folder is `plain`.
 
-The weaker-signal benchmark (pilot; protocol in `docs/review-tracker.md`) removes the 250 genes with the largest stimulation effect and
+The weaker-signal benchmark (pilot) removes the 250 genes with the largest stimulation effect and
 reuses every script through the environment variable `SC_TAG`; its files carry the suffix `_drop250` and the main files are not touched.
 
 ```
