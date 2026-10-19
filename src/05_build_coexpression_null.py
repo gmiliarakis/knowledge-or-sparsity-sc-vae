@@ -1,15 +1,18 @@
 # Co-expression null for the Hallmark masks: for every Hallmark set, a module of the same size built only from
 # gene-gene correlation in training cells (a random seed gene and its most correlated genes). It asks whether
 # curated knowledge adds anything beyond groups of genes that are simply expressed together.
+import os
+
 import anndata as ad
 import numpy as np
 import scanpy as sc
 
-masks = np.load("data/processed/masks_hallmark.npz")
+suffix = "_" + os.environ["SC_TAG"] if os.environ.get("SC_TAG") else ""  # SC_TAG=drop250 selects the weaker-signal benchmark
+masks = np.load(f"data/processed/masks_hallmark{suffix}.npz")
 real = masks["real"]
 sizes = real.sum(axis=0)
 
-adata = ad.read_h5ad("data/processed/kang.h5ad")
+adata = ad.read_h5ad(f"data/processed/kang{suffix}.h5ad")
 assert (adata.var_names == masks["genes"]).all()
 train = adata[adata.obs["split"] == "train"]
 
@@ -72,6 +75,6 @@ for s in seeds:
           f"{ifn[members].mean():.0%} in Hallmark IFN-alpha or IFN-gamma")
 
 np.savez_compressed(
-    "data/processed/coexpression_hallmark.npz",
+    f"data/processed/coexpression_hallmark{suffix}.npz",
     genes=masks["genes"], sets=masks["sets"], modules=modules, seed_genes=seed_genes,
 )

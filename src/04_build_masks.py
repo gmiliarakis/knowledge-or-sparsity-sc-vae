@@ -1,4 +1,5 @@
-# Gene set masks (genes x sets, True = gene in set) and their shuffled versions. Choices are explained in the README.
+# Gene set masks (genes x sets, True = gene in set) and their shuffled versions (all-gene shuffle and sets-only shuffle). Choices are explained in the README.
+import os
 from pathlib import Path
 
 import anndata as ad
@@ -6,7 +7,8 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 
-adata = ad.read_h5ad("data/processed/kang.h5ad")
+suffix = "_" + os.environ["SC_TAG"] if os.environ.get("SC_TAG") else ""  # SC_TAG=drop250 selects the weaker-signal benchmark
+adata = ad.read_h5ad(f"data/processed/kang{suffix}.h5ad")
 genes = adata.var_names  # Ensembl IDs; all QC genes are the gene universe
 
 # today's official symbol for each Ensembl ID (HGNC); genes HGNC does not know keep their 2017 symbol
@@ -53,6 +55,8 @@ levels = [0, 0.25, 0.5, 0.75, 1]
 seeds = range(10)
 
 for name, gmt in [("hallmark", "h.all.v2024.1.Hs.symbols.gmt"), ("reactome", "c2.cp.reactome.v2024.1.Hs.symbols.gmt")]:
+    if suffix and name != "hallmark":
+        continue
     sets = {}
     for line in open("data/raw/" + gmt):
         set_name, _, *members = line.rstrip("\n").split("\t")
@@ -63,7 +67,10 @@ for name, gmt in [("hallmark", "h.all.v2024.1.Hs.symbols.gmt"), ("reactome", "c2
     missing = len(all_members - set(symbol))
     print(f"\n{name}: {len(sets)} sets, {len(all_members)} genes, {missing} not among our QC genes (mostly not expressed in PBMCs)")
 
-    mask = mask.loc[:, mask.sum() >= 12]
+    if suffix:  # weaker-signal benchmark: the same sets as in the main experiment, even if they shrank below 12 genes
+        mask = mask.loc[:, list(np.load(f"data/processed/masks_{name}.npz")["sets"])]
+    else:
+        mask = mask.loc[:, mask.sum() >= 12]
     real = mask.values
     print("sets with >= 12 genes:", real.shape[1], "| genes in at least one set:", real.any(axis=1).sum(), "of", len(genes))
     print("set genes whose symbol another gene also has:", symbol[real.any(axis=1)].duplicated(keep=False).sum())
@@ -99,6 +106,27 @@ for name, gmt in [("hallmark", "h.all.v2024.1.Hs.symbols.gmt"), ("reactome", "c2
               f"100% shuffled {np.mean(shuffled):.3f} (range {min(shuffled):.3f} to {max(shuffled):.3f})")
 
     np.savez_compressed(
-        f"data/processed/masks_{name}.npz",
+        f"data/processed/masks_{name}{suffix}.npz",
         genes=np.array(genes, dtype=str), sets=np.array(mask.columns, dtype=str), real=real, perms=perms, levels=levels, bins=bins,
     )
+
+    # Sets-only shuffle (the cleaner random control): only genes in at least one set are permuted, and only among themselves
+    # inside each expression bin. Set genes stay in sets and no-set genes stay in no set, so the free latents reach the same
+    # genes as in the real mask. The all-gene shuffle above moves about half of the interferon-alpha genes into the pool of
+    # genes in no set. Written to its own file (perms: seed x genes) with its own random seeds, so the other masks do not change.
+    if name == "hallmark":
+        in_set = real.any(axis=1)
+        set_perms = np.zeros((len(seeds), len(genes)), dtype=np.int32)
+        for s in seeds:
+            rng = np.random.default_rng(1000 + s)
+            perm = np.arange(len(genes))
+            for b in range(25):
+                idx = np.flatnonzero((bins == b) & in_set)
+                perm[idx] = rng.permutation(idx)
+            assert (real[perm].any(axis=1) == in_set).all()
+            set_perms[s] = perm
+        kept = [(real & real[p]).sum(axis=0) / real.sum(axis=0) for p in set_perms]
+        ifn = mask.columns.get_loc("HALLMARK_INTERFERON_ALPHA_RESPONSE")
+        print(f"\nsets-only shuffle: {1 - np.mean(kept):.0%} of set members changed; {int((~in_set).sum())} genes in no set (unchanged);",
+              "interferon-alpha genes in the free pool:", [int((real[:, ifn] & ~real[p].any(axis=1)).sum()) for p in set_perms])
+        np.savez_compressed(f"data/processed/masks_hallmark_setshuffle{suffix}.npz", perms=set_perms)

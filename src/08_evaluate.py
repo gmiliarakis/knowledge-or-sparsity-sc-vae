@@ -4,40 +4,22 @@
 # full-size point, into separate tables.
 import argparse
 import json
-from pathlib import Path
 
-import anndata as ad
 import numpy as np
 import pandas as pd
-from scipy import stats
-from sklearn.metrics import roc_auc_score
+
+from scoring import (alpha_name, auroc_by_type as auroc, full, min_variance, results_dir, rows, tables_dir, val_all)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--learning-curves", action="store_true")
 args = parser.parse_args()
 
-variants = {"plain": "vanilla", "real": "real", "shuffled": "shuffled", "coexpression": "coexpression"}
-alpha_name = "HALLMARK_INTERFERON_ALPHA_RESPONSE"
-min_variance = 0.01  # a latent whose posterior means vary less across validation cells is inactive
-
-obs = ad.read_h5ad("data/processed/kang.h5ad", backed="r").obs
-stim = (obs["condition"] == "stim").values
-cell_type = obs["cell_type"].astype(str).values
-types = sorted(set(cell_type) - {"Megakaryocytes"})  # no nucleus, so no interferon response to find
-rows = {s: np.flatnonzero((obs["split"] == s).values & (cell_type != "Megakaryocytes")) for s in ["val", "test"]}
-val_all = np.flatnonzero((obs["split"] == "val").values)
-full = int((obs["split"] == "train").sum())
-
-
-def auroc(score, split):
-    # stim vs ctrl within each cell type, so a latent cannot score by separating cell types
-    r = rows[split]
-    return pd.Series({t: roc_auc_score(stim[r][cell_type[r] == t], score[r][cell_type[r] == t]) for t in types})
+variants = {"plain": "vanilla", "real": "real", "shuffled": "shuffled", "setshuffle": "setshuffle", "coexpression": "coexpression"}
 
 
 scores, per_type = [], []
 for folder, variant in variants.items():
-    for run in sorted(Path("results", folder).glob("seed*")):
+    for run in sorted((results_dir / folder).glob("seed*")):
         if "_train" in run.name and not args.learning_curves:
             continue
         info = json.load(open(run / "run.json"))
@@ -46,7 +28,7 @@ for folder, variant in variants.items():
         activity = z[val_all].var(axis=0)
         active = activity > min_variance
 
-        if folder in ("real", "shuffled"):
+        if folder in ("real", "shuffled", "setshuffle"):
             # named latent, oriented without labels: mean weight on the set's own genes made positive
             alpha = ids.index(alpha_name)
             sign = np.sign(w[w[:, alpha] != 0, alpha].mean())
@@ -74,32 +56,20 @@ for folder, variant in variants.items():
 scores = pd.DataFrame(scores).sort_values("train_size", kind="stable")
 print(scores.groupby(["train_size", "variant"], sort=False)[["ifn_alpha", "active_latents"]].agg(["mean", "count"]).round(3))
 
-# Paired by seed. One primary test (interferon-alpha score, real vs shuffled, all training cells); everything else is
-# descriptive.
+# Paired differences by seed (descriptive). Hypothesis tests, intervals and multiplicity correction are in src/11_tests.py.
 comparisons = []
-for size, score in [(n, "ifn_alpha") for n in scores["train_size"].unique()]:
-    wide = scores[scores["train_size"] == size].pivot(index="seed", columns="variant", values=score)
-    for other in ["shuffled", "vanilla", "coexpression"]:
+for size in scores["train_size"].unique():
+    wide = scores[scores["train_size"] == size].pivot(index="seed", columns="variant", values="ifn_alpha")
+    for other in ["shuffled", "setshuffle", "vanilla", "coexpression"]:
         if "real" not in wide or other not in wide:
             continue
         d = (wide["real"] - wide[other]).dropna()
-        n = len(d)
-        half = stats.t.ppf(0.975, n - 1) * d.std() / np.sqrt(n) if n > 1 else np.nan
-        p = stats.wilcoxon(d).pvalue if (d != 0).sum() > 1 else np.nan  # zero differences are dropped
-        comparisons.append({"train_size": size, "score": score, "comparison": f"real - {other}", "pairs": n,
-                            "mean_difference": d.mean(), "ci_low": d.mean() - half, "ci_high": d.mean() + half, "wilcoxon_p": p,
-                            "primary": score == "ifn_alpha" and other == "shuffled" and size == full})
+        comparisons.append({"train_size": size, "comparison": f"real - {other}", "pairs": len(d),
+                            "mean_difference": d.mean(), "seeds_real_higher": int((d > 0).sum())})
 comparisons = pd.DataFrame(comparisons)
 print(comparisons.round(4).to_string(index=False))
 
-primary = comparisons[comparisons["primary"]]
-if len(primary):
-    r = primary.iloc[0]
-    verdict = "real beats shuffled" if r["ci_low"] > 0 else "shuffled beats real" if r["ci_high"] < 0 else "no difference shown"
-    print(f"primary test ({r['pairs']} pairs): real - shuffled {r['mean_difference']:+.4f}, "
-          f"95% CI [{r['ci_low']:+.4f}, {r['ci_high']:+.4f}], Wilcoxon p = {r['wilcoxon_p']:.3g}: {verdict}")
-
-out = Path("reports/tables")
+out = tables_dir
 out.mkdir(parents=True, exist_ok=True)
 prefix = "learning_curves_" if args.learning_curves else ""
 scores.to_csv(out / f"{prefix}scores.csv", index=False, float_format="%.6g")
