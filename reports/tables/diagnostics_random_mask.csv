@@ -1,0 +1,11 @@
+seed,best_latent,best_latent_kind,best_latent_genes,best_latent_alpha_genes,best_latent_gamma_genes,alpha_genes_in_free_pool,alpha_genes_in_a_set,named_latent_alpha_genes,best_val_auroc
+0,HALLMARK_MTORC1_SIGNALING,named set,188,7,8,50,45,3,0.987909
+1,HALLMARK_TNFA_SIGNALING_VIA_NFKB,named set,188,5,7,59,36,5,0.992007
+2,free 7,free,8847,54,115,54,41,4,0.0189671
+3,free 3,free,8847,56,110,56,39,4,0.0103903
+4,HALLMARK_APOPTOSIS,named set,142,3,7,48,47,2,0.991055
+5,free 7,free,8847,52,107,52,43,5,0.00784197
+6,HALLMARK_APOPTOSIS,named set,142,4,5,43,52,7,0.988842
+7,HALLMARK_KRAS_SIGNALING_UP,named set,133,6,5,51,44,5,0.0112201
+8,HALLMARK_MYOGENESIS,named set,92,1,1,58,37,3,0.972191
+9,HALLMARK_PI3K_AKT_MTOR_SIGNALING,named set,93,1,6,50,45,3,0.0179132

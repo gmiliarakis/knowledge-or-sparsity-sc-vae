@@ -1,41 +1,51 @@
-variant,seed,named_latent,best_latent,best_is_named
-plain,0,0.993238,0.993238,True
-plain,1,0.973996,0.973996,True
-plain,2,0.978627,0.978627,True
-plain,3,0.98185,0.98185,True
-plain,4,0.936615,0.936615,True
-plain,5,0.988736,0.988736,True
-plain,6,0.936567,0.936567,True
-plain,7,0.988394,0.988394,True
-plain,8,0.927821,0.927821,True
-plain,9,0.950191,0.950191,True
-real,0,0.998007,0.998007,True
-real,1,0.992932,0.997973,False
-real,2,0.996947,0.996947,True
-real,3,0.996955,0.996955,True
-real,4,0.99683,0.99683,True
-real,5,0.996125,0.996125,True
-real,6,0.998054,0.998054,True
-real,7,0.997324,0.997324,True
-real,8,0.996533,0.996533,True
-real,9,0.997514,0.997514,True
-shuffled,0,0.941071,0.989572,False
-shuffled,1,0.874855,0.99443,False
-shuffled,2,0.982577,0.984716,False
-shuffled,3,0.381369,0.989931,False
-shuffled,4,0.887207,0.99095,False
-shuffled,5,0.535479,0.993255,False
-shuffled,6,0.837208,0.992486,False
-shuffled,7,0.984276,0.990826,False
-shuffled,8,0.558467,0.976183,False
-shuffled,9,0.597117,0.988585,False
-coexpression,0,0.99784,0.99784,True
-coexpression,1,0.997868,0.997868,True
-coexpression,2,0.996644,0.996644,True
-coexpression,3,0.99763,0.99763,True
-coexpression,4,0.997526,0.997526,True
-coexpression,5,0.997625,0.997625,True
-coexpression,6,0.998034,0.998034,True
-coexpression,7,0.997818,0.997818,True
-coexpression,8,0.997652,0.997652,True
-coexpression,9,0.997781,0.997781,True
+variant,seed,named_latent,best_latent,best_is_named,best_latent_name,named_latent_active
+plain,0,0.993238,0.993238,True,latent 47,True
+plain,1,0.973996,0.973996,True,latent 12,True
+plain,2,0.978627,0.978627,True,latent 13,True
+plain,3,0.98185,0.98185,True,latent 10,True
+plain,4,0.936615,0.936615,True,latent 4,True
+plain,5,0.988736,0.988736,True,latent 9,True
+plain,6,0.936567,0.936567,True,latent 31,True
+plain,7,0.988394,0.988394,True,latent 19,True
+plain,8,0.927821,0.927821,True,latent 28,True
+plain,9,0.950191,0.950191,True,latent 29,True
+real,0,0.998007,0.998007,True,HALLMARK_INTERFERON_ALPHA_RESPONSE,True
+real,1,0.992932,0.997973,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+real,2,0.996947,0.996947,True,HALLMARK_INTERFERON_ALPHA_RESPONSE,True
+real,3,0.996955,0.996955,True,HALLMARK_INTERFERON_ALPHA_RESPONSE,True
+real,4,0.99683,0.99683,True,HALLMARK_INTERFERON_ALPHA_RESPONSE,True
+real,5,0.996125,0.996125,True,HALLMARK_INTERFERON_ALPHA_RESPONSE,True
+real,6,0.998054,0.998054,True,HALLMARK_INTERFERON_ALPHA_RESPONSE,True
+real,7,0.997324,0.997324,True,HALLMARK_INTERFERON_ALPHA_RESPONSE,True
+real,8,0.996533,0.996533,True,HALLMARK_INTERFERON_ALPHA_RESPONSE,True
+real,9,0.997514,0.997514,True,HALLMARK_INTERFERON_ALPHA_RESPONSE,True
+shuffled,0,0.941071,0.989572,False,HALLMARK_MTORC1_SIGNALING,True
+shuffled,1,0.874855,0.99443,False,HALLMARK_TNFA_SIGNALING_VIA_NFKB,True
+shuffled,2,0.982577,0.984716,False,free 7,True
+shuffled,3,0.381369,0.989931,False,free 3,True
+shuffled,4,0.887207,0.99095,False,HALLMARK_APOPTOSIS,True
+shuffled,5,0.535479,0.993255,False,free 7,True
+shuffled,6,0.837208,0.992486,False,HALLMARK_APOPTOSIS,True
+shuffled,7,0.984276,0.990826,False,HALLMARK_KRAS_SIGNALING_UP,True
+shuffled,8,0.558467,0.976183,False,HALLMARK_MYOGENESIS,True
+shuffled,9,0.597117,0.988585,False,HALLMARK_PI3K_AKT_MTOR_SIGNALING,True
+setshuffle,0,0.9909,0.9909,True,HALLMARK_INTERFERON_ALPHA_RESPONSE,True
+setshuffle,1,0.883092,0.993286,False,HALLMARK_KRAS_SIGNALING_UP,True
+setshuffle,2,0.97404,0.995096,False,HALLMARK_COMPLEMENT,True
+setshuffle,3,0.104614,0.996441,False,HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY,True
+setshuffle,4,0.937875,0.993074,False,HALLMARK_INFLAMMATORY_RESPONSE,True
+setshuffle,5,0.727301,0.996693,False,HALLMARK_MTORC1_SIGNALING,True
+setshuffle,6,0.943494,0.994276,False,HALLMARK_DNA_REPAIR,True
+setshuffle,7,0.604503,0.993829,False,HALLMARK_PI3K_AKT_MTOR_SIGNALING,True
+setshuffle,8,0.993305,0.993305,True,HALLMARK_INTERFERON_ALPHA_RESPONSE,True
+setshuffle,9,0.993592,0.993592,True,HALLMARK_INTERFERON_ALPHA_RESPONSE,True
+coexpression,0,0.99784,0.99784,True,module 45,True
+coexpression,1,0.997868,0.997868,True,module 25,True
+coexpression,2,0.996644,0.996644,True,module 11,True
+coexpression,3,0.99763,0.99763,True,module 5,True
+coexpression,4,0.997526,0.997526,True,module 37,True
+coexpression,5,0.997625,0.997625,True,module 30,True
+coexpression,6,0.998034,0.998034,True,module 26,True
+coexpression,7,0.997818,0.997818,True,module 48,True
+coexpression,8,0.997652,0.997652,True,module 21,True
+coexpression,9,0.997781,0.997781,True,module 31,True

@@ -1,0 +1,5 @@
+train_size,comparison,pairs,mean_difference,seeds_real_higher
+16749,real - shuffled,2,0,0
+16749,real - setshuffle,2,0,0
+16749,real - vanilla,2,-0.359022,0
+16749,real - coexpression,2,-0.386871,0

@@ -1,0 +1,8 @@
+genes_removed,n_removed,n_kept,test_auroc
+none,0,12034,0.997189
+interferon-alpha and -gamma sets (216 genes),216,11818,0.945257
+top 100 stimulation-responsive genes,100,11934,0.900987
+top 500 stimulation-responsive genes,500,11534,0.744295
+top 1000 stimulation-responsive genes,1000,11034,0.648623
+top 2000 stimulation-responsive genes,2000,10034,0.573318
+annotated + top 1000,1075,10959,0.645695
