@@ -116,7 +116,7 @@ The data are from Kang et al. [17] (GEO GSE96583, batch 2). PBMCs from 8 patient
 or with interferon-β (stim), and each condition was pooled and sequenced in one 10x run. Every donor appears in both
 conditions. The authors' genotype-based singlet calls (demuxlet) and cell-type labels are used as given.
 
-| Step | What is done | Result |
+| Step | Action | Result |
 |---|---|---|
 | Cell quality control (QC) | cells beyond 5 median absolute deviations in log total counts, log detected genes or share of counts in the top 20 genes are removed, following [18] and computed with scanpy [19], with thresholds per condition × cell type | 24,673 labelled singlets → 23,919 cells (3.1% removed; 0.8–5.0% per cell type, 20.8% of megakaryocytes) |
 | Gene filter | genes detected in ≥ 20 cells are kept, and all of them are modelled | 12,034 genes |

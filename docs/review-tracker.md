@@ -48,7 +48,11 @@ Last updated: 2026-10-19.
 
 ## Protocol: weaker-signal benchmark (fixed 2026-10-14, before any run)
 
+<<<<<<< HEAD
 Why: every method, with or without a VAE, scores 0.97 to 0.998 on the full data, so the main benchmark cannot separate
+=======
+Reason: every method, with or without a VAE, scores 0.97 to 0.998 on the full data, so the main benchmark cannot separate
+>>>>>>> a9c8da1 (Rewrite README around four latent-free measures; add supplement and tracker)
 variants. Baselines as the strongest stimulation genes are removed (test cells): best principal component 0.863 and mean of
 the remaining interferon-α genes 0.689 (0.724 when the library size is recomputed without the removed genes, as the models do) with the top 250 genes removed; 0.744 and 0.536 with the top 500 removed.
 The question this benchmark asks: does a mask built on annotated sets help or hurt when the annotated set is incomplete and
@@ -66,7 +70,11 @@ the signal is weak?
 
 ## Accepted limitations
 
+<<<<<<< HEAD
 | ID | Limitation | Where stated |
+=======
+| ID | Limitation | Stated in |
+>>>>>>> a9c8da1 (Rewrite README around four latent-free measures; add supplement and tracker)
 |---|---|---|
 | R14 | Test cells come from the same 8 donors as training cells; seeds cover one split only | README Limitations |
 | R15 | One dataset, one stimulus, one target | README Limitations and Summary |
