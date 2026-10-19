@@ -1,18 +1,19 @@
 # Knowledge or sparsity? Gene set masks in a single-cell VAE
 
-![From stimulated cells to a masked VAE: the four decoder masks and the interferon-α score each one reached](reports/figures/overview.png)
+![From stimulated cells to a masked VAE: the five decoder masks and the decoded response each one reached](reports/figures/overview.png)
 
-*Stage 3 shows the decoder mask of each variant as trained with seed 0: rows are the 12,034
-genes sorted by Hallmark membership, columns are the 58 latents, and each dot is a kept link between a gene and a latent.
-Stage 4 shows the interferon-α score of the scored latent in all 10 seeds, with the mean printed under each
-variant.*
+*Control and IFN-β-stimulated blood cells enter a VAE whose linear decoder is restricted by a binary mask (stages 1 and 2). In
+stage 3, rows are the 12,034 genes sorted by Hallmark membership, columns are the 58 latents (50 named, then 8 free), and
+each dot is a link kept by the mask of seed 0. The fully random mask also shuffles genes that are in no set; the within-set
+random mask leaves them in place. In stage 4, each dot is the correlation of the decoded and the observed stimulation shift
+across genes for one of the 10 seeds of a variant, and the diamond and the number give the mean.*
 
 **Contents**
 
 - [Background](#background)
 - [Methods](#methods): [study design](#study-design), [data](#data), [gene sets and masks](#gene-sets-and-masks),
-  [model](#model), [evaluation](#evaluation), [learning curves](#learning-curves-q1b)
-- [Results](#results): [Q1](#q1-knowledge-or-sparsity), [Q1b](#q1b-learning-curves)
+  [model](#model), [evaluation](#evaluation)
+- [Results](#results): [Q1](#q1-knowledge-or-sparsity), [supplementary results](docs/supplementary.md)
 - [Limitations](#limitations) · [Reproducing](#reproducing) · [Future work](#future-work) · [References](#references)
 
 ## Summary
@@ -21,20 +22,21 @@ variant.*
 
 - **Question:** in a single-cell RNA-seq variational autoencoder (VAE) restricted to gene sets, does the biological knowledge in the sets or the sparsity they impose explain how well it captures a known response?
 - **Data:** blood cells (PBMCs) from 8 lupus patients, with and without interferon-β stimulation (Kang et al. [17]; 23,919 cells, 12,034 genes).
-- **Response:** the interferon response switched on by IFN-β (a type I interferon). Success is one latent that separates stimulated from control cells (AUROC); the interferon-α response gene set is the matching biological target.
+- **Response:** the interferon response switched on by IFN-β (a type I interferon); the Hallmark interferon-α response set is the matching biological target.
 - **Model:** VAE with a linear decoder. A binary mask on the decoder weights limits which genes each latent variable can reach.
-- **Four variants:** no mask, gene set mask, random mask of the same sparsity, mask of co-expressed gene modules from the data alone.
-- **Gene sets:** Hallmark collection of MSigDB v2024.1, 50 expert-curated sets (e.g. interferon response, hypoxia, inflammation).
-- **Evaluation:** how well one latent distinguishes stimulated from control cells, over 10 seeds; learning curves at smaller training sizes.
-- **Limitation:** one dataset with one very strong biological response.
+- **Five variants:** no mask, gene set mask, two random masks of the same sparsity (shuffling the labels of all genes, or of set genes only), mask of co-expressed gene modules from the data alone.
+- **Gene sets:** Hallmark collection of MSigDB v2024.1, 50 sets refined from founder sets for coherent expression (e.g. interferon response, hypoxia, inflammation).
+- **Evaluation:** four measures that choose no latent (held-out loss, decoded stimulation shift, cell-type probe, stimulation probe), 10 seeds. The interferon-α latent score and learning curves are in the [supplementary results](docs/supplementary.md).
+- **Limitations:** one dataset with one very strong response; stimulation and sequencing run are confounded; detection of the stimulation is saturated.
 
 **Key findings**
 
-- Sparsity alone is enough to capture the response: a random mask reaches it in its best latent.
-- Knowledge makes the model capture the biology: the response lands in the latent tied to the interferon-α genes, not to unrelated ones.
-- Modules built from the data alone capture it about as well, but finding their latent needs the stimulation labels.
-- Random and gene set masks both capture the response slightly better than an unmasked VAE.
-- Knowledge did not make learning more data-efficient on this task.
+- Sparsity has a cost: every masked variant fits unseen cells worse, reproduces the stimulation response less well and separates cell types less well than the no-mask VAE.
+- Biological knowledge recovers part of that cost: the Hallmark mask fits unseen cells and reproduces the response better than random masks of the same sparsity.
+- Knowledge does not improve the cell-type representation: Hallmark and random masks separate cell types equally well.
+- Modules built from the data alone fit and reproduce the response better than Hallmark sets; the Hallmark sets add names that are known before training.
+- The interferon-α latent of the Hallmark mask carries the response, whereas a random mask's latent at that position does so unreliably (supplementary S1).
+- Detection of the stimulation is saturated: a principal component or the mean of the interferon-α genes separates the conditions as well as any variant, and no data-efficiency benefit of knowledge could be detected (supplementary S3).
 
 ## Background
 
@@ -70,12 +72,12 @@ sparsity that the mask imposes. Earlier work leaves three questions open, and ea
 
 - **Knowledge or sparsity?** (Q1) A gene set mask fixes 89% of the decoder weights at zero. Any gain over a model without a mask could
   come from the sparsity alone. A random mask keeps the size and overlaps of every set and changes only its
-  biology. It isolates the effect of the knowledge.
-- **Curated knowledge or any co-expression?** (Q1) Curated gene sets align with the main axes of expression more than
-  size-matched random sets do in bulk tumour data [12]. A Hallmark mask could beat a random one only because its genes are
-  co-expressed. Modules of co-expressed genes of the same sizes test whether curation adds anything beyond that.
-- **Less data needed?** (Q1b) expiMap was reported to learn more sample-efficiently than the linear-decoder VAE LDVAE [13] when fewer training samples were available [4]. That comparison did not include a random gene set control. Knowledge and sparsity were confounded. Learning curves with all four
-  variants test this directly.
+  biology. It isolates the effect of the knowledge. Two versions are used (Study design).
+- **Pre-specified sets or modules found in the data?** (Q1) Curated gene sets align with the main axes of expression more than
+  size-matched random sets do in bulk tumour data [12], and the Hallmark sets were refined for coherent expression [20]. A
+  Hallmark mask could beat a random one only because its genes are co-expressed. Modules of co-expressed genes of the same
+  sizes, found in this dataset, test whether pre-specified sets add anything beyond that.
+- **Less data needed?** (Q1b) expiMap was reported to learn more sample-efficiently than the linear-decoder VAE LDVAE [13] when fewer training samples were available [4], without a random gene set control. Learning curves test this ([supplementary S3](docs/supplementary.md)).
 
 ## Methods
 
@@ -83,17 +85,25 @@ Step-by-step detail, the architecture printout, symbols and scoring code are in 
 
 ### Study design
 
-The figure at the top summarises the design: the four masks and the score each one reached.
+The figure at the top summarises the design: the five decoder masks as trained with seed 0 and the evaluation.
 
-The benchmark is four variants that share one architecture and one training setup, differ only in the decoder mask
+The benchmark is five variants that share one architecture and one training setup, differ only in the decoder mask
 and are each fit with 10 seeds. Baselines and structure-preserving controls are included because randomized pathways and simple baselines can match more elaborate models [1, 15, 16].
 
 | Variant | Decoder mask | Tests |
 |---|---|---|
 | No mask (vanilla VAE, LDVAE [13]) | none | reference without knowledge |
 | Hallmark | Hallmark gene sets | knowledge + sparsity |
-| Random | Hallmark sets with gene labels randomly permuted | sparsity alone |
-| Co-expression | modules of co-expressed genes, same sizes | data-derived structure |
+| Fully random | Hallmark sets with the labels of all genes randomly permuted | sparsity alone; free latents can reach set genes |
+| Within-set random | Hallmark sets with the labels of set genes randomly permuted among set genes | sparsity alone; free latents reach the same genes as in the Hallmark mask |
+| Co-expression | modules of co-expressed genes found in this data, same sizes | data-derived structure (an alternative, not a negative control) |
+
+**Two random masks.** In the Hallmark mask 8,847 genes (74%) belong to no set, and only the 8 free latents reach them. A random mask must decide what to do with those genes, and the choice changes what the comparison measures.
+
+- **Fully random** shuffles all 12,034 genes, so set genes and unassigned genes trade places. In it 43 to 59 of the 95 interferon-α genes land among the unassigned genes, where no named latent can hold them, so the Hallmark−random difference partly measures where the interferon genes sit. This was the random control fixed before the runs.
+- **Within-set random** shuffles only the 3,187 set genes among themselves. The unassigned genes, and so the genes the free latents reach, are identical to the Hallmark mask, and every interferon-α gene stays reachable by a named latent. It isolates the value of knowing which genes belong together. It was added after a review of the first results.
+
+Both are reported; the within-set random mask is the stricter control.
 
 The pipeline has eight steps: data (blue), design (orange), model (purple) and evaluation (teal).
 
@@ -126,24 +136,31 @@ Three preprocessing choices were made for this data set.
 The Hallmark mask uses the Hallmark collection [20] from MSigDB v2024.1. It has 50 sets of at least 12 genes (median
 117.5) and no near-duplicate sets: the largest overlap, between the early and late estrogen responses, is a Jaccard
 index of 0.34. Its one unambiguous target for this data is the interferon-α response, with 95 of its 97 genes present.
+The Hallmark sets were built from many founder sets by automated overlap analysis and expert curation, so that each conveys one
+biological state or process with coherent expression, and they were made as inputs for gene set enrichment analysis [20].
+They are therefore not independent of expression data, which limits what the comparison with co-expression modules can show.
 Gene symbols are matched through Ensembl IDs to current symbols of the HUGO Gene Nomenclature Committee (HGNC) [21].
 
-Two null masks (negative controls) replace the Hallmark sets with sets of the same sizes. Each is built 10 times, and the run with seed k uses
-version k.
+Two random masks (negative controls) replace the Hallmark sets with sets of the same sizes, and a third mask replaces them with data-derived
+modules. Each is built 10 times, and the run with seed k uses version k.
 
-- **Random mask** (`04_build_masks.py`). Genes are put into 25 bins of equal size (481–482 genes) by their mean
+- **Fully random mask** (`04_build_masks.py`). Genes are put into 25 bins of equal size (481–482 genes) by their mean
   count in training cells. Gene labels are then permuted within each bin: each gene takes over the set memberships
   of another gene from its bin. Every set keeps its size, its overlaps with other sets and its expression level. Only
-  its biology changes. A full shuffle changes 98% of set members; the rest land on a member of their own set.
-- **Co-expression mask** (`05_build_coexpression_null.py`). This null tests whether curated sets add anything beyond
-  co-expressed genes. It is built from the training cells alone, without condition or cell-type labels. For each seed,
+  its biology changes. A full shuffle changes 98% of set members; the rest land on a member of their own set. Genes in no set are shuffled too, so
+  43 to 59 of the 95 interferon-α genes (none in the Hallmark mask) land among the 8,847 genes in no set, which only the free latents reach.
+- **Within-set random mask** (`04_build_masks.py`). The same bins, but only genes that are in at least one set are
+  permuted, and only among themselves. The 8,847 genes in no set stay in no set, so the free latents reach the same genes as in the
+  Hallmark mask and no interferon-α gene is among them. Every set keeps its size and its overlaps; 95% of set members change.
+- **Co-expression mask** (`05_build_coexpression_null.py`). This mask tests whether pre-specified sets add anything beyond
+  co-expressed genes found in this dataset. It is an alternative to the Hallmark mask, not a negative control. It is built from the training cells alone, without condition or cell-type labels. For each seed,
   50 seed genes are drawn at random from the 6,753 genes detected in ≥ 1% of training cells. Module j is seed gene j plus
   the n − 1 genes most positively correlated with it (Pearson correlation of log-transformed, depth-scaled counts), where
   n is the size of Hallmark set j (12–197 genes). A module keeps the size of its set and none of its biology; modules are
   built independently and may share genes. Three properties affect how the results are read.
 
-  - **Coherence.** The median within-set correlation is 0.096 for modules and 0.003 for Hallmark sets, so this null is
-    a strong comparison.
+  - **Coherence.** The median within-set correlation is 0.096 for modules and 0.003 for Hallmark sets, so this comparison is
+    a strong one.
   - **Overlap.** Modules cover 2,338–3,233 genes (Hallmark: 3,187). Ribosomal-protein genes and PTMA are in up to 28
     modules per seed; no Hallmark gene is in more than 10 sets.
   - **Interferon.** In every seed, the module most raised by IFN-β is enriched for Hallmark interferon genes (19–89% of
@@ -155,8 +172,8 @@ version k.
 
 Every variant uses the same VAE. The encoder has one hidden layer (128 units, ReLU, dropout 0.1) and reads the 12,034
 genes after a shifted-log transform (below) plus a one-hot code for the 8 donors. The decoder is linear and has no
-layers of its own, only the parameters $W$, $V$ and $\log\theta$ (`w`, `v` and `log_theta` in the code). In three of the
-four variants a binary mask multiplies $W$. The architecture printout, parameter counts and symbol list are in
+layers of its own, only the parameters $W$, $V$ and $\log\theta$ (`w`, `v` and `log_theta` in the code). In four of the
+five variants a binary mask multiplies $W$. The architecture printout, parameter counts and symbol list are in
 [docs/methods.md](docs/methods.md#architecture-and-parameter-counts).
 
 The mask decides how many of the 697,972 weights in `w` can be trained.
@@ -165,7 +182,8 @@ The mask decides how many of the 697,972 weights in `w` can be trained.
 |---|---|
 | No mask | 697,972 |
 | Hallmark | 76,344 (5,568 set memberships + 8 free latents × 8,847 genes in no set) |
-| Random | 76,344 (same sizes and overlaps as the Hallmark mask) |
+| Fully random | 76,344 (same sizes and overlaps as the Hallmark mask) |
+| Within-set random | 76,344 (same sizes and overlaps as the Hallmark mask) |
 | Co-expression | 75,976–83,136 (by seed) |
 
 The encoder first puts the counts of a cell on a common scale. Each count $x_g$ is divided by the
@@ -205,7 +223,7 @@ Four design choices concern the decoder and its inputs.
 - **Named and free latents.** In the masked variants, latents 1–50 may only use the genes of their set. The 8 free
   latents may only use the 8,847 genes in no set (74%). When the free latents
   could reach all genes, they absorbed the stimulation signal and the named latents switched off. They are
-  kept off the set genes.
+  kept off the set genes. This choice was made after pilot runs, not before.
 - **Donor, not condition.** Donor is a covariate in encoder and decoder. The stimulation is the signal the latents should find, so
   condition is never a covariate.
 - **Likelihood.** Negative binomial on raw counts. The library size is the observed total count, and the
@@ -221,237 +239,71 @@ All variants are trained with the same settings.
 | KL warm-up | $\beta$ rises linearly from 0 to 1 over 10,000 steps at batch 64 [14], counted in cells seen: ~38 epochs at every training size (`--warmup-epochs`) |
 | Stopping | early stopping on validation loss with a patience of 3 epochs [14], counted after the KL warm-up; any decrease counts as an improvement (`--min-delta 0`); at most 2,000 epochs (`--max-epochs`) |
 | Encoder width | 128, chosen on the no-mask VAE |
-| Seeds | 10 per variant; each seed sets the initial weights, the batches and (for the null masks) the mask. The train/validation/test split is fixed (seed 0) |
+| Seeds | 10 per variant; each seed sets the initial weights, the batches and (for the random and co-expression masks) the mask. The train/validation/test split is fixed (seed 0) |
 | Validation loss | computed with the same latent draws at every epoch. Early stopping then follows the model and not the sampling noise |
 | Software | versions under Reproducing; the last digits of the losses differ between CPU and GPU |
 
 ### Evaluation
 
-#### The interferon-α score
+Four measures choose no latent. They are computed for every run on the test cells; validation cells only fit the probes. Megakaryocytes are mostly platelets, which have no nucleus, and are excluded from all scores and kept in training. The interferon-α latent score, the reference scores without a VAE and the learning curves are described in the [supplementary results](docs/supplementary.md).
 
-**Rationale.** Type I interferons induce a largely shared set of interferon-stimulated genes (ISGs) in peripheral blood
-cells, with differences between cell types [17, 27]. IFN-β is a type I interferon, and the Hallmark interferon-α response
-is a curated set of such genes [20]. A latent named after this set should therefore take higher values in stimulated
-cells than in control cells of the same type. The stimulation labels are never used in training; they enter only here, as
-the known answer. The score itself is our own choice. VEGA [3] and expiMap [4] also use this dataset, with other
-measures, and we found no published standard score for a named latent.
+| Measure | Question | Computation |
+|---|---|---|
+| Held-out loss | Does the structure of the mask explain unseen cells? | Negative log-likelihood per test cell plus the KL term at weight 1, the training objective; lower is better |
+| Decoded response | Does the decoder reproduce the stimulation effect? | The decoder gives the expected share of every gene for a test cell from its latent means and donor. Within each cell type, the mean decoded log expression (the encoder's shifted-log scale) of stimulated minus control cells is correlated across the 6,753 genes detected in ≥ 1% of training cells with the observed shift, and averaged over the 7 cell types. Labels define only the observed shift. A second value uses the 95 interferon-α genes alone |
+| Cell-type probe | Do the latents hold cell type, which the model never saw? | Multinomial logistic regression on standardised latent means, fitted on validation cells, balanced accuracy on test cells. Descriptive variants: 10, 50 and 200 validation cells per type, and the AUROC between CD4 and CD8 T cells and between CD14+ and FCGR3A+ monocytes |
+| Stimulation probe | Does the representation hold the response anywhere? | Logistic regression on all 58 latents fitted on validation cells; AUROC within cell types on test cells |
 
-The score is the AUROC of that latent. It uses only the ranking of the latent values, so it depends neither on the scale
-of the latent, which differs between variants and seeds, nor on a threshold. Its reading is direct: 0.5 is chance, 1 is
-perfect separation, and the value is the probability that a random stimulated cell has a higher latent value than a
-random control cell [28], the Wilcoxon (Mann–Whitney) statistic scaled to [0, 1]. The AUROC is computed within each cell
-type, because cell types differ far more from each other than stimulation does, and a latent that only separates cell
-types must not score.
+#### Statistics
 
-**Definition.**  Let $z_{ik}$ be the posterior mean of latent $k$ for test cell $i$ and $\sigma_k = \pm 1$ its
-orientation, and let $s_i = \sigma_k z_{ik}$. For cell type $t$, with stimulated test cells $S_t$ and control test cells
-$C_t$:
-
-$$\mathrm{AUROC}_t = \frac{1}{|S_t|\,|C_t|} \sum_{i \in S_t} \sum_{j \in C_t} \Big( \mathbf{1}[s_i > s_j] + \tfrac{1}{2}\,\mathbf{1}[s_i = s_j] \Big)$$
-
-The interferon-α score $A$ is the unweighted mean over the 7 cell types (megakaryocytes excluded). A latent counts as
-inactive when the variance of its posterior means over the validation cells is at most 0.01, and then $A = 0.5$:
-
-$$A = \begin{cases} \dfrac{1}{7} \sum_{t=1}^{7} \mathrm{AUROC}_t & \mathrm{Var}_{i \in \mathrm{val}}(z_{ik}) > 0.01 \\\\ 0.5 & \end{cases}$$
-
-The test sets per cell type range from 29 control and 33 stimulated cells (dendritic cells) to 746 and 764 (CD4 T cells).
-
-**Which latent, and which sign.** The sign of a latent is arbitrary, so $\sigma_k$ is fixed without labels where the latent
-has a name.
-
-*Hallmark and random mask.* The latent $k$ is the one named `HALLMARK_INTERFERON_ALPHA_RESPONSE` (the same position
-holds random genes in the random mask). Its orientation is the sign of the mean decoder weight on its own genes, the
-genes $g$ with $M_{gk} = 1$, so that a higher $z_{ik}$ raises those genes. With $G_k$ the set of these genes:
-
-$$\sigma_k = \mathrm{sign}\Big(\frac{1}{|G_k|} \sum_{g \in G_k} W_{gk}\Big)$$
-
-*No mask and co-expression mask.* The latents have no names. Let $A_k$ be the mean over the 7 cell types of the
-AUROC of latent $k$ on validation cells. The chosen latent is the active one furthest from 0.5:
-
-$$k^{*} = \arg\max_{k \in \mathrm{active}} \big| A_k - 0.5 \big|$$
-
-Its orientation is $\sigma = +1$ if $A_{k^{*}} > 0.5$ and $\sigma = -1$ otherwise. It is then scored on
-test cells. This rule gives these two variants the best of their active latents, where the other two variants get one
-fixed latent.
-
-**Evidence for the score.** The named latent tracks the stimulation within every cell type. An independent
-recomputation from the saved latent values with the Mann–Whitney U statistic reproduced the scores of four runs (one per
-variant) to six decimals. The scoring code is `src/08_evaluate.py`, abridged in
-[docs/methods.md](docs/methods.md#scoring-code).
-
-**Limits of the score.** The score does not show that a latent represents interferon biology specifically. Any latent
-whose genes respond to the stimulation can separate stimulated from control cells, and the Hallmark interferon-α and
-interferon-γ sets share 71 of the 95 interferon-α genes. A shuffled latent holding 3 of 95 interferon-α genes still
-reached up to 0.98 in one seed. Near 1 the AUROC saturates and measures ranking, not the size of the effect, and rare
-cell types have few test cells.
-#### Labels, exclusions and statistics
-
-- **Labels.** Labels never enter training. Validation labels choose latents for the variants without meaningful names
-  and test labels are used only for the final scores.
-- **Megakaryocytes.** They are mostly platelets, and platelets have no nucleus. Megakaryocytes are excluded from the scores and kept in
-  training.
-- **Statistics.** Each variant has 10 seeds, paired by seed. The one primary test compares the interferon-α score of
-  the Hallmark and random masks. Hallmark beats random if the 95% paired t-interval of the difference excludes 0, and an
-  exact two-sided Wilcoxon signed-rank test is reported alongside; with 10 pairs, its smallest possible p is 0.002.
-  The target latent, the score and this test were fixed before the 10-seed runs. All other comparisons are secondary and
-  not corrected for multiple testing.
-- **Robustness checks** (`src/10_robustness.py`). (i) The random mask is also scored like the no-mask VAE, by its best
-  active latent chosen on validation cells. (ii) The named latents are scored in each of the 8 donors separately.
-  (iii) For the learning curves, the slope of each difference on log2(training size) is fitted per seed.
-
-### Learning curves (Q1b)
-
-The learning curves test whether Hallmark knowledge helps more when cells are scarce. All four variants are refit on
-smaller training sets and scored as above.
-
-- **Training sizes.** 500, 1,000, 2,000, 4,000, 8,000 and all ~16,700 training cells, as nested subsamples stratified
-  by donor × condition × cell type. Each seed has its own series of subsamples, shared by all four variants. The
-  comparison stays paired by seed, and the seeds also cover the choice of cells. Validation and test sets stay fixed,
-  and the full-size point is the main experiment.
-- **Training.** KL warm-up over ~38 epochs, patience 3 epochs and learning rate 1e-3 at every size, with 10 seeds per
-  variant and size.
-- **Nulls.** Co-expression modules and shuffle expression bins are rebuilt on each subsample. With few cells,
-  correlations are noisier: modules overlap less and cover ~4,100 genes at 500 cells.
+- **Tests.** Each variant has 10 seeds, paired by seed. Every test is an exact two-sided Wilcoxon signed-rank test of the paired differences (smallest possible p with 10 pairs: 0.002), reported with the Hodges–Lehmann estimate and an exact distribution-free interval; `reports/tables/tests.csv` (`src/11_tests.py`) holds all of them and only adjusted p-values are quoted. Three families are corrected separately: the 10 tests on the interferon-α score at full size (Holm; family-wise error 0.05; intervals at the Bonferroni level), the 12 tests of the four measures above, each for Hallmark minus the three other masks (Holm), and the 18 learning-curve tests (Benjamini–Hochberg; false discovery rate 0.05, valid for the positive dependence between sizes that share seeds, with false-coverage-rate intervals). One family of all 40 tests is impossible, because Holm over more than 25 tests cannot reject at p ≥ 0.002.
+- **Equivalence** of the Hallmark and co-expression masks is tested with two one-sided tests against ±0.005 AUROC (half a percentage point in the probability that a stimulated cell outranks a control cell). The margin predates the within-set random mask.
+- **Order of decisions.** The interferon-α latent, its score and the Hallmark-versus-random comparison were fixed before the 10-seed runs. The restriction of the free latents to genes in no set (made after pilot runs), the within-set random mask, the latent-free measures and the grouping of tests into families came after looking at results. Per-cell-type and per-donor scores are descriptive.
 
 ## Results
 
-All 40 runs (4 variants × 10 seeds) stopped early. The interferon-α latent was active in every run. Values are
-mean ± SD over 10 seeds; differences are paired by seed.
+All 50 runs (5 variants × 10 seeds) stopped early. Values are mean ± SD over 10 seeds.
 
-| Variant | Interferon-α score | Active latents out of 58 | Validation loss per cell |
-|---|---|---|---|
-| No mask | 0.966 ± 0.025 | 34–56 | 1,920 |
-| Hallmark | 0.997 ± 0.002 | 36–38 | 1,963 |
-| Random | 0.758 ± 0.218 | 33–37 | 1,966 |
-| Co-expression | 0.998 ± 0.0004 | 28–37 | 1,951 |
+| Variant | Held-out loss per cell | Decoded response, all genes | Decoded response, interferon-α genes | Cell-type balanced accuracy | Stimulation probe AUROC |
+|---|---|---|---|---|---|
+| No mask | 1929.1 ± 1.0 | 0.942 ± 0.001 | 0.985 ± 0.001 | 0.885 ± 0.006 | 0.9989 ± 0.0003 |
+| Hallmark | 1971.4 ± 1.2 | 0.873 ± 0.001 | 0.972 ± 0.002 | 0.855 ± 0.004 | 0.9988 ± 0.0002 |
+| Fully random | 1975.3 ± 1.5 | 0.784 ± 0.034 | 0.801 ± 0.075 | 0.855 ± 0.005 | 0.9979 ± 0.0007 |
+| Within-set random | 1981.3 ± 1.4 | 0.746 ± 0.044 | 0.734 ± 0.110 | 0.850 ± 0.010 | 0.9980 ± 0.0003 |
+| Co-expression | 1959.9 ± 1.5 | 0.898 ± 0.008 | 0.974 ± 0.007 | 0.864 ± 0.008 | 0.9988 ± 0.0002 |
 
-![Interferon-α score and active latents per run, and paired differences](reports/figures/scores.png)
+![Measures per variant and seed](reports/figures/panel.png)
 
-*(a) One dot per seed, bar at the mean; grey lines join Hallmark and random runs of the same seed; hollow dots would mark
-inactive latents (none here). (b) Active latents per run: a latent is active if the variance of its posterior means across
-validation cells exceeds 0.01. (c) Per-seed paired differences (dots), their mean and 95% t-interval; the primary
-comparison, Hallmark−random, in black.*
-
-| Comparison | Interferon-α score |
-|---|---|
-| Hallmark−random | +0.239 (+0.083 to +0.395), p = 0.002 |
-| Hallmark−no mask | +0.031 (+0.013 to +0.049), p = 0.002 |
-| Hallmark−co-expression | −0.0009 (−0.0020 to +0.0002), p = 0.04 |
-
-Mean difference, 95% paired t-interval and Wilcoxon signed-rank p over 10 seeds.
+*One dot per seed, bar at the mean, for the four measures that choose no latent.*
 
 ### Q1: knowledge or sparsity?
 
-- **The Hallmark mask places the response in its named latent.** The interferon-α latent separated stimulated from
-  control test cells almost perfectly (0.997 ± 0.002). The random mask has the same set sizes, overlaps and expression
-  levels. Its latent at the same position scored 0.758 ± 0.218 (0.38 to 0.98 by seed). The Hallmark mask scored
-  higher in all 10 seeds, by +0.239 (p = 0.002). In the lowest random-mask seed the latent's sign pointed away from the
-  response and ranked control cells above stimulated ones.
-- **The random mask encodes the response in a latent that reaches unrelated genes.** Scored like the no-mask VAE, by its best
-  active latent, the random mask reached 0.989 ± 0.005 (0.976 to 0.994 by seed). In none of the 10 seeds was that latent
-  the interferon-α one. The Hallmark mask was still higher in all 10 seeds, by +0.008 (+0.005 to +0.012, p = 0.002). Its best
-  latent was the interferon-α latent in 9 of 10 seeds. The sparsity of the mask is enough to carry the
-  response; the genes in the sets decide which latent carries it and what that latent represents.
-- **A co-expression mask scores very similarly to the Hallmark mask.** Its best module scored 0.998 ± 0.0004 against 0.997
-  ± 0.002 for the Hallmark latent, a difference of −0.0009 (95% interval −0.0020 to +0.0002; Wilcoxon p = 0.04,
-  uncorrected). Modules built from the data alone, without labels, capture the response about as well as curated sets do. Curation adds a known meaning: the Hallmark latent reaches the interferon genes and is known before
-  training, while the module and the no-mask latent have to be found with validation labels.
-- **The Hallmark mask beats the no-mask VAE.** Its best latent scored 0.966 ± 0.025. The Hallmark mask was higher in all 10 seeds
-  (+0.031).
-- **The result holds in every cell type.** The Hallmark mask reached at least 0.991 in each of the 7 cell types (NK
-  cells lowest). The random mask averaged 0.73 to 0.84 in each.
-- **The result holds in every donor.** The named latent scored 0.993 or higher in each of the 8 donors for the Hallmark
-  mask and 0.73 to 0.78 for the random mask. The Hallmark−random difference was +0.22 to +0.27 in every
-  donor. The test cells come from the same 8 donors as the training cells. This does not show generalisation to new
-  donors.
-- **Masks cost reconstruction.** Validation loss per cell was 1,920 for the no-mask VAE and 1,951–1,966 for the
-  masked variants. The masked variants kept 34–37 of 58 latents active on average, against 47.
-- **Relation to prediction networks.** There, randomized models matched or outperformed informed ones [1]. In the
-  unsupervised models here, the masks agree on the signal and differ in whether the latent that carries the response has a known biological meaning.
+Hallmark minus each other mask for the four measures (Hodges–Lehmann estimate, interval at the Bonferroni level, Holm-adjusted p; 12 tests):
 
-![AUROC per cell type](reports/figures/cell_types.png)
+| Measure | − fully random | − within-set random | − co-expression |
+|---|---|---|---|
+| Held-out loss per cell (lower is better) | −3.7 (−6.3 to −2.0); 0.023 | −10.1 (−12.4 to −6.9); 0.023 | +11.8 (+9.2 to +12.7); 0.023 |
+| Decoded response, correlation | +0.087 (+0.045 to +0.138); 0.023 | +0.129 (+0.062 to +0.183); 0.023 | −0.026 (−0.035 to −0.014); 0.023 |
+| Cell-type balanced accuracy | +0.001 (−0.006 to +0.008); 1.000 | +0.006 (−0.005 to +0.018); 0.697 | −0.009 (−0.018 to +0.000); 0.029 |
+| Stimulation probe, AUROC | +0.0009 (−0.0002 to +0.0019); 0.039 | +0.0008 (+0.0004 to +0.0013); 0.023 | +0.0001 (−0.0004 to +0.0005); 1.000 |
 
-*Small dots: single seeds; large dots: means over 10 seeds.*
-
-![Validation loss during training](reports/figures/training.png)
-
-*One line per seed; dots mark the best epoch; shading marks the KL warm-up.*
-
-### Q1b: learning curves
-
-Interferon-α score, mean over 10 seeds at each training size.
-
-| Training cells | No mask | Hallmark | Random | Co-expression | Hallmark−random |
-|---|---|---|---|---|---|
-| 500 | 0.992 | 0.996 | 0.482 | 0.993 | +0.514 |
-| 1,000 | 0.987 | 0.997 | 0.636 | 0.996 | +0.362 |
-| 2,000 | 0.982 | 0.997 | 0.610 | 0.997 | +0.387 |
-| 4,000 | 0.975 | 0.997 | 0.672 | 0.997 | +0.325 |
-| 8,000 | 0.972 | 0.997 | 0.552 | 0.997 | +0.445 |
-| 16,749 | 0.966 | 0.997 | 0.758 | 0.998 | +0.239 |
-
-![Learning curves](reports/figures/learning_curves.png)
-
-*(a) Mean over 10 seeds with a 95% t-interval band. (b) Per-seed Hallmark−random differences (dots), mean and 95%
-t-interval.*
-
-- **On this target, Hallmark knowledge does not make learning more data-efficient.** With 500 cells the Hallmark mask already scored
-  0.996. The co-expression mask (0.993) and the no-mask VAE (0.992) were within 0.004 of it. The Hallmark advantage was
-  already small at 500 cells.
-- **A co-expression mask scores very similarly to the Hallmark mask at every size.** The mean difference (Hallmark −
-  co-expression) was +0.003 at 500 cells (95% interval −0.001 to +0.007) and between +0.002 and −0.001 at larger sizes;
-  from 1,000 cells up every 95% interval lies between −0.002 and +0.004. At every size the Hallmark mask was ahead in
-  only 3 to 7 of 10 seeds.
-- **The named latent of the random mask stays unreliable at every size.** Its mean score was 0.48 to 0.76, and single seeds ranged from 0.01 to
-  0.99. The Hallmark mask beat it in all 10 seeds at every size, by +0.24 to +0.51: most at 500 cells (+0.51) and least with all cells (+0.24). The fitted slope was −0.034 per doubling of
-  the training set (95% interval −0.074 to +0.007, Wilcoxon p = 0.11). The advantage over the random mask is not shown
-  to depend on the training size.
-- **The no-mask VAE scores lower as cells are added.** Its score fell from 0.992 to 0.966. The Hallmark advantage
-  grew from +0.004 to +0.031 (slope +0.005 per doubling, 95% interval +0.003 to +0.008) and was positive in
-  all 10 seeds at each size.
-- **Small training sets overfit.** Validation loss exceeded training loss by 40–90 per cell (2–4%) at 500 to 2,000
-  cells and by 15–20 at 4,000, and was near zero from 8,000 cells.
-
-### Robustness checks
-
-Checks on the main results (`src/10_robustness.py`; tables in `reports/tables/robustness_*.csv`).
-
-| Check | Result |
-|---|---|
-| Random mask scored on its best latent, as the no-mask VAE is | 0.989 ± 0.005 (0.976 to 0.994); the interferon-α latent in 0 of 10 seeds |
-| Hallmark scored on its best latent | 0.997 ± 0.001; the interferon-α latent in 9 of 10 seeds |
-| Hallmark − random, both on the best latent | +0.008 (+0.005 to +0.012), p = 0.002; higher in 10 of 10 seeds |
-| Hallmark, per donor (mean over 10 seeds) | 0.993 to 1.000 in each of the 8 donors |
-| Random mask, per donor | 0.733 to 0.784 |
-| Hallmark − random, per donor | +0.215 to +0.267 |
-| Slope per doubling of training cells, Hallmark − random | −0.034 (−0.074 to +0.007), p = 0.11 |
-| Slope per doubling of training cells, Hallmark − no mask | +0.005 (+0.003 to +0.008), p = 0.002 |
-| Slope per doubling of training cells, Hallmark − co-expression | −0.0007 (−0.0013 to −0.0001), p = 0.01 |
+- **Sparsity has a cost.** Against the no-mask VAE, the masked variants lose 31 to 52 units of loss per cell, 0.04 to 0.20 of decoded-response correlation and 0.02 to 0.04 of cell-type balanced accuracy. The no-mask VAE leads on all three.
+- **Knowledge recovers part of the cost.** The Hallmark mask fits unseen cells better than the random masks (by 3.9 and 9.9 units, about 8% and 19% of their loss penalty) and reproduces the stimulation shift better (correlation 0.873 against 0.784 and 0.746, about 56% and 65% of their gap to the no-mask VAE). On the interferon-α genes alone the Hallmark decoder reaches 0.972, the random masks 0.801 and 0.734.
+- **Knowledge does not change the cell-type representation.** Hallmark and random masks do not differ (adjusted p 1.0 and 0.70). Few-shot probes and the two hard pairs show the same picture (supplementary S2).
+- **Data-derived modules do at least as well.** The co-expression mask fits better (11.8 units), reproduces the shift better (0.898) and separates cell types slightly better (+0.009); on the interferon-α genes the two masks are nearly equal. The modules are built from the training cells, which favours them on fit, and the Hallmark sets give a named latent known before training.
+- **The stimulation probe is saturated.** All variants score 0.998 to 0.999; the Hallmark mask exceeds the random masks by under 0.001, which is detectable and of no practical size. Without any VAE, the best principal component scores 0.997 and the mean of the interferon-α genes 0.996 (supplementary S1).
 
 ## Limitations
 
-- **Scope.** One dataset, one stimulus and one target: PBMCs from 8 donors (patients with SLE, whose type I interferon
-  activity is often raised at baseline [29]) stimulated with IFN-β, Hallmark as the only gene set collection and the
-  interferon-α response as the only target with a known answer. The signal is very strong. The Hallmark, co-expression
-  and (best-latent) random masks score between 0.989 and 0.998, and the data cannot separate masks that reach this
-  ceiling. Whether the other latents are correct is not tested (Q2 and Q3 in Future work).
-- **Seeds.** The 10 seeds vary the training and one draw of each null mask. The split, the 8 donors and the cells are
-  fixed, the test cells share their donors with the training cells and no donor was held out, so the intervals say
-  nothing about new donors. The SD of the random mask (0.22) mixes the draw of the mask with the training noise.
-- **Scoring and tests.** The named latent is scored for the Hallmark and random masks; the best active latent, chosen
-  with validation labels, for the no-mask and co-expression variants. This favours the last two (the random mask is also
-  scored that way as a robustness check). Only Hallmark against random was a primary comparison. All others are
-  uncorrected for multiple testing.
-- **Target of the score.** Stimulation, not interferon biology specifically (see Evaluation). The co-expression null
-  also recovers the response, so it cannot show what curation adds beyond a known meaning for each latent.
-- **Hard mask and linear decoder only.** Soft masks, nonlinear decoders, gene set scores as input features and graph
-  models were not tested. The 8 free latents reach only genes in no set; with access to all genes, they absorbed the
-  response and the named latents switched off, so this design choice shapes the result.
-- **Shared settings.** Learning rate (1e-3), encoder width (128, chosen on the no-mask VAE) and patience (3 epochs) are
-  the same for all variants and were not tuned for each. Other settings could favour a different variant.
-- **Preprocessing.** The 2017 gene annotation (hg19), the cell-type labels and the demuxlet calls come from the authors
-  of the data. Doublets of two cells from the same donor are not detected (an estimated 2% of cells), and ambient RNA is
-  not corrected.
+- **Scope.** One dataset, one stimulus and one target: PBMCs from 8 donors (patients with SLE, whose type I interferon activity is often raised at baseline [29]) stimulated with IFN-β, Hallmark as the only gene set collection and the interferon-α response as the only target with a known answer. The interferon-α and -γ sets share 71 of 95 genes, so the target is not specific to type I interferon.
+- **Saturation.** The stimulation is so strong that a principal component, the mean of the interferon-α genes and every variant separate the conditions (0.966 to 0.998), and the headroom for the named-latent comparisons is 0.003. The learning curves cannot show a data-efficiency effect at this ceiling.
+- **Stimulation and run are confounded.** Each condition was pooled and sequenced in one 10x run, without ambient-RNA correction, so every stimulation score includes any run effect. Removing the strongest stimulation genes removes the separation, which argues against a diffuse shift, but run effects among those genes cannot be excluded. An independent dataset with replicate runs would settle it.
+- **Source of the gain over random masks.** The better fit and decoded response of the Hallmark mask may come mainly from sets that respond to the stimulation (interferon, TNF-α, inflammatory response). This was not separated, and a dataset without such sets could behave differently.
+- **Hallmark and the modules.** The Hallmark sets were refined for coherent expression and made for enrichment analysis [20], so they are not independent of expression data. The co-expression modules are built from the training cells, which favours them on fit. The comparison separates sets named in advance from sets found in this data, and not curated knowledge from data; a collection built by manual pathway curation, such as Reactome, would test the latter.
+- **Seeds.** The 10 seeds vary the training and one draw of each random mask. The split, the 8 donors and the cells are fixed, the test cells share their donors with the training cells and no donor was held out, so the intervals say nothing about new donors. The SD of the random masks (0.22 and 0.28) mixes the draw of the mask with the training noise.
+- **Scoring.** The interferon-α score uses the named latent for three variants and the best latent, chosen with validation labels, for the other two, which favours the last two.
+- **Design.** Hard mask and linear decoder only; soft masks, nonlinear decoders, gene set scores as input features and graph models were not tested. The 8 free latents reach only genes in no set, because with access to all genes they absorbed the response and the named latents switched off, so this choice shapes the result. Learning rate (1e-3), encoder width (128, chosen on the no-mask VAE) and patience (3 epochs) are shared by all variants and were not tuned for each.
+- **Preprocessing.** The 2017 gene annotation (hg19), the cell-type labels and the demuxlet calls come from the authors of the data. Doublets of two cells from the same donor are not detected (an estimated 2% of cells), and ambient RNA is not corrected.
 
 ## Reproducing
 
@@ -491,8 +343,8 @@ python src/09_figures.py
 
 | Option | Default | Meaning |
 |---|---|---|
-| `--mask` | `none` | `none`, `real`, `shuffled` or `coexpression` |
-| `--seed` | `0` | initial weights, batches and (for the null masks) the mask |
+| `--mask` | `none` | `none`, `real`, `shuffled` (fully random mask), `setshuffle` (within-set random mask) or `coexpression` |
+| `--seed` | `0` | initial weights, batches and (for the random and co-expression masks) the mask |
 | `--train-size` | all training cells | number of training cells, for the learning curves |
 | `--max-epochs` | `2000` | safety ceiling; a run that reaches it fails |
 | `--warmup-epochs` | ~38.2 | epochs for β to rise from 0 to 1; the default is 10,000 steps at batch 64 [14], scaled to the training set |
@@ -510,18 +362,32 @@ python src/learning_curves/01_subsample.py
 bash src/learning_curves/02_run.sh
 python src/08_evaluate.py --learning-curves
 python src/09_figures.py
-python src/10_robustness.py
+python src/10_checks.py
+python src/11_tests.py
 ```
 
-The last script reads the tables of both experiments and adds the robustness checks.
+`10_checks.py` reads the scored runs and adds the robustness checks, the reference scores, the gene-removal check and the probe, and `11_tests.py` runs every hypothesis test with its multiplicity correction. The
+tables label the no-mask VAE `vanilla`, and its results folder is `plain`.
+
+The weaker-signal benchmark (pilot; protocol in `docs/review-tracker.md`) removes the 250 genes with the largest stimulation effect and
+reuses every script through the environment variable `SC_TAG`; its files carry the suffix `_drop250` and the main files are not touched.
+
+```
+python src/03b_remove_genes.py 250
+SC_TAG=drop250 python src/04_build_masks.py
+SC_TAG=drop250 python src/05_build_coexpression_null.py
+SC_TAG=drop250 bash src/07_experiment.sh 0 1
+SC_TAG=drop250 python src/08_evaluate.py
+SC_TAG=drop250 python src/10_checks.py
+```
 
 | Path | Contents |
 |---|---|
-| `src/` | numbered scripts in run order; `06_fit.py` trains one model per call and is run by `07_experiment.sh` |
+| `src/` | numbered scripts in run order, with the shared set-up in `scoring.py`; `06_fit.py` trains one model per call and is run by `07_experiment.sh` |
 | `src/learning_curves/` | training subsamples and the runs on them (Q1b) |
-| `notebooks/hvg_inspection.py` | highly-variable-gene analysis behind the choice to model all genes |
+| `src/hvg_inspection.py` | highly-variable-gene analysis behind the choice to model all genes |
 | `data/`, `results/` | created by the scripts, not tracked |
-| `reports/tables/` | scores per run, AUROCs per cell type, paired comparisons and robustness checks (`robustness_*.csv`) |
+| `reports/tables/` | scores per run, AUROCs per cell type, paired differences, every hypothesis test (`tests.csv`), robustness checks (`robustness_*.csv`) and diagnostics (`diagnostics_*.csv`) |
 | `reports/figures/` | figures |
 | `docs/methods.md` | co-expression recipe, architecture and symbols, scoring code, biological choices by pipeline step, candidate datasets |
 

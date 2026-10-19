@@ -35,7 +35,7 @@ README.
 
 ## Architecture and parameter counts
 
-Every variant uses the same VAE, with an encoder of one hidden layer and a linear decoder (binary mask on its weight matrix in three of the four variants). In PyTorch it prints as follows.
+Every variant uses the same VAE, with an encoder of one hidden layer and a linear decoder (binary mask on its weight matrix in four of the five variants). In PyTorch it prints as follows.
 
 ```
 VAE(
@@ -99,7 +99,7 @@ def auroc(score, split):
 activity = z[val_all].var(axis=0)
 active = activity > min_variance  # 0.01
 
-if folder in ("real", "shuffled"):
+if folder in ("real", "shuffled", "setshuffle"):
     # named latent, oriented without labels: mean weight on the set's own genes made positive
     alpha = ids.index(alpha_name)
     sign = np.sign(w[w[:, alpha] != 0, alpha].mean())
@@ -122,7 +122,7 @@ variant) to six decimals.
 **Limits of the score.** The score does not show that a latent represents interferon biology specifically. Any latent
 whose genes respond to the stimulation can separate stimulated from control cells. The Hallmark interferon-α and
 interferon-γ sets share 71 of the 95 interferon-α genes. The score therefore cannot tell type I from type II
-interferon. A shuffled latent holds few interferon-α genes (3 of 95 in seed 0) and still reached up to 0.98 in a seed.
+interferon. A shuffled latent holds few interferon-α genes (3 of 95 in seed 0) and still reached up to 0.98 in a seed; the latent at the interferon-α position of the within-set random mask scored 0.93 or higher in 6 of 10 seeds.
 Near 1, the AUROC saturates and measures ranking, not the size of the effect. Rare cell types have few test cells. Their
 AUROC values are noisy.
 
@@ -138,7 +138,8 @@ The table lists where biological knowledge or an assumption about the cells ente
 | Split | `03` | stratified by donor × condition × cell type | every group appears in train, validation and test |
 | Gene identity | `04` | Ensembl IDs mapped to current HGNC symbols (1,256 symbols changed since 2017; 427 genes HGNC no longer lists keep their 2017 symbol) | gene set symbols are current |
 | Gene sets | `04` | Hallmark, sets of ≥ 12 genes (all 50) | one unambiguous target, the interferon-α response |
-| Random null | `04` | labels permuted within expression bins | random genes are as highly expressed as the genes they replace |
+| Fully random | `04` | labels permuted within expression bins | random genes are as highly expressed as the genes they replace |
+| Within-set random | `04` | labels permuted within expression bins, among genes that are in a set | the genes in no set, and so the free latents' reach, stay as in the Hallmark mask |
 | Co-expression | `05` | modules of correlated genes, sizes matched to Hallmark | see Gene sets and masks |
 | Free latents | `06` | reach only genes in no set | when they reached all genes, they absorbed the stimulation signal |
 | Covariates | `06` | donor in encoder and decoder; condition never | the stimulation is the signal the latents should find |
