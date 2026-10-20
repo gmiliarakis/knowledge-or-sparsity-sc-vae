@@ -63,29 +63,6 @@ decoder has no layers of its own, only the three parameters $W$, $V$ and $\log\t
 
 The mask decides how many of the 697,972 weights in `w` can be trained (table in the README, Model).
 
-## Symbols of the model
-
-The terms, for one cell:
-
-- $x_g$, $\tilde{x}_g$: the raw count of gene $g$ and its encoder input. $\ell = \sum_g x_g$ is the total count of the cell
-  and $m$ the median total count of the training cells.
-- $d \in \lbrace 0,1\rbrace^{8}$: the donor one-hot code.
-- $z \in \mathbb{R}^{58}$: the latent values. Training draws them from
-  $q(z \mid x, d) = \mathcal{N}\big(\mathrm{mean},\ \mathrm{diag}\,\exp(\mathrm{log\_var})\big)$; the evaluation uses the
-  posterior means.
-- $W \in \mathbb{R}^{12034 \times 58}$: the latent → gene weights (`w` in the code). $M \in \lbrace 0,1\rbrace^{12034 \times 58}$ is
-  the mask, with 1 where latent $k$ may reach gene $g$ and 0 elsewhere. The product $\odot$ is elementwise.
-- $V \in \mathbb{R}^{12034 \times 8}$: the donor offsets (`v`), which also set the baseline of each gene.
-- $\pi_g$: the share of gene $g$. The softmax is taken over genes, so the shares are positive and sum to 1.
-- $\mu_g = \ell\,\pi_g$: the expected count of gene $g$.
-- $\theta_g$: the dispersion of gene $g$ (`exp(log_theta)`), with $\mathrm{Var}(x_g) = \mu_g + \mu_g^2 / \theta_g$.
-- $-\log p_{\mathrm{NB}}(x \mid \mu, \theta)$: the reconstruction term, the negative log-likelihood summed over genes.
-- $\mathrm{KL}\big(q \,\|\, \mathcal{N}(0, I)\big)$: the KL divergence of the posterior from the standard normal prior,
-  summed over latents.
-- $\beta$: the KL weight. It rises linearly from 0 to 1 over the first ≈ 38 epochs (KL warm-up) and then stays at 1.
-- $\mathcal{L}$: the loss per cell, averaged over each batch. With $\beta = 1$ it is the negative evidence lower bound
-  (ELBO).
-
 ## Scoring code
 
 **Code** (`src/08_evaluate.py`, abridged; `z` holds the posterior means, `w` the masked decoder weights):

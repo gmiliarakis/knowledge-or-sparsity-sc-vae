@@ -14,7 +14,7 @@ across genes for one of the 10 seeds of a variant, and the diamond and the numbe
 - [Methods](#methods): [study design](#study-design), [data](#data), [gene sets and masks](#gene-sets-and-masks),
   [model](#model), [evaluation](#evaluation)
 - [Results](#results): [Q1](#q1-knowledge-or-sparsity), [supplementary results](docs/supplementary.md)
-- [Limitations](#limitations) · [Reproducing](#reproducing) · [Future work](#future-work) · [References](#references)
+- [Limitations](#limitations) · [Reproducing](#reproducing) · [Future work](#future-work) · [Use of generative AI](#use-of-generative-ai) · [References](#references)
 
 ## Summary
 
@@ -91,7 +91,7 @@ sparsity that the mask imposes. Earlier work leaves four questions open, and eac
 
 ## Methods
 
-Step-by-step detail, the architecture printout, symbols and scoring code are in [docs/methods.md](docs/methods.md).
+Step-by-step detail, the architecture summary and the scoring code are in [docs/methods.md](docs/methods.md).
 
 ### Study design
 
@@ -181,7 +181,7 @@ co-expressed genes found in the data. Each is built 10 times, and the run with s
 Every variant uses the same VAE. The encoder has one hidden layer (128 units, ReLU, dropout 0.1) and reads the 12,034
 genes after a shifted-log transform (below) plus a one-hot code for the 8 donors. The decoder is linear and has no
 layers of its own, only the parameters $W$, $V$ and $\log\theta$ (`w`, `v` and `log_theta` in the code). In four of the
-five variants a binary mask multiplies $W$. The architecture summary, parameter counts and symbol list are in
+five variants a binary mask multiplies $W$. The architecture summary and parameter counts are in
 [docs/methods.md](docs/methods.md#architecture-and-parameter-counts).
 
 The mask decides how many of the 697,972 weights in `w` can be trained.
@@ -222,7 +222,27 @@ keeps the latents on a common scale and lets those that the data do not need swi
 $$\mathcal{L} = -\log p_{\mathrm{NB}}(x \mid \mu, \theta) + \beta \cdot \mathrm{KL}\big(q(z \mid x, d)\ \|\ \mathcal{N}(0, I)\big)$$
 
 The weight $\beta$ starts at 0, so the model first learns to reconstruct. It reaches 1 after ≈ 38 epochs.
-Symbols are defined in [docs/methods.md](docs/methods.md#symbols-of-the-model).
+
+**Symbols**, for one cell:
+
+- $x_g$, $\tilde{x}_g$: the raw count of gene $g$ and its encoder input. $\ell = \sum_g x_g$ is the total count of the cell
+  and $m$ the median total count of the training cells.
+- $d \in \lbrace 0,1\rbrace^{8}$: the donor one-hot code.
+- $z \in \mathbb{R}^{58}$: the latent values. Training draws them from
+  $q(z \mid x, d) = \mathcal{N}\big(\mathrm{mean},\ \mathrm{diag}\,\exp(\mathrm{log\_var})\big)$; the evaluation uses the
+  posterior means.
+- $W \in \mathbb{R}^{12034 \times 58}$: the latent → gene weights (`w` in the code). $M \in \lbrace 0,1\rbrace^{12034 \times 58}$ is
+  the mask, with 1 where latent $k$ may reach gene $g$ and 0 elsewhere. The product $\odot$ is elementwise.
+- $V \in \mathbb{R}^{12034 \times 8}$: the donor offsets (`v`), which also set the baseline of each gene.
+- $\pi_g$: the share of gene $g$. The softmax is taken over genes, so the shares are positive and sum to 1.
+- $\mu_g = \ell\,\pi_g$: the expected count of gene $g$.
+- $\theta_g$: the dispersion of gene $g$ (`exp(log_theta)`), with $\mathrm{Var}(x_g) = \mu_g + \mu_g^2 / \theta_g$.
+- $-\log p_{\mathrm{NB}}(x \mid \mu, \theta)$: the reconstruction term, the negative log-likelihood summed over genes.
+- $\mathrm{KL}\big(q \,\|\, \mathcal{N}(0, I)\big)$: the KL divergence of the posterior from the standard normal prior,
+  summed over latents.
+- $\beta$: the KL weight. It rises linearly from 0 to 1 over the first ≈ 38 epochs (KL warm-up) and then stays at 1.
+- $\mathcal{L}$: the loss per cell, averaged over each batch. With $\beta = 1$ it is the negative evidence lower bound
+  (ELBO).
 
 Four design choices concern the decoder and its inputs.
 
@@ -256,7 +276,7 @@ Four measures choose no latent. They are computed for every run on the test cell
 
 | Question | Measure | Computation |
 |---|---|---|
-| Does the structure of the mask explain the test cells? | Test loss | Negative log-likelihood per test cell plus the KL term at weight 1, the training objective; lower is better |
+| How well does the model reconstruct cells it was not trained on? | Test loss | Negative log-likelihood per test cell plus the KL term at weight 1, the training objective; lower is better |
 | Does the decoder reproduce the stimulation effect? | Decoded response | The decoder gives the expected share of every gene for a test cell from its latent means and donor. Within each cell type, the mean decoded log expression (the encoder's shifted-log scale) of stimulated minus control cells is correlated across the 6,753 genes detected in ≥ 1% of training cells with the observed shift, and averaged over the 7 cell types. Labels define only the observed shift. A second value uses the 95 interferon-α genes alone |
 | Do the latents hold cell type, which the model never saw? | Cell-type probe | Multinomial logistic regression on standardised latent means, fitted on validation cells, balanced accuracy on test cells. Descriptive variants: 10, 50 and 200 validation cells per type, and the AUROC between CD4 and CD8 T cells and between CD14+ and FCGR3A+ monocytes |
 | Does the representation hold the response anywhere? | Stimulation probe | Logistic regression on all 58 latents fitted on validation cells; AUROC within cell types on test cells |
@@ -270,13 +290,13 @@ Four measures choose no latent. They are computed for every run on the test cell
 
 All 50 runs (5 variants × 10 seeds) stopped early. Values are mean ± SD over 10 seeds.
 
-| Variant | Test loss per cell | Decoded response, all genes | Decoded response, interferon-α genes | Cell-type balanced accuracy | Stimulation probe AUROC |
+| Measure | No mask | Hallmark | Fully random | Within-set random | Co-expression |
 |---|---|---|---|---|---|
-| No mask | 1929.1 ± 1.0 | 0.942 ± 0.001 | 0.985 ± 0.001 | 0.885 ± 0.006 | 0.9989 ± 0.0003 |
-| Hallmark | 1971.4 ± 1.2 | 0.873 ± 0.001 | 0.972 ± 0.002 | 0.855 ± 0.004 | 0.9988 ± 0.0002 |
-| Fully random | 1975.3 ± 1.5 | 0.784 ± 0.034 | 0.801 ± 0.075 | 0.855 ± 0.005 | 0.9979 ± 0.0007 |
-| Within-set random | 1981.3 ± 1.4 | 0.746 ± 0.044 | 0.734 ± 0.110 | 0.850 ± 0.010 | 0.9980 ± 0.0003 |
-| Co-expression | 1959.9 ± 1.5 | 0.898 ± 0.008 | 0.974 ± 0.007 | 0.864 ± 0.008 | 0.9988 ± 0.0002 |
+| Test loss per cell | 1929.1 ± 1.0 | 1971.4 ± 1.2 | 1975.3 ± 1.5 | 1981.3 ± 1.4 | 1959.9 ± 1.5 |
+| Decoded response, all genes | 0.942 ± 0.001 | 0.873 ± 0.001 | 0.784 ± 0.034 | 0.746 ± 0.044 | 0.898 ± 0.008 |
+| Decoded response, interferon-α genes | 0.985 ± 0.001 | 0.972 ± 0.002 | 0.801 ± 0.075 | 0.734 ± 0.110 | 0.974 ± 0.007 |
+| Cell-type balanced accuracy | 0.885 ± 0.006 | 0.855 ± 0.004 | 0.855 ± 0.005 | 0.850 ± 0.010 | 0.864 ± 0.008 |
+| Stimulation probe AUROC | 0.9989 ± 0.0003 | 0.9988 ± 0.0002 | 0.9979 ± 0.0007 | 0.9980 ± 0.0003 | 0.9988 ± 0.0002 |
 
 ![Measures per variant and seed](reports/figures/panel.png)
 
@@ -397,7 +417,7 @@ SC_TAG=drop250 python src/11_tests.py
 | `data/`, `results/` | created by the scripts, not tracked |
 | `reports/tables/` | scores per run, AUROCs per cell type, paired differences, every hypothesis test (`tests.csv`), robustness checks (`robustness_*.csv`) and diagnostics (`diagnostics_*.csv`) |
 | `reports/figures/` | figures |
-| `docs/methods.md` | co-expression recipe, architecture and symbols, scoring code, biological choices by pipeline step, candidate datasets |
+| `docs/methods.md` | co-expression recipe, architecture summary, scoring code, biological choices by pipeline step, candidate datasets |
 
 ## Future work
 
@@ -411,6 +431,10 @@ The same comparison could be repeated on harder questions and other data. Candid
   applied to mouse gastrulation data [25]? And does a soft mask started from random sets refine to the same
   gene sets?
 - **Reactome.** Reactome [26] as a second gene set collection on the Kang data, as used there by VEGA [3].
+
+## Use of generative AI
+
+The author used Claude Opus 5.5 and Claude Sonnet 5.5 (Anthropic) between September and October 2026 to help write and debug analysis code and to improve the readability of the text. The author designed the study, ran all analyses, and wrote the text. The author reviewed all AI-assisted code and text and takes full responsibility for the accuracy, integrity and originality of this work.
 
 ## References
 1. Caranzano I, et al. Sparsity is all you need: rethinking biologically informed neural networks. *Brief Bioinform*
