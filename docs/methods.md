@@ -1,12 +1,11 @@
 # Methods in detail
 
-Details moved out of the README so that it stays short. Numbers in square brackets refer to the reference list in the
-README.
+Supporting detail for the Methods in the [README](../README.md). Numbers in square brackets refer to its reference list.
 
 ## Co-expression mask: full recipe
 
-- **Co-expression mask** (`05_build_coexpression_null.py`). This null tests whether curated sets add anything beyond
-  co-expressed genes. The groups are built from the data alone, without condition or cell-type
+- **Co-expression mask** (`05_build_coexpression_null.py`). This mask tests whether pre-specified sets add anything beyond
+  co-expressed genes found in the data. The groups are built from the data alone, without condition or cell-type
   labels.
 
   1. **Expression.** Training cells only, stimulated and control together. Counts are scaled to the median total
@@ -22,8 +21,8 @@ README.
   The groups have three properties that affect how the results are read.
 
   - **Coherence.** The median within-set correlation is 0.096 for the groups and 0.003 for Hallmark sets. In single
-    PBMCs most members of a Hallmark set barely co-vary. A group, in contrast, is built to co-vary. This null is
-    therefore a strong comparison.
+    PBMCs most members of a Hallmark set barely co-vary. A group, in contrast, is built to co-vary. The groups are therefore a demanding
+    comparison for the Hallmark sets.
   - **Overlap.** The groups have the same 5,568 memberships as the Hallmark sets but cover 2,338–3,233 genes (Hallmark:
     3,187). The overlap concentrates on genes correlated with many others. Ribosomal-protein genes (RPS6, RPL3, …)
     and PTMA are in up to 28 groups per seed. No Hallmark gene is in more than 10 sets. Several groups
@@ -92,20 +91,16 @@ alpha_auc = measured if active[alpha] else pd.Series(0.5, index=types)
 score = alpha_auc.mean()  # unweighted mean over the 7 cell types
 ```
 
-**Evidence for the score.** The named latent tracks the stimulation within every cell type. An independent
-recomputation from the saved latent values with the Mann–Whitney U statistic reproduced the scores of four runs (one per
-variant) to six decimals.
-
-**Limits of the score.** The score does not show that a latent represents interferon biology specifically. Any latent
+**The score measures** how well one latent separates stimulated from control cells. It does not show that a latent represents interferon biology specifically. Any latent
 whose genes respond to the stimulation can separate stimulated from control cells. The Hallmark interferon-α and
 interferon-γ sets share 71 of the 95 interferon-α genes. The score therefore cannot tell type I from type II
-interferon. A shuffled latent holds few interferon-α genes (3 of 95 in seed 0) and still reached up to 0.98 in a seed; the latent at the interferon-α position of the within-set random mask scored 0.93 or higher in 6 of 10 seeds.
+interferon. A latent of the fully random mask holds few interferon-α genes (3 of 95 in seed 0) and still reached up to 0.98 in a seed; the latent at the interferon-α position of the within-set random mask scored 0.93 or higher in 6 of 10 seeds.
 Near 1, the AUROC saturates and measures ranking, not the size of the effect. Rare cell types have few test cells. Their
 AUROC values are noisy.
 
 ## Biology in the code
 
-The table lists where biological knowledge or an assumption about the cells enters the pipeline.
+The table lists the steps at which biological knowledge or an assumption about the cells enters the pipeline.
 
 | Step | Script | Choice | Reason |
 |---|---|---|---|
@@ -130,7 +125,7 @@ The table lists where biological knowledge or an assumption about the cells ente
 
 | Question | Dataset | Access |
 |---|---|---|
-| Q1, Q1b | Kang et al. 2018 [17] | GEO GSE96583 (batch 2) |
+| Q1, Q1b, Q1c | Kang et al. 2018 [17] | GEO GSE96583 (batch 2) |
 | Q1, Q2 | Human tonsil atlas [24] | Zenodo 10.5281/zenodo.8373756 |
 | Q2 | B cell activation time course and IRF4 / PRDM1 CRISPR perturbations [23] | Zenodo 10.5281/zenodo.17984776 |
 | Q3 | Tonsil CITE-seq [24]; 10x Genomics 10k PBMCs with TotalSeq-B antibodies | Zenodo 10.5281/zenodo.8373756; 10x Genomics |
