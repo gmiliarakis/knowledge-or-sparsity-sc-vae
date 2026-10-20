@@ -27,9 +27,9 @@ Q1b,8000 cells: real - coexpression,10,-0.0002318,0.556641,Benjamini-Hochberg,0.
 Q1b,slope per doubling of cells: real - shuffled,10,-0.0338854,0.105469,Benjamini-Hochberg,0.135603,False,0.966667,-0.0312615,-0.0865703,0.0176265,18
 Q1b,slope per doubling of cells: real - vanilla,10,0.00526969,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.00484493,0.00215565,0.00855988,18
 Q1b,slope per doubling of cells: real - coexpression,10,-0.000709965,0.00976562,Benjamini-Hochberg,0.0146484,True,0.966667,-0.000567009,-0.00145059,-0.000114108,18
-Q1c,held-out loss per cell (lower is better): real - shuffled,10,-3.877,0.00195312,Holm,0.0234375,True,0.995833,-3.735,-6.255,-1.96,12
-Q1c,held-out loss per cell (lower is better): real - setshuffle,10,-9.942,0.00195312,Holm,0.0234375,True,0.995833,-10.1,-12.4,-6.89,12
-Q1c,held-out loss per cell (lower is better): real - coexpression,10,11.474,0.00195312,Holm,0.0234375,True,0.995833,11.755,9.18,12.71,12
+Q1c,test loss per cell (lower is better): real - shuffled,10,-3.877,0.00195312,Holm,0.0234375,True,0.995833,-3.735,-6.255,-1.96,12
+Q1c,test loss per cell (lower is better): real - setshuffle,10,-9.942,0.00195312,Holm,0.0234375,True,0.995833,-10.1,-12.4,-6.89,12
+Q1c,test loss per cell (lower is better): real - coexpression,10,11.474,0.00195312,Holm,0.0234375,True,0.995833,11.755,9.18,12.71,12
 Q1c,decoded response correlation: real - shuffled,10,0.0889306,0.00195312,Holm,0.0234375,True,0.995833,0.08749,0.0449805,0.137711,12
 Q1c,decoded response correlation: real - setshuffle,10,0.126529,0.00195312,Holm,0.0234375,True,0.995833,0.12948,0.0622995,0.183265,12
 Q1c,decoded response correlation: real - coexpression,10,-0.025181,0.00195312,Holm,0.0234375,True,0.995833,-0.0255265,-0.0352145,-0.0142535,12
