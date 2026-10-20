@@ -9,7 +9,7 @@
 #                                    the interferon-alpha genes still present.
 #   diagnostics_gene_removal.csv  F. best principal component after removing sets of genes (main benchmark only).
 #   diagnostics_probe.csv         G. logistic regression on all latents (stimulation).
-#   diagnostics_fit.csv           H. held-out negative log-likelihood per cell, the model's own objective on cells it never saw.
+#   diagnostics_fit.csv           H. test negative log-likelihood per cell, the model's own objective on the test cells.
 #   diagnostics_response.csv      I. decoded response: the stimulation shift in gene expression that the decoder reproduces,
 #                                    correlated across genes with the observed shift (no latent is chosen).
 #   diagnostics_celltype.csv      J. what the latents learned about cell type, which the model never saw: balanced accuracy of a
@@ -182,7 +182,7 @@ probe = pd.DataFrame(probe)
 probe.to_csv(out / "diagnostics_probe.csv", index=False, float_format="%.6g")
 print(probe.groupby("variant")["probe_auroc"].agg(["mean", "std", "min", "max"]).round(4))
 
-# H. Held-out fit ------------------------------------------------------------------------------------------------------
+# H. Test fit ------------------------------------------------------------------------------------------------------
 # The loss each run stored (negative log-likelihood per cell, the KL term included at weight 1), for validation and test cells.
 fit = []
 for folder, variant in variants:

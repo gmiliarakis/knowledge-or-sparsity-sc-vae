@@ -6,7 +6,7 @@ README.
 ## Co-expression mask: full recipe
 
 - **Co-expression mask** (`05_build_coexpression_null.py`). This null tests whether curated sets add anything beyond
-  co-expressed genes. The modules are built from the data alone, without condition or cell-type
+  co-expressed genes. The groups are built from the data alone, without condition or cell-type
   labels.
 
   1. **Expression.** Training cells only, stimulated and control together. Counts are scaled to the median total
@@ -15,27 +15,27 @@ README.
      correlation 0 with every other gene.
   3. **Seed genes.** For each seed, 50 distinct seed genes are drawn at random from the 6,753 genes detected in ≥ 1%
      of training cells. The nearest neighbours of rarer genes are noise, and these genes are excluded.
-  4. **Modules.** Module j is seed gene j plus the n − 1 genes most positively correlated with it, where n is the
-     size of Hallmark set j (12–197 genes). Module j takes the size of Hallmark set j and none of its biology. Its
-     latent is called "module j". Modules are built independently and may share genes.
+  4. **Groups.** Group j is seed gene j plus the n − 1 genes most positively correlated with it, where n is the
+     size of Hallmark set j (12–197 genes). Group j takes the size of Hallmark set j and none of its biology. Its
+     latent is labelled "module j" in the code. Groups are built independently and may share genes.
 
-  The modules have three properties that affect how the results are read.
+  The groups have three properties that affect how the results are read.
 
-  - **Coherence.** The median within-set correlation is 0.096 for modules and 0.003 for Hallmark sets. In single
-    PBMCs most members of a Hallmark set barely co-vary. A module, in contrast, is built to co-vary. This null is
+  - **Coherence.** The median within-set correlation is 0.096 for the groups and 0.003 for Hallmark sets. In single
+    PBMCs most members of a Hallmark set barely co-vary. A group, in contrast, is built to co-vary. This null is
     therefore a strong comparison.
-  - **Overlap.** Modules have the same 5,568 memberships as the Hallmark sets but cover 2,338–3,233 genes (Hallmark:
+  - **Overlap.** The groups have the same 5,568 memberships as the Hallmark sets but cover 2,338–3,233 genes (Hallmark:
     3,187). The overlap concentrates on genes correlated with many others. Ribosomal-protein genes (RPS6, RPL3, …)
-    and PTMA are in up to 28 modules per seed. No Hallmark gene is in more than 10 sets. Several modules
-    partly describe the same ribosomal axis. The 8 free latents reach the 8,801–9,696 genes in no module.
-  - **Interferon.** The modules were checked against the stimulation labels after they were built. In every seed,
-    the module most raised by IFN-β is enriched for Hallmark interferon genes: 19–89% of its genes, against a base
+    and PTMA are in up to 28 groups per seed. No Hallmark gene is in more than 10 sets. Several groups
+    partly describe the same ribosomal axis. The 8 free latents reach the 8,801–9,696 genes in no group.
+  - **Interferon.** The groups were checked against the stimulation labels after they were built. In every seed,
+    the group most raised by IFN-β is enriched for Hallmark interferon genes: 19–89% of its genes, against a base
     rate of 1.8%. In one seed it grew around UBE2L6 and contains ISG15, IFI6, IFIT1, IFIT3, MX1, IRF7 and OAS1. The
     data alone recover the core interferon response.
 
 ## Architecture and parameter counts
 
-Every variant uses the same VAE, with an encoder of one hidden layer and a linear decoder (binary mask on its weight matrix in four of the five variants). In PyTorch it prints as follows.
+Every variant uses the same VAE, with an encoder of one hidden layer and a linear decoder (binary mask on its weight matrix in four of the five variants). The PyTorch module summary is as follows.
 
 ```
 VAE(
@@ -82,7 +82,7 @@ The terms, for one cell:
 - $-\log p_{\mathrm{NB}}(x \mid \mu, \theta)$: the reconstruction term, the negative log-likelihood summed over genes.
 - $\mathrm{KL}\big(q \,\|\, \mathcal{N}(0, I)\big)$: the KL divergence of the posterior from the standard normal prior,
   summed over latents.
-- $\beta$: the KL weight. It rises linearly from 0 to 1 over the first ~38 epochs (KL warm-up) and then stays at 1.
+- $\beta$: the KL weight. It rises linearly from 0 to 1 over the first ≈ 38 epochs (KL warm-up) and then stays at 1.
 - $\mathcal{L}$: the loss per cell, averaged over each batch. With $\beta = 1$ it is the negative evidence lower bound
   (ELBO).
 
@@ -140,7 +140,7 @@ The table lists where biological knowledge or an assumption about the cells ente
 | Gene sets | `04` | Hallmark, sets of ≥ 12 genes (all 50) | one unambiguous target, the interferon-α response |
 | Fully random | `04` | labels permuted within expression bins | random genes are as highly expressed as the genes they replace |
 | Within-set random | `04` | labels permuted within expression bins, among genes that are in a set | the genes in no set, and so the free latents' reach, stay as in the Hallmark mask |
-| Co-expression | `05` | modules of correlated genes, sizes matched to Hallmark | see Gene sets and masks |
+| Co-expression | `05` | groups of co-expressed genes, sizes matched to Hallmark | see Gene sets and masks |
 | Free latents | `06` | reach only genes in no set | when they reached all genes, they absorbed the stimulation signal |
 | Covariates | `06` | donor in encoder and decoder; condition never | the stimulation is the signal the latents should find |
 | Likelihood | `06` | negative binomial on raw counts, observed total counts as library size | droplet counts are not zero-inflated [22] |

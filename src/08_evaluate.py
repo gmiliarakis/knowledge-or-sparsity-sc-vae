@@ -8,7 +8,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from scoring import (alpha_name, auroc_by_type as auroc, full, min_variance, results_dir, rows, tables_dir, val_all)
+from scoring import (alpha_name, auroc_by_type as auroc, full, min_variance, results_dir, rows, tables_dir, types, val_all)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--learning-curves", action="store_true")

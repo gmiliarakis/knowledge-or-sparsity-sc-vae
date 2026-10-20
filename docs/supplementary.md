@@ -3,6 +3,10 @@
 Results that support the main report ([README](../README.md)) but are not part of its argument. Statistical tests are described
 there; all tests are in `reports/tables/tests.csv`, and only adjusted p-values are quoted.
 
+## Statistics
+
+The tests follow the procedure of the [README](../README.md#statistics). Two further families belong to the supplement: the 10 tests on the interferon-α score at full size (Holm; family-wise error 0.05; intervals at the Bonferroni level) and the 18 learning-curve tests (Benjamini–Hochberg; false discovery rate 0.05, valid for the positive dependence between sizes that share seeds, with false-coverage-rate intervals). One family of all 40 tests is impossible, because Holm over more than 25 tests cannot reject at p ≥ 0.002. Equivalence of the Hallmark and co-expression masks on the interferon-α score is tested with two one-sided tests against ±0.005 AUROC (half a percentage point in the probability that a stimulated cell outranks a control cell); the margin predates the within-set random mask. The 12 tests of S4 form their own family (Holm).
+
 ## S1. The interferon-α latent
 
 The score of a latent named after the Hallmark interferon-α response set, and the reference scores without a VAE.
@@ -19,7 +23,7 @@ The interferon-α latent of the Hallmark mask scored 0.997 ± 0.001 and was its 
 
 ![Interferon-α score, active latents and paired differences](../reports/figures/scores.png)
 
-*a, interferon-α score of every seed (lines join the Hallmark and random scores of the same seed). b, latents with an active posterior. c, paired difference of Hallmark minus each other variant, with the Hodges–Lehmann estimate and the Holm-adjusted interval; the primary comparison is in black.*
+*a, interferon-α score of every seed (lines join the Hallmark and random scores of the same seed). b, latents with an active posterior. c, paired difference of Hallmark minus each other variant, with the median and the Holm-adjusted interval; the primary comparison is in black.*
 
 ## S2. Cell-type probe, few-shot and hard pairs
 
@@ -46,10 +50,10 @@ smaller training sets and scored by the interferon-α latent score (S1).
   by donor × condition × cell type. Each seed has its own series of subsamples, shared by these four variants. The
   comparison stays paired by seed, and the seeds also cover the choice of cells. Validation and test sets stay fixed,
   and the full-size point is the main experiment.
-- **Training.** KL warm-up over ~38 epochs, patience 3 epochs and learning rate 1e-3 at every size, with 10 seeds per
+- **Training.** KL warm-up over ≈ 38 epochs, patience 3 epochs and learning rate 1e-3 at every size, with 10 seeds per
   variant and size.
-- **Nulls.** Co-expression modules and shuffle expression bins are rebuilt on each subsample. With few cells,
-  correlations are noisier: modules overlap less and cover ~4,100 genes at 500 cells.
+- **Nulls.** Groups of co-expressed genes and shuffle expression bins are rebuilt on each subsample. With few cells,
+  correlations are noisier: the groups overlap less and cover ~4,100 genes at 500 cells.
 - **Random masks.** Only the fully random mask was run on subsamples.
 
 ### Results
@@ -67,7 +71,36 @@ Interferon-α score, mean over 10 seeds at each training size.
 
 ![Learning curves](../reports/figures/learning_curves.png)
 
-*(a) Mean over 10 seeds with a 95% t-interval band. (b) Per-seed Hallmark−random differences (dots), their Hodges–Lehmann estimate and the interval at the family level.*
+*(a) Mean over 10 seeds with a 95% t-interval band. (b) Per-seed Hallmark−random differences (dots), their median and the interval at the family level.*
 
 - No data-efficiency benefit of Hallmark knowledge could be detected, and this task cannot detect one: with 500 cells the no-mask VAE already scores 0.992 and the Hallmark mask 0.996. Hallmark and co-expression do not differ at any size (adjusted p 0.089 to 1.0).
 - The Hallmark latent beats the random mask's latent at every size (all 10 seeds, adjusted p = 0.003), and this advantage is not shown to depend on training size (slope adjusted p = 0.14). The random mask's latent is unreliable at every size (single seeds 0.01 to 0.99).
+
+## S4. Dropping the 250 strongest stimulation genes
+
+This analysis asks whether the Hallmark advantage over the random masks rests on the strongest stimulation genes. It drops them and repeats the comparison for test loss and decoded response. Dropping them also shrinks the Hallmark sets (32 of the 95 interferon-α genes remain), so the benchmark shows as well what happens when a gene set is incomplete.
+
+### Design
+
+The 250 genes with the largest |t| of stimulated against control log expression in training cells (megakaryocytes excluded) are dropped, which leaves 11,784 genes (list in `reports/tables/removed_genes_drop250.csv`). They are chosen from the data and never from the gene sets. The 50 Hallmark sets, both random masks and the groups of co-expressed genes are rebuilt on the remaining genes, and 3,032 genes are in at least one set. Architecture, training, scoring and the four measures are unchanged, with 10 seeds per variant (seeds 0 and 1 were also run as a pilot before the decision to run all 10). The criterion was fixed before the 10-seed run: the sign and the Holm-adjusted p of the contrasts of Hallmark against the random masks for test loss and decoded response. Without any VAE, the best principal component scores 0.864 and the mean of the 32 remaining interferon-α genes 0.724.
+
+### Results
+
+| Variant | Test loss per cell | Decoded response | Cell-type balanced accuracy | Stimulation probe AUROC |
+|---|---|---|---|---|
+| No mask | 1718.2 ± 1.4 | 0.766 ± 0.002 | 0.881 ± 0.004 | 0.9877 ± 0.0009 |
+| Hallmark | 1747.6 ± 0.7 | 0.528 ± 0.004 | 0.857 ± 0.007 | 0.9723 ± 0.0015 |
+| Fully random | 1747.7 ± 2.0 | 0.522 ± 0.020 | 0.856 ± 0.006 | 0.9742 ± 0.0028 |
+| Within-set random | 1749.7 ± 1.0 | 0.506 ± 0.005 | 0.850 ± 0.006 | 0.9756 ± 0.0014 |
+| Co-expression | 1739.6 ± 1.6 | 0.552 ± 0.019 | 0.864 ± 0.005 | 0.9720 ± 0.0026 |
+
+| Measure | Hallmark minus | Median difference | Interval | Adjusted p |
+|---|---|---|---|---|
+| Test loss per cell (lower is better) | fully random | +0.3 | −3.6 to +2.0 | 1.000 |
+| | within-set random | −2.1 | −3.3 to −1.2 | 0.023 |
+| | co-expression | +8.1 | +5.4 to +10.3 | 0.023 |
+| Decoded response (correlation) | fully random | +0.006 | −0.020 to +0.035 | 1.000 |
+| | within-set random | +0.022 | +0.016 to +0.031 | 0.023 |
+| | co-expression | −0.023 | −0.048 to −0.002 | 0.023 |
+
+Against the fully random mask the Hallmark advantage is gone: the difference in test loss is +0.3 units and in decoded response +0.006, against −3.7 and +0.087 with all genes. Against the within-set random mask the advantage persists at about one fifth of its size (−2.1 units against −10.1, and +0.022 against +0.129). The groups of co-expressed genes still fit better than the Hallmark sets (8.1 units) and reproduce the shift better (0.023 higher). The decoded response falls for every masked variant to 0.51 to 0.55, against 0.77 without a mask. The named interferon-α latent was inactive in all Hallmark and within-set random runs, and the best latent of the Hallmark and random masks scored 0.879 to 0.904 on average. Cell-type accuracy shows no difference (adjusted p of at least 0.26), and the stimulation probe is lower for Hallmark than for the within-set random mask by 0.003 (adjusted p 0.031) and does not differ otherwise.

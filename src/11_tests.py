@@ -13,7 +13,7 @@
 # Family Q1b (learning curves, exploratory, 18 tests): Benjamini-Hochberg, which controls the false discovery rate at 0.05
 #   and is valid for positively dependent tests (the same seeds and nested subsamples run through all sizes). Intervals are
 #   Benjamini-Yekutieli false-coverage-rate intervals, level 1 - R*q/m with R the number of rejections, of the same kind.
-# Family Q1c (latent-free panel, confirmatory, 12 tests): Holm, as Q1. Four measures that choose no latent (held-out loss, decoded
+# Family Q1c (latent-free panel, confirmatory, 12 tests): Holm, as Q1. Four measures that choose no latent (test loss, decoded
 #   response, cell-type probe, stimulation probe), each with three contrasts: Hallmark minus each of the two random masks and
 #   minus the co-expression mask. The no-mask VAE is a descriptive reference, and the few-shot and hard-pair cell-type scores
 #   are descriptive.
@@ -121,7 +121,7 @@ if not suffix:
             per_seed.append(np.polyfit(np.log2(d.index.values), d.values, 1)[0])
         tests.append(("Q1b", f"slope per doubling of cells: real - {other}", np.array(per_seed), "difference"))
 
-latent_free = [("held-out loss per cell (lower is better)", "diagnostics_fit.csv", "test_loss"),
+latent_free = [("test loss per cell (lower is better)", "diagnostics_fit.csv", "test_loss"),
                ("decoded response correlation", "diagnostics_response.csv", "lfc_corr"),
                ("cell-type balanced accuracy", "diagnostics_celltype.csv", "balanced_acc_full"),
                ("stimulation probe AUROC", "diagnostics_probe.csv", "probe_auroc")]

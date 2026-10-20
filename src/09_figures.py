@@ -243,12 +243,12 @@ ax.axvline(0, color=baseline, lw=0.8, zorder=0)
 ax.set_yticks(*zip(*rows))
 ax.set_ylim(y - 0.5, -1.0)
 ax.grid(axis="y", visible=False)
-ax.set(title="c  Paired difference, Hodges–Lehmann estimate and 99.5% interval", xlabel="difference in AUROC")
+ax.set(title="c  Paired difference, median and 99.5% interval", xlabel="difference in AUROC")
 fig.savefig(out / "scores.png")
 plt.close(fig)
 
 # 1b. The four measures that choose no latent, one dot per seed
-measures = [("a  Held-out loss per cell", "diagnostics_fit.csv", "test_loss", "negative log-likelihood + KL (lower is better)"),
+measures = [("a  Test loss per cell", "diagnostics_fit.csv", "test_loss", "negative log-likelihood + KL (lower is better)"),
             ("b  Decoded response", "diagnostics_response.csv", "lfc_corr", "correlation across genes with the observed shift"),
             ("c  Cell-type probe", "diagnostics_celltype.csv", "balanced_acc_full", "balanced accuracy"),
             ("d  Stimulation probe", "diagnostics_probe.csv", "probe_auroc", "AUROC stim vs ctrl")]
