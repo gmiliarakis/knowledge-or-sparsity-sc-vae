@@ -64,11 +64,11 @@ The mask decides how many of the 697,972 weights in `w` can be trained (table in
 
 ## Scoring code
 
-**Code** (`src/08_evaluate.py`, abridged; `z` holds the posterior means, `w` the masked decoder weights):
+**Code** (`src/08_evaluate.py`, abridged; `z` contains the posterior means, `w` the masked decoder weights):
 
 ```python
 def auroc(score, split):
-    # stim vs ctrl within each cell type, so a latent cannot score by separating cell types
+    # stim vs ctrl per cell type, so a latent cannot score by separating cell types
     r = rows[split]
     return pd.Series({t: roc_auc_score(stim[r][cell_type[r] == t], score[r][cell_type[r] == t]) for t in types})
 
@@ -94,7 +94,7 @@ score = alpha_auc.mean()  # unweighted mean over the 7 cell types
 **The score measures** how well one latent separates stimulated from control cells. It does not show that a latent represents interferon biology specifically. Any latent
 whose genes respond to the stimulation can separate stimulated from control cells. The Hallmark interferon-α and
 interferon-γ sets share 71 of the 95 interferon-α genes. The score therefore cannot tell type I from type II
-interferon. A latent of the fully random mask holds few interferon-α genes (3 of 95 in seed 0) and still reached up to 0.98 in a seed; the latent at the interferon-α position of the within-set random mask scored 0.93 or higher in 6 of 10 seeds.
+interferon. A latent of the fully random mask contains few interferon-α genes (3 of 95 in seed 0) and still reached up to 0.98 in a seed; the latent at the interferon-α position of the within-set random mask scored 0.93 or higher in 6 of 10 seeds.
 Near 1, the AUROC saturates and measures ranking, not the size of the effect. Rare cell types have few test cells. Their
 AUROC values are noisy.
 
@@ -104,7 +104,7 @@ The table lists the steps at which biological knowledge or an assumption about t
 
 | Step | Script | Choice | Reason |
 |---|---|---|---|
-| Cell identity | `03` | the authors' demuxlet singlet calls and cell-type labels, used as given | a droplet holding two donors' cells is identified from their genotypes, which is stronger evidence than an expression-based doublet score |
+| Cell identity | `03` | the authors' demuxlet singlet calls and cell-type labels, used as given | a droplet containing cells of two donors is identified from their genotypes, which is stronger evidence than an expression-based doublet score |
 | Cell QC | `03` | thresholds per condition × cell type | monocytes, dendritic cells and megakaryocytes differ in RNA content, and stimulation shifts it |
 | Genes | `03` | all genes detected in ≥ 20 cells; no highly-variable-gene selection | selection drops interferon-induced genes |
 | Split | `03` | stratified by donor × condition × cell type | every group appears in train, validation and test |
@@ -118,7 +118,7 @@ The table lists the steps at which biological knowledge or an assumption about t
 | Likelihood | `06` | negative binomial on raw counts, observed total counts as library size | droplet counts are not zero-inflated [22] |
 | Target latent | `08` | HALLMARK_INTERFERON_ALPHA_RESPONSE | IFN-β is a type I interferon |
 | Orientation | `08` | sign set so the latent's mean weight on its own genes is positive | a gene set that is switched on raises its own genes |
-| Scoring | `08` | AUROC within cell type, unweighted mean over 7 types | the question is whether every cell type responds to IFN-β, and a latent should not score by separating cell types |
+| Scoring | `08` | AUROC per cell type on the test set, unweighted mean over 7 types | the question is whether every cell type responds to IFN-β, and a latent should not score by separating cell types |
 | Megakaryocytes | `08` | excluded from scores, kept in training | mostly platelets, which have no nucleus |
 
 ## Candidate datasets for future work
