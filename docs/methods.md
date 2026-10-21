@@ -32,6 +32,56 @@ Supporting detail for the Methods in the [README](../README.md). Numbers in squa
     rate of 1.8%. In one seed it grew around UBE2L6 and contains ISG15, IFI6, IFIT1, IFIT3, MX1, IRF7 and OAS1. The
     data alone recover the core interferon response.
 
+## Model equations
+
+The encoder first puts the counts of a cell on a common scale. Each count $x_g$ is divided by the
+total count of the cell $\ell$, multiplied by the median total $m$ of the training cells and log-transformed. Deeply and
+shallowly sequenced cells then look alike.
+
+$$\tilde{x}_g = \ln\big(1 + x_g \cdot m / \ell\big)$$
+
+The encoder reads $\tilde{x}$ and the donor code $d$ and proposes where the cell lies in the latent space, as a mean and a
+variance for each of the 58 latents. This proposal is the posterior $q(z \mid x, d)$. Training draws a point $z$ from it;
+the evaluation uses its mean.
+
+The decoder turns $z$ back into expression. Each latent raises or lowers the genes that the
+mask $M$ lets it reach, through its weights $W$, and the donor adds its offsets $V$. A softmax over genes converts these
+scores into shares $\pi_g$ that sum to 1, the fraction of the counts of the cell that each gene should receive.
+
+$$\pi = \mathrm{softmax}\big((W \odot M)\,z + V\,d\big)$$
+
+The expected count of gene $g$ is the total count of the cell times its share. The observed count scatters around it as a
+negative binomial (NB). The dispersion $\theta_g$ allows each gene to be noisier than a Poisson count.
+
+$$x_g \sim \mathrm{NB}\big(\mu_g = \ell \cdot \pi_g,\ \theta_g\big)$$
+
+The loss has two parts. The reconstruction term measures how unlikely the observed counts are under
+the prediction. The Kullback–Leibler (KL) term pulls the posterior of each cell towards a standard normal prior. This
+keeps the latents on a common scale and lets those that the data do not need switch off.
+
+$$\mathcal{L} = -\log p_{\mathrm{NB}}(x \mid \mu, \theta) + \beta \cdot \mathrm{KL}\big(q(z \mid x, d)\ \|\ \mathcal{N}(0, I)\big)$$
+
+where, for one cell:
+
+- $x_g$, $\tilde{x}_g$: the raw count of gene $g$ and its encoder input. $\ell = \sum_g x_g$ is the total count of the cell
+  and $m$ the median total count of the training cells.
+- $d \in \lbrace 0,1\rbrace^{8}$: the donor one-hot code.
+- $z \in \mathbb{R}^{58}$: the latent values. Training draws them from
+  $q(z \mid x, d) = \mathcal{N}\big(\mathrm{mean},\ \mathrm{diag}\,\exp(\mathrm{log\_var})\big)$; the evaluation uses the
+  posterior means.
+- $W \in \mathbb{R}^{12034 \times 58}$: the latent → gene weights (`w` in the code). $M \in \lbrace 0,1\rbrace^{12034 \times 58}$ is
+  the mask, with 1 where latent $k$ may reach gene $g$ and 0 elsewhere. The product $\odot$ is elementwise.
+- $V \in \mathbb{R}^{12034 \times 8}$: the donor offsets (`v`), which also set the baseline of each gene.
+- $\pi_g$: the share of gene $g$. The softmax is taken over genes, so the shares are positive and sum to 1.
+- $\mu_g = \ell\,\pi_g$: the expected count of gene $g$.
+- $\theta_g$: the dispersion of gene $g$ (`exp(log_theta)`), with $\mathrm{Var}(x_g) = \mu_g + \mu_g^2 / \theta_g$.
+- $-\log p_{\mathrm{NB}}(x \mid \mu, \theta)$: the reconstruction term, the negative log-likelihood summed over genes.
+- $\mathrm{KL}\big(q \,\|\, \mathcal{N}(0, I)\big)$: the KL divergence of the posterior from the standard normal prior,
+  summed over latents.
+- $\beta$: the KL weight. It rises linearly from 0 to 1 over the first ≈ 38 epochs (KL warm-up), so the model first learns to reconstruct, and then stays at 1.
+- $\mathcal{L}$: the loss per cell, averaged over each batch. With $\beta = 1$ it is the negative evidence lower bound
+  (ELBO).
+
 ## Architecture and parameter counts
 
 Every variant uses the same VAE, with an encoder of one hidden layer and a linear decoder (binary mask on its weight matrix in four of the five variants). The PyTorch module summary is as follows.
@@ -48,7 +98,7 @@ VAE(
 )
 ```
 
-The encoder input is the 12,034 genes after a shifted-log transform (below) plus a one-hot code for the 8 donors. The
+The encoder input is the 12,034 genes (Kang data; the Oesinghaus data have about 11,340 genes and 12 donors, so the encoder, `w` and `v` are smaller) after a shifted-log transform (see the README) plus a one-hot code for the 8 donors. The
 decoder has no layers of its own, only the three parameters $W$, $V$ and $\log\theta$ (`w`, `v` and `log_theta` in the code).
 
 | Parameter | Shape | Role | Count |
@@ -104,29 +154,31 @@ The table lists the steps at which biological knowledge or an assumption about t
 
 | Step | Script | Choice | Reason |
 |---|---|---|---|
+| Data | `03c` | Oesinghaus data for Q1e and Q1f: 12 healthy donors, cells read in place from the published archive, at most 1,200 per donor × condition group, genes shared with the Kang data (`SC_DATA`) | stimulated and control cells of a donor share a plate; the cytokine was chosen from the published differential-expression table before any model was fitted |
 | Cell identity | `03` | the authors' demuxlet singlet calls and cell-type labels, used as given | a droplet containing cells of two donors is identified from their genotypes, which is stronger evidence than an expression-based doublet score |
 | Cell QC | `03` | thresholds per condition × cell type | monocytes, dendritic cells and megakaryocytes differ in RNA content, and stimulation shifts it |
 | Genes | `03` | all genes detected in ≥ 20 cells; no highly-variable-gene selection | selection drops interferon-induced genes |
 | Split | `03` | stratified by donor × condition × cell type | every group appears in train, validation and test |
 | Gene identity | `04` | Ensembl IDs mapped to current HGNC symbols (1,256 symbols changed since 2017; 427 genes HGNC no longer lists keep their 2017 symbol) | gene set symbols are current |
-| Gene sets | `04` | Hallmark, sets of ≥ 12 genes (all 50) | one unambiguous target, the interferon-α response |
+| Gene sets | `04` | Hallmark, sets of ≥ 12 genes (all 50); for Q1d 50 Reactome sets chosen from names, sizes, overlaps and the pathway hierarchy (`SC_SETS=reactome`) | Hallmark has one unambiguous target, the interferon-α response; Reactome is curated pathway by pathway and not built from expression |
 | Fully random | `04` | labels permuted within expression bins | random genes are as highly expressed as the genes they replace |
 | Within-set random | `04` | labels permuted within expression bins, among genes that are in a set | the genes in no set, and so the free latents' reach, stay as in the Hallmark mask |
 | Co-expression | `05` | groups of co-expressed genes, sizes matched to Hallmark | see Gene sets and masks |
 | Free latents | `06` | reach only genes in no set | when they reached all genes, they absorbed the stimulation signal |
 | Covariates | `06` | donor in encoder and decoder; condition never | the stimulation is the signal the latents should find |
 | Likelihood | `06` | negative binomial on raw counts, observed total counts as library size | droplet counts are not zero-inflated [22] |
-| Target latent | `08` | HALLMARK_INTERFERON_ALPHA_RESPONSE | IFN-β is a type I interferon |
+| Target latent | `08` | Hallmark interferon-α response or Reactome interferon α/β signaling for IFN-β; IL-2 STAT5 signaling or interleukin-2 family signaling for IL-2 (`SC_TARGET=il2`) | IFN-β is a type I interferon; IL-2 is scored against its own set |
 | Orientation | `08` | sign set so the latent's mean weight on its own genes is positive | a gene set that is switched on raises its own genes |
-| Scoring | `08` | AUROC per cell type on the test set, unweighted mean over 7 types | the question is whether every cell type responds to IFN-β, and a latent should not score by separating cell types |
+| Scoring | `08` | AUROC per cell type on the test set, unweighted mean over the scored types (7 for Kang, 13 for the Oesinghaus data) | the question is whether every cell type responds to IFN-β, and a latent should not score by separating cell types |
 | Megakaryocytes | `08` | excluded from scores, kept in training | mostly platelets, which have no nucleus |
 
-## Candidate datasets for future work
+## Data sets used and for future work
 
 | Question | Dataset | Access |
 |---|---|---|
-| Q1, Q1b, Q1c | Kang et al. 2018 [17] | GEO GSE96583 (batch 2) |
-| Q1, Q2 | Human tonsil atlas [24] | Zenodo 10.5281/zenodo.8373756 |
-| Q2 | B cell activation time course and IRF4 / PRDM1 CRISPR perturbations [23] | Zenodo 10.5281/zenodo.17984776 |
-| Q3 | Tonsil CITE-seq [24]; 10x Genomics 10k PBMCs with TotalSeq-B antibodies | Zenodo 10.5281/zenodo.8373756; 10x Genomics |
-| Q4 | Mouse gastrulation [25] | ArrayExpress E-MTAB-6967 |
+| Q1, Q1a to Q1e | Kang et al. 2018 [17] | GEO GSE96583 (batch 2) |
+| Q1d to Q1f | Human Cytokine Dictionary of Oesinghaus et al. [41], as distributed by Parse Biosciences [42] | Parse Biosciences, "10 Million Human PBMCs in a Single Experiment" (CC BY-NC 4.0) |
+| Known regulators, and B cells | Human tonsil atlas [24] | Zenodo 10.5281/zenodo.8373756 |
+| Known regulators | B cell activation time course and IRF4 / PRDM1 CRISPR perturbations [23] | Zenodo 10.5281/zenodo.17984776 |
+| Protein as reference | Tonsil CITE-seq [24]; 10x Genomics 10k PBMCs with TotalSeq-B antibodies | Zenodo 10.5281/zenodo.8373756; 10x Genomics |
+| Imperfect gene sets | Mouse gastrulation [25] | ArrayExpress E-MTAB-6967 |

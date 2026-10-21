@@ -5,15 +5,15 @@
 # are dropped. Its smallest possible value with 10 pairs is 2/2^10 = 0.00195, so a Holm or Bonferroni correction over more
 # than 25 tests could never reject. That fixes how the tests are grouped:
 #
-# Family Q1 (full-size experiment, confirmatory, 10 tests): Holm step-down, which controls the family-wise error rate
+# Family S1 (interferon-α latent at full size, confirmatory, 10 tests): Holm step-down, which controls the family-wise error rate
 #   at 0.05 under any dependence between the tests (they share seeds). Intervals are the distribution-free intervals that
 #   belong to the signed-rank test (Hodges-Lehmann estimate, exact interval from the Walsh averages) at the Bonferroni level
 #   1 - 0.05/m, which are simultaneous for the m tests. Holm is less conservative than Bonferroni, so an interval can touch 0
 #   for a test that Holm rejects.
-# Family Q1b (learning curves, exploratory, 18 tests): Benjamini-Hochberg, which controls the false discovery rate at 0.05
+# Family S3 (learning curves, Q1b, exploratory, 18 tests): Benjamini-Hochberg, which controls the false discovery rate at 0.05
 #   and is valid for positively dependent tests (the same seeds and nested subsamples run through all sizes). Intervals are
 #   Benjamini-Yekutieli false-coverage-rate intervals, level 1 - R*q/m with R the number of rejections, of the same kind.
-# Family Q1c (latent-free panel, confirmatory, 12 tests): Holm, as Q1. Four measures that choose no latent (test loss, decoded
+# Family latent-free (Q1, Q1c, Q1d-f; 12 tests per benchmark, confirmatory): Holm, as S1. Four measures that choose no latent (test loss, decoded
 #   response, cell-type probe, stimulation probe), each with three contrasts: Hallmark minus each of the two random masks and
 #   minus the co-expression mask. The no-mask VAE is a descriptive reference, and the few-shot and hard-pair cell-type scores
 #   are descriptive.
@@ -103,23 +103,23 @@ tests = []  # (family, test, differences, kind)
 if main:
     at_full = scores[scores["train_size"] == full]
     for other in ["shuffled", "setshuffle", "vanilla", "coexpression"]:
-        tests.append(("Q1", f"fixed latent: real - {other}", diff(at_full, "ifn_alpha", "real", other), "difference"))
+        tests.append(("S1", f"fixed latent: real - {other}", diff(at_full, "ifn_alpha", "real", other), "difference"))
     for a, b in [("real", "shuffled"), ("real", "setshuffle"), ("real", "vanilla"), ("shuffled", "vanilla"),
                  ("setshuffle", "vanilla")]:
-        tests.append(("Q1", f"best latent: {a} - {b}", diff(best, "best_latent", a, b), "difference"))
-    tests.append(("Q1", f"equivalence (+-{margin}): real - coexpression", diff(at_full, "ifn_alpha", "real", "coexpression"),
+        tests.append(("S1", f"best latent: {a} - {b}", diff(best, "best_latent", a, b), "difference"))
+    tests.append(("S1", f"equivalence (+-{margin}): real - coexpression", diff(at_full, "ifn_alpha", "real", "coexpression"),
                   "equivalence"))
     for size in sorted(curves["train_size"].unique()):
         if size == full:
             continue
         for other in ["shuffled", "vanilla", "coexpression"]:
-            tests.append(("Q1b", f"{size} cells: real - {other}", diff(curves[curves["train_size"] == size], "ifn_alpha", "real", other), "difference"))
+            tests.append(("S3", f"{size} cells: real - {other}", diff(curves[curves["train_size"] == size], "ifn_alpha", "real", other), "difference"))
     for other in ["shuffled", "vanilla", "coexpression"]:
         per_seed = []
         for seed, g in slopes_input.groupby(level=0):
             d = (g["real"] - g[other]).droplevel(0)
             per_seed.append(np.polyfit(np.log2(d.index.values), d.values, 1)[0])
-        tests.append(("Q1b", f"slope per doubling of cells: real - {other}", np.array(per_seed), "difference"))
+        tests.append(("S3", f"slope per doubling of cells: real - {other}", np.array(per_seed), "difference"))
 
 latent_free = [("test loss per cell (lower is better)", "diagnostics_fit.csv", "test_loss"),
                ("decoded response correlation", "diagnostics_response.csv", "lfc_corr"),
@@ -128,7 +128,7 @@ latent_free = [("test loss per cell (lower is better)", "diagnostics_fit.csv", "
 for label, file, column in latent_free:
     frame = pd.read_csv(out / file)
     for other in ["shuffled", "setshuffle", "coexpression"]:
-        tests.append(("Q1c", f"{label}: real - {other}", diff(frame, column, "real", other), "difference"))
+        tests.append(("latent-free", f"{label}: real - {other}", diff(frame, column, "real", other), "difference"))
 
 rows = []
 for family, name, d, kind in tests:
@@ -139,7 +139,7 @@ for family, name, d, kind in tests:
     rows.append({"family": family, "test": name, "pairs": len(d), "mean_difference": d.mean(), "p_raw": p, "_d": d, "_kind": kind})
 result = pd.DataFrame(rows)
 
-for family, method in [("Q1", "Holm"), ("Q1b", "Benjamini-Hochberg"), ("Q1c", "Holm")]:
+for family, method in [("S1", "Holm"), ("S3", "Benjamini-Hochberg"), ("latent-free", "Holm")]:
     sel = result["family"] == family
     if not sel.any():
         continue

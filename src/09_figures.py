@@ -1,6 +1,6 @@
 # Figures from the evaluation tables (src/08_evaluate.py) and the training logs, written to reports/figures/. The
-# learning-curve figure is drawn once its tables exist (src/08_evaluate.py --learning-curves). The panel of measures that
-# choose no latent needs src/10_checks.py, and the tests in src/11_tests.py supply the intervals.
+# learning-curve figure is drawn once its tables exist (src/08_evaluate.py --learning-curves). The comparison figures need src/10_checks.py,
+# and the tests in src/11_tests.py supply the intervals.
 from pathlib import Path
 
 import matplotlib
@@ -8,13 +8,13 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from gene_sets import collection, data, run
+from gene_sets import collection, data, main, run
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-surface, ink, secondary, muted, grid, baseline = "#fcfcfb", "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7"
-colors = {"vanilla": "#cfcfcf", "real": "#0072B2", "shuffled": "#D55E00", "setshuffle": "#E69F00", "coexpression": "#009E73"}  # Okabe-Ito, colourblind-safe
+surface, ink, secondary, muted, grid, baseline = "#ffffff", "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7"
+colors = {"vanilla": "#cfcfcf", "real": "#0072B2", "shuffled": "#882255", "setshuffle": "#56B4E9", "coexpression": "#117733"}  # blue, green, sky blue and wine: distinct under red-green colour blindness
 names = {"vanilla": "no mask", "real": "Hallmark", "shuffled": "fully random", "setshuffle": "within-set random", "coexpression": "co-expression"}
 ticks = {"vanilla": "no\nmask", "real": "Hallmark", "shuffled": "fully\nrandom", "setshuffle": "within-set\nrandom", "coexpression": "co-\nexpression"}
 folders = {"vanilla": "plain", "real": "real", "shuffled": "shuffled", "setshuffle": "setshuffle", "coexpression": "coexpression"}
@@ -32,78 +32,60 @@ plt.rcParams.update({
     "savefig.dpi": 400, "savefig.bbox": "tight", "pdf.fonttype": 42,
 })
 
+SEED_S, MEAN_S = 9, 15  # point area (pt²) of a seed and of the black mean: the same in every figure
+
+
+def seed_dots(ax, x, y, color, filled=True, zorder=3):
+    # a seed: one translucent dot in the colour of its variant (an open ring when `filled` is False, an inactive latent)
+    if filled:
+        ax.scatter(x, y, s=SEED_S, color=matplotlib.colors.to_rgba(color, 0.65), lw=0, zorder=zorder)
+    else:
+        ax.scatter(x, y, s=SEED_S, facecolor="none", edgecolor=color, lw=0.8, zorder=zorder)
+
+
+def mean_dot(ax, x, y, zorder=5):
+    ax.scatter(x, y, s=MEAN_S, color=ink, lw=0, zorder=zorder)
+
+
 mask_name = "Reactome" if collection == "reactome" else "Hallmark"
-if data != "kang":  # Oesinghaus benchmark (SC_DATA=oesinghaus_ifn_beta or oesinghaus_il_2, SC_SETS=hallmark or reactome): one figure, then stop
-    # a the score of the known-answer latent, b-e the four measures that choose no latent, f the 12 paired contrasts of those measures
+if True:  # one figure per benchmark (SC_DATA, SC_SETS); the main experiment (kang/hallmark) continues below, every other benchmark stops here
+    # the four measures that choose no latent, one dot per seed
     ticks["real"] = mask_name
-    answer = {"oesinghaus_ifn_beta": "interferon-α/β set", "oesinghaus_il_2": "IL-2 set"}.get(data, "known-answer set")
+    bench_label = {"kang": "Kang IFN-β", "oesinghaus_ifn_beta": "Oesinghaus IFN-β", "oesinghaus_il_2": "Oesinghaus IL-2"}[data]
     tables, out = Path(f"reports/tables/{run}"), Path("reports/figures")
     out.mkdir(parents=True, exist_ok=True)
-    scores = pd.read_csv(tables / "scores.csv")
-    tests = pd.read_csv(tables / "tests.csv")
-    n_types = pd.read_csv(tables / "cell_types.csv")["cell_type"].nunique()
     offset = dict(zip(range(10), np.linspace(-0.18, 0.18, 10)))  # each seed keeps its position in every panel
 
 
-    def strip(ax, frame, column, hollow=None):
-        # one dot per seed (open when the named latent was inactive) and the mean as a short bar
+    def strip(ax, frame, column):
+        # one dot per seed and the mean as a short bar
         for i, v in enumerate(order):
             runs = frame[frame["variant"] == v]
             if runs.empty:
                 continue
             xs = i + runs["seed"].map(offset)
-            empty = runs[hollow].eq(False) if hollow else pd.Series(False, index=runs.index)
-            ax.scatter(xs[~empty], runs.loc[~empty, column], s=24, color=colors[v], edgecolor=surface, lw=0.8, zorder=3)
-            ax.scatter(xs[empty], runs.loc[empty, column], s=24, color=surface, edgecolor=colors[v], lw=1.2, zorder=3)
-            ax.plot([i - 0.3, i + 0.3], [runs[column].mean()] * 2, color=ink, lw=1.1, zorder=4)
+            seed_dots(ax, xs, runs[column], colors[v])
+            mean_dot(ax, i, runs[column].mean())
         ax.set_xticks(range(len(order)), [ticks[v] for v in order])
         ax.set_xlim(-0.6, len(order) - 0.4)
         ax.grid(axis="x", visible=False)
         ax.tick_params(axis="x", labelsize=6.5)
 
 
-    measures = [("b  Test loss per cell", "diagnostics_fit.csv", "test_loss", "negative log-likelihood + KL\n(lower is better)"),
-                ("c  Decoded response", "diagnostics_response.csv", "lfc_corr", "correlation across genes with\nthe observed shift"),
-                ("d  Cell-type probe", "diagnostics_celltype.csv", "balanced_acc_full", "balanced accuracy"),
-                ("e  Stimulation probe", "diagnostics_probe.csv", "probe_auroc", "AUROC stim vs ctrl")]
-    fig, axes = plt.subplots(2, 3, figsize=(10.2, 5.8), gridspec_kw={"hspace": 0.6, "wspace": 0.38})
-    ax = axes[0, 0]
-    strip(ax, scores, "ifn_alpha", hollow="ifn_alpha_active")
-    ax.axhline(0.5, color=muted, lw=0.8, zorder=0)
-    ax.set(title=f"a  Score of the {answer}", ylabel=f"AUROC stim vs ctrl\nmean over {n_types} cell types")
-    for ax, (title, file, column, ylabel) in zip([axes[0, 1], axes[0, 2], axes[1, 0], axes[1, 1]], measures):
+    measures = [("a  Test loss per cell", "diagnostics_fit.csv", "test_loss", "negative log-likelihood + KL\n(lower is better)"),
+                ("b  Decoded response", "diagnostics_response.csv", "lfc_corr", "correlation across genes with\nthe observed shift"),
+                ("c  Cell-type probe", "diagnostics_celltype.csv", "balanced_acc_full", "balanced accuracy"),
+                ("d  Stimulation probe", "diagnostics_probe.csv", "probe_auroc", "AUROC stim vs ctrl")]
+    fig, axes = plt.subplots(2, 2, figsize=(7.4, 5.6), gridspec_kw={"hspace": 0.55, "wspace": 0.35})
+    for ax, (title, file, column, ylabel) in zip(axes.ravel(), measures):
         strip(ax, pd.read_csv(tables / file), column)
         ax.set(title=title, ylabel=ylabel)
-
-    # f: the 12 paired contrasts of the latent-free family (real minus each other mask) as a grid. The sign says who is better
-    # (the loss is lower-is-better), the cell is dark when Holm rejects and grey when not, the number is the adjusted p.
-    ax = axes[1, 2]
-    other = {"shuffled": "fully\nrandom", "setshuffle": "within-set\nrandom", "coexpression": "co-\nexpression"}
-    labels = {"test loss per cell": "test loss", "decoded response correlation": "decoded response",
-              "cell-type balanced accuracy": "cell-type probe", "stimulation probe AUROC": "stimulation probe"}
-    for r, (key, label) in enumerate(labels.items()):
-        for c, variant in enumerate(other):
-            row = tests[tests["test"].str.startswith(key) & tests["test"].str.endswith(f"real - {variant}")].iloc[0]
-            better = row["mean_difference"] < 0 if key.startswith("test loss") else row["mean_difference"] > 0
-            color = ink if row["reject"] else muted
-            ax.text(c, r - 0.12, 'better' if better else 'worse', ha="center", va="center", fontsize=6.5, color=color,
-                    fontweight="bold" if row["reject"] else "normal")
-            ax.text(c, r + 0.18, f"p = {row['p_adj']:.3f}", ha="center", va="center", fontsize=6, color=color)
-    ax.set_xlim(-0.5, 2.5)
-    ax.set_ylim(3.5, -0.5)
-    ax.set_xticks(range(3), list(other.values()))
-    ax.set_yticks(range(4), list(labels.values()))
-    ax.xaxis.tick_top()
-    ax.tick_params(axis="both", labelsize=6.5)
-    ax.grid(False)
-    for side in ax.spines.values():
-        side.set_visible(False)
-    ax.set_title(f"f  {mask_name}: better or worse than", pad=24)
-    fig.suptitle(f"{data}, {collection}   (black: rejected after Holm correction, grey: not)", x=0.02, ha="left", fontsize=8, color=secondary)
+    fig.suptitle(f"{bench_label}, {mask_name} sets", x=0.02, ha="left", fontsize=9)
     fig.savefig(out / f"{data}_{collection}.png")
     plt.close(fig)
     print("saved", out / f"{data}_{collection}.png")
-    raise SystemExit
+    if not main:
+        raise SystemExit
 
 tables, out = Path("reports/tables/kang/hallmark"), Path("reports/figures")
 out.mkdir(parents=True, exist_ok=True)
@@ -126,9 +108,9 @@ def strip(ax, column, hollow=None, pairs=True, frame=None):
             continue
         xs = x[v] + runs["seed"].map(offset)
         empty = runs[hollow].eq(False) if hollow else pd.Series(False, index=runs.index)
-        ax.scatter(xs[~empty], runs.loc[~empty, column], s=24, color=colors[v], edgecolor=surface, lw=0.8, zorder=3)
-        ax.scatter(xs[empty], runs.loc[empty, column], s=24, color=surface, edgecolor=colors[v], lw=1.2, zorder=3)
-        ax.plot([x[v] - 0.3, x[v] + 0.3], [runs[column].mean()] * 2, color=ink, lw=1.1, zorder=4)
+        seed_dots(ax, xs[~empty], runs.loc[~empty, column], colors[v])
+        seed_dots(ax, xs[empty], runs.loc[empty, column], colors[v], filled=False)
+        mean_dot(ax, x[v], runs[column].mean())
     ax.set_xticks(range(len(order)), [ticks[v] for v in order])
     ax.set_xlim(-0.6, len(order) - 0.4)
     ax.grid(axis="x", visible=False)
@@ -276,8 +258,8 @@ dot_in = 0.04
 for i, v in enumerate(variants):
     y_ = response[response["variant"] == v]["lfc_corr"].to_numpy()
     x_ = i + swarm(y_, dot_in / (width_in / len(variants)), dot_in / (height_in / (high - low)))
-    ax.scatter(x_, y_, s=8, color=colors[v], edgecolor=surface, lw=0.3, zorder=3)
-    ax.scatter(i, y_.mean(), marker="D", s=14, color=ink, edgecolor=surface, lw=0.6, zorder=4)
+    seed_dots(ax, x_, y_, colors[v])
+    mean_dot(ax, i, y_.mean())
     ax.text(i, y_.mean() - 0.025, f"{y_.mean():.2f}", ha="center", va="top", fontsize=6.5, color=ink, zorder=5)
 ax.set(xlim=(-0.5, len(variants) - 0.5), ylim=(low, high), yticks=[0.7, 0.8, 0.9, 1.0], yticklabels=["0.7", "0.8", "0.9", "1.0"])
 ax.set_ylabel("correlation")
@@ -309,7 +291,7 @@ for other, label_ in [("shuffled", "fully random"), ("setshuffle", "within-set r
     primary = other == "shuffled"  # the comparison fixed before the 10-seed runs, in black
     color, size = (ink, 22) if primary else (muted, 16)
     diff = (wide["real"] - wide[other]).dropna()
-    ax.scatter(diff, y + diff.index.map(offset), s=7, color=color, alpha=0.45, lw=0, zorder=2)
+    seed_dots(ax, diff, y + diff.index.map(offset), color, zorder=2)
     ax.plot([r["ci_low"], r["ci_high"]], [y, y], color=color, lw=0.9, zorder=3)
     ax.scatter(r["hodges_lehmann"], y, s=size, color=color, edgecolor=surface, lw=0.6, zorder=4)
     rows.append((y, f"Hallmark−{label_}"))
@@ -320,19 +302,6 @@ ax.set_ylim(y - 0.5, -1.0)
 ax.grid(axis="y", visible=False)
 ax.set(title="c  Paired difference, median and 99.5% interval", xlabel="difference in AUROC")
 fig.savefig(out / "scores.png")
-plt.close(fig)
-
-# 1b. The four measures that choose no latent, one dot per seed
-measures = [("a  Test loss per cell", "diagnostics_fit.csv", "test_loss", "negative log-likelihood + KL (lower is better)"),
-            ("b  Decoded response", "diagnostics_response.csv", "lfc_corr", "correlation across genes with the observed shift"),
-            ("c  Cell-type probe", "diagnostics_celltype.csv", "balanced_acc_full", "balanced accuracy"),
-            ("d  Stimulation probe", "diagnostics_probe.csv", "probe_auroc", "AUROC stim vs ctrl")]
-fig, axes = plt.subplots(2, 2, figsize=(7.4, 5.4), gridspec_kw={"hspace": 0.5, "wspace": 0.3})
-for ax, (title, file, column, ylabel) in zip(axes.ravel(), measures):
-    strip(ax, column, pairs=False, frame=pd.read_csv(tables / file))
-    ax.set(title=title, ylabel=ylabel)
-    ax.tick_params(axis="x", labelsize=6.5)
-fig.savefig(out / "panel.png")
 plt.close(fig)
 
 # 2. Learning curves: mean and 95% t-interval over seeds at each training size, and the real - shuffled difference
@@ -354,7 +323,7 @@ if (tables / "learning_curves_scores.csv").exists():
         wide = all_scores[all_scores["train_size"] == n].pivot(index="seed", columns="variant", values="ifn_alpha")
         diff = (wide["real"] - wide["shuffled"]).dropna()
         r = tests.loc["fixed latent: real - shuffled" if n == full else f"{n} cells: real - shuffled"]
-        ax.scatter(n * (1 + diff.index.map(offset) * 0.5), diff, s=7, color=ink, alpha=0.4, lw=0, zorder=2)
+        seed_dots(ax, n * (1 + diff.index.map(offset) * 0.5), diff, ink, zorder=2)
         ax.vlines(n, r["ci_low"], r["ci_high"], color=ink, lw=0.9, zorder=3)
         ax.scatter(n, r["hodges_lehmann"], s=16, color=ink, edgecolor=surface, lw=0.5, zorder=4)
     ax.axhline(0, color=baseline, lw=0.8, zorder=0)
@@ -368,26 +337,59 @@ if (tables / "learning_curves_scores.csv").exists():
     fig.savefig(out / "learning_curves.png")
     plt.close(fig)
 
-# 6. Pipeline: the phases of the analysis, one box per step
+# 6. Pipeline: the phases of the analysis, one box per step; what varies between benchmarks under the step that varies it,
+# and the two extra analyses as dashed boxes under the step they change
 phases = {"Data": ("#e3eef7", "#5b9bd5"), "Design": ("#fbe6cf", "#e69f00"), "Model": ("#ecdcf0", "#a86fb5"),
           "Evaluation": ("#d6eeea", "#2a9d8f")}
-steps = [("Data", "Labelled\nsingletons"), ("Data", "Cell QC"), ("Data", "Gene\nfilter"), ("Design", "Split"),
-         ("Design", "Masks"), ("Model", "VAE"), ("Evaluation", "Four\nmeasures"), ("Evaluation", "Tests")]
-bw, bh, gap, gap_phase = 0.82, 0.52, 0.17, 0.3
+steps = [("Data", "Cells of a\ncontrast"), ("Data", "Cell QC"), ("Data", "Gene\nfilter"), ("Design", "Split"),
+         ("Design", "Gene sets"), ("Design", "Five\nmasks"), ("Model", "VAE"), ("Evaluation", "Measures"), ("Evaluation", "Tests")]
+stacks = {0: [("Kang IFN-β", 0), ("Oesinghaus", 0), ("IFN-β", 1), ("IL-2", 1)], 4: [("Hallmark", 0), ("Reactome", 0)],
+          5: [("real sets", 0), ("co-expression", 0), ("random", 0), ("fully random", 1), ("within-set random", 1), ("no mask", 0)],
+          2: [("Without the 250\nstrongest genes", 0)],
+          3: [("Learning curves", 0), ("500 cells", 1), ("1,000 cells", 1), ("2,000 cells", 1), ("4,000 cells", 1),
+              ("8,000 cells", 1), ("all 16,749", 1)],
+          7: [("test loss", 0), ("decoded response", 0), ("probes", 0), ("cell-type", 1), ("stimulation", 1),
+              ("named-latent and\nreference scores", 0)]}  # (label, level): level 1 hangs under the box above it
+bw, bh, gap, gap_phase = 1.0, 0.52, 0.17, 0.3
 fig_w = 0.2 + len(steps) * bw + sum(gap_phase if steps[k][0] != steps[k + 1][0] else gap for k in range(len(steps) - 1))
-fig = plt.figure(figsize=(fig_w, 1.0))
+fig_h = 2.95
+fig = plt.figure(figsize=(fig_w, fig_h))
 bg = fig.add_axes([0, 0, 1, 1])
-bg.set(xlim=(0, fig_w), ylim=(0, 1.0))
+bg.set(xlim=(0, fig_w), ylim=(0, fig_h))
 bg.axis("off")
 arrow = dict(arrowstyle="-|>", color=secondary, lw=0.9, mutation_scale=8, shrinkA=0, shrinkB=0)
-x, y, span = 0.1, 0.08, {}
+x, y, span, centre = 0.1, 2.05, {}, {}
 for k, (phase, name) in enumerate(steps):
     fill, edge = phases[phase]
     bg.add_patch(matplotlib.patches.FancyBboxPatch((x, y), bw, bh, boxstyle="round,pad=0,rounding_size=0.05", fc=fill, ec=edge,
                                                    lw=1.0))
     bg.text(x + bw / 2, y + bh / 2, name, ha="center", va="center", fontsize=7, color=ink, linespacing=1.1)
+    centre[k] = x + bw / 2
     lo, hi = span.get(phase, (x, x))
     span[phase] = (min(lo, x), x + bw)
+    if k in stacks:  # small boxes under the step, as a tree: a spine on the left, children indented under their parent
+        h, pad, left0, indent, right = 0.2, 0.06, x + 0.12, 0.17, x + bw - 0.03
+        yt, boxes = y - 0.1, []
+        for item, level in stacks[k]:
+            box_h = h * 1.7 if "\n" in item else h
+            yt -= box_h
+            boxes.append((item, level, left0 + level * indent, yt, box_h))
+            yt -= pad
+        top_level = [b for b in boxes if b[1] == 0]
+        bg.plot([x + 0.04] * 2, [y, top_level[-1][3] + top_level[-1][4] / 2], color=muted, lw=0.8, zorder=0)
+        for n, (item, level, left, yb, box_h) in enumerate(boxes):
+            bg.add_patch(matplotlib.patches.FancyBboxPatch((left, yb), right - left, box_h,
+                                                           boxstyle="round,pad=0,rounding_size=0.04",
+                                                           fc="#f3f2ee" if k in (2, 3) else surface,
+                                                           ec=muted if k in (2, 3) else phases[phase][1], lw=0.8, zorder=2))
+            bg.text((left + right) / 2, yb + box_h / 2, item, ha="center", va="center", fontsize=5.4 if level else 5.8,
+                    color=ink, linespacing=1.1, zorder=3)
+            if level == 0:  # tick from the spine
+                bg.plot([x + 0.04, left], [yb + box_h / 2] * 2, color=muted, lw=0.8, zorder=0)
+            else:  # elbow from the parent box (the nearest level-0 box above) to this child
+                parent = next(b for b in reversed(boxes[:n]) if b[1] == 0)
+                elbow = parent[2] + 0.08
+                bg.plot([elbow, elbow, left], [parent[3], yb + box_h / 2, yb + box_h / 2], color=muted, lw=0.8, zorder=0)
     if k < len(steps) - 1:
         step = gap_phase if steps[k + 1][0] != phase else gap
         strong = phase == "Model"  # the evaluation reads the trained VAE itself
@@ -399,5 +401,192 @@ for phase, (lo, hi) in span.items():  # a label and a line above each phase
     bg.text((lo + hi) / 2, y + bh + 0.2, phase, ha="center", va="center", fontsize=7.5, fontweight="bold", color=ink)
 fig.savefig(out / "pipeline.png")
 plt.close(fig)
+
+# 7. Overarching figures: the six benchmarks side by side (Q1c to Q1f). One line weight and one point size for every line plot.
+import matplotlib.transforms as mtransforms
+
+LW, PT = 1.0, 3  # line weight and point size
+grey = "#9a9a9a"
+vcolor = {**colors, "vanilla": grey}
+vnames = {**names, "real": "real sets"}
+bench_rows, bench_groups, y_ = [], [], 0.0
+for d_, label_ in [("kang", "Kang IFN-β"), ("oesinghaus_ifn_beta", "Oesinghaus IFN-β"), ("oesinghaus_il_2", "Oesinghaus IL-2")]:
+    first = y_
+    for c_ in ("hallmark", "reactome"):
+        bench_rows.append((f"{d_}/{c_}", c_.capitalize(), y_))
+        y_ += 1
+    bench_groups.append((label_, first, y_ - 1))
+    y_ += 0.6
+
+
+def group_names(ax, groups, inches=0.7):
+    # the shared part of the row labels (the contrast) once on the left, instead of repeated on every row
+    shift = mtransforms.offset_copy(ax.get_yaxis_transform(), fig=ax.figure, x=-inches, units="inches")
+    for text, ya, yb in groups:
+        ax.text(0, (ya + yb) / 2, text, ha="right", va="center", fontsize=8, fontweight="bold", color=ink, transform=shift,
+                linespacing=1.1)
+
+
+def advantage_figure():
+    # advantage of the real sets over each other mask, for the four measures, with the interval of the paired test
+    measures = [("test loss per cell (lower is better)", "test loss per cell\n(loss units)", -1),
+                ("decoded response correlation", "decoded response\n(correlation)", 1),
+                ("cell-type balanced accuracy", "cell-type probe\n(balanced accuracy)", 1),
+                ("stimulation probe AUROC", "stimulation probe\n(AUROC)", 1)]
+    others = [(v, names[v], vcolor[v]) for v in ("shuffled", "setshuffle", "coexpression")]  # each line in the colour of the mask it is compared with
+    rows, groups, ya = [], [], 0.0
+    for d_, label_ in [("kang", "Kang IFN-β"), ("oesinghaus_ifn_beta", "Oesinghaus IFN-β"), ("oesinghaus_il_2", "Oesinghaus IL-2")]:
+        first = ya
+        for c_ in ("hallmark", "reactome"):
+            rows.append((f"{d_}/{c_}", c_.capitalize(), ya))
+            ya += 1
+        if d_ == "kang":  # the repeat without the 250 strongest genes belongs to the Kang group
+            rows.append(("kang_drop250/hallmark", "Hallmark, 250 strongest\ngenes dropped", ya))
+            ya += 1
+        groups.append((label_, first, ya - 1))
+        ya += 0.6
+    with plt.rc_context({"lines.linewidth": LW, "lines.markersize": PT, "axes.grid": False, "axes.spines.left": False}):
+        fig, axs = plt.subplots(1, 4, figsize=(10.4, 4.3), sharey=True, gridspec_kw={"wspace": 0.12})
+        for ax, (key, title, sign) in zip(axs, measures):
+            ax.axvline(0, color=ink, lw=0.6)
+            for path, _, y in rows:
+                t = pd.read_csv(f"reports/tables/{path}/tests.csv")
+                for j, (o, _, c) in enumerate(others):
+                    r = t[t["test"] == f"{key}: real - {o}"].iloc[0]
+                    yy = y + (j - 1) * 0.26
+                    lo, hi = sorted([sign * r["ci_low"], sign * r["ci_high"]])
+                    ax.plot([lo, hi], [yy, yy], color=c, zorder=2)
+                    if r["reject"]:
+                        ax.plot(sign * r["hodges_lehmann"], yy, "o", color=ink, zorder=3)
+            ax.set_title(title, fontsize=8, loc="left")
+            ax.tick_params(axis="y", length=0)
+            ax.grid(axis="x", color=grid, lw=0.6)
+        axs[0].set_yticks([y for _, _, y in rows], [l for _, l, _ in rows], fontsize=7.5)
+        axs[0].set_ylim(rows[-1][2] + 0.7, -0.7)
+        group_names(axs[0], groups)
+        for _, label, c in others:
+            axs[0].plot([], [], color=c, label=f"real sets minus {label}")
+        fig.legend(*axs[0].get_legend_handles_labels(), frameon=False, fontsize=7.5, ncol=3, loc="upper center", bbox_to_anchor=(0.55, 1.03))
+        fig.text(0.55, -0.01, "right of the line: real sets better (test loss flipped); black dot: adjusted p < 0.05", ha="center",
+                 fontsize=7.5, color=secondary)
+        fig.savefig(out / "advantage.png")
+        plt.close(fig)
+
+
+def share_scores(path):
+    # decoded response of each variant, as the position between the fully random mask (0) and no mask (100)
+    w = pd.read_csv(f"reports/tables/{path}/diagnostics_response.csv").pivot(index="seed", columns="variant", values="lfc_corr")
+    zero = w["shuffled"].mean()
+    return {v: (w[v] - zero) / (w["vanilla"].mean() - zero) * 100 for v in ("real", "coexpression", "setshuffle")}
+
+
+def share_figure(rows, groups, size, name):
+    with plt.rc_context({"lines.linewidth": LW, "lines.markersize": PT, "axes.grid": False, "axes.spines.left": False}):
+        fig, ax = plt.subplots(figsize=size)
+        top = rows[0][2] - 0.8
+        ax.axvline(0, color=colors["shuffled"], lw=0.6, zorder=1)
+        ax.axvline(100, color=grey, lw=0.6, zorder=1)
+        for path, _, y in rows:
+            s = share_scores(path)
+            for j, v in enumerate(("real", "coexpression", "setshuffle")):
+                yy = y + (j - 1) * 0.28
+                ax.plot([s[v].min(), s[v].max()], [yy, yy], color=vcolor[v], zorder=2)
+                ax.plot(s[v].mean(), yy, "o", color=vcolor[v], zorder=3)
+        ax.text(1.5, top, "fully random mask", va="center", ha="left", fontsize=7, color=colors["shuffled"])
+        ax.text(101.5, top, "no mask", va="center", ha="left", fontsize=7, color=grey)
+        ax.set_yticks([y for _, _, y in rows], [l for _, l, _ in rows], fontsize=7.5)
+        ax.tick_params(axis="y", length=0)
+        ax.set_xticks([-50, -25, 0, 25, 50, 75, 100])
+        ax.set_xlim(-70, 125)
+        ax.set_ylim(max(y for _, _, y in rows) + 0.7, top - 0.5)
+        ax.grid(axis="x", color=grid, lw=0.6)
+        ax.set_xlabel("relative decoded response (%)")
+        for v in ("real", "coexpression", "setshuffle"):
+            ax.plot([], [], color=vcolor[v], label=vnames[v])
+        ax.legend(frameon=False, fontsize=7.5, ncol=3, loc="lower center", bbox_to_anchor=(0.4, 1.0))
+        if groups:
+            group_names(ax, groups)
+        fig.savefig(out / name)
+        plt.close(fig)
+
+
+def levels_figures():
+    # decoded response of every seed (small point) and its mean (black point), for every variant
+    order_ = ["real", "coexpression", "setshuffle", "shuffled", "vanilla"]
+    offsets = np.linspace(-0.17, 0.17, 10)
+    with plt.rc_context({"lines.linewidth": LW, "axes.grid": False}):
+        fig, ax = plt.subplots(figsize=(7.4, 3.4))
+        for gi, (path, label, _) in enumerate(bench_rows):
+            d = pd.read_csv(f"reports/tables/{path}/diagnostics_response.csv")
+            for k, v in enumerate(order_):
+                vals = d[d["variant"] == v]["lfc_corr"]
+                ax.plot([gi * 6 + k] * 2, [vals.min(), vals.max()], color=vcolor[v], lw=LW)
+                ax.plot(gi * 6 + k, vals.mean(), "o", color=vcolor[v], markersize=PT)
+        ax.set_xticks([gi * 6 + 2 for gi in range(6)], [l for _, l, _ in bench_rows], fontsize=7.5)
+        ax.set_xlim(-1, 35)
+        ax.set_ylim(0.45, 1.0)
+        ax.set_ylabel("decoded response (correlation)")
+        ax.grid(axis="y", color=grid, lw=0.6)
+        belows = mtransforms.blended_transform_factory(ax.transData, ax.transAxes)
+        for ci, (_, label, _) in enumerate(zip(range(3), [g[0] for g in bench_groups], range(3))):
+            ax.text(ci * 12 + 5, -0.16, label, ha="center", va="top", fontsize=8, fontweight="bold", transform=belows)
+        for v in order_:
+            ax.plot([], [], "o", color=vcolor[v], markersize=PT, label=vnames[v])
+        ax.legend(frameon=False, fontsize=7.5, ncol=5, loc="lower center", bbox_to_anchor=(0.5, 1.0))
+        fig.savefig(out / "levels_benchmarks.png")
+        plt.close(fig)
+        fig, ax = plt.subplots(figsize=(4.6, 3.0))
+        for gi, path in enumerate(["kang/hallmark", "kang_drop250/hallmark"]):
+            d = pd.read_csv(f"reports/tables/{path}/diagnostics_response.csv")
+            for k, v in enumerate(order_):
+                vals = d[d["variant"] == v].sort_values("seed")["lfc_corr"].to_numpy()
+                seed_dots(ax, gi * 6 + k + offsets, vals, vcolor[v])
+                mean_dot(ax, gi * 6 + k, vals.mean())
+        ax.set_xticks([2, 8], ["all 12,034 genes", "250 strongest\nresponse genes dropped"], fontsize=7.5)
+        ax.set_xlim(-0.8, 10.8)
+        ax.set_ylim(0.45, 1.0)
+        ax.set_ylabel("decoded response (correlation)")
+        ax.grid(axis="y", color=grid, lw=0.6)
+        for v in order_:
+            ax.plot([], [], "o", color=vcolor[v], markersize=PT, label=vnames[v])
+        ax.legend(frameon=False, fontsize=7, ncol=3, loc="lower center", bbox_to_anchor=(0.5, 1.0), columnspacing=1, handletextpad=0.2)
+        fig.savefig(out / "levels_Q1c.png")
+        plt.close(fig)
+
+
+def named_latent_figure():
+    # score of the latent at the position of the known-answer set (real and random masks) or of the best latent (co-expression, no mask)
+    order_ = ["real", "coexpression", "setshuffle", "shuffled", "vanilla"]
+    with plt.rc_context({"lines.linewidth": LW, "lines.markersize": PT, "axes.grid": False}):
+        fig, ax = plt.subplots(figsize=(7.4, 3.4))
+        for gi, (path, _, _) in enumerate(bench_rows):
+            d = pd.read_csv(f"reports/tables/{path}/scores.csv")
+            d = d[d["train_size"] == d["train_size"].max()]
+            for k, v in enumerate(order_):
+                vals = d[d["variant"] == v]["ifn_alpha"]
+                ax.plot([gi * 6 + k] * 2, [vals.min(), vals.max()], color=vcolor[v], lw=LW)
+                ax.plot(gi * 6 + k, vals.mean(), "o", color=vcolor[v], markersize=PT)
+        ax.set_xticks([gi * 6 + 2 for gi in range(6)], [l for _, l, _ in bench_rows], fontsize=7.5)
+        ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
+        ax.set_xlim(-1, 35)
+        ax.set_ylim(0, 1.02)
+        ax.set_ylabel("score of the latent (AUROC)")
+        ax.grid(axis="y", color=grid, lw=0.6)
+        belows = mtransforms.blended_transform_factory(ax.transData, ax.transAxes)
+        for ci, (label, _, _) in enumerate(bench_groups):
+            ax.text(ci * 12 + 5, -0.16, label, ha="center", va="top", fontsize=8, fontweight="bold", transform=belows)
+        for v in order_:
+            ax.plot([], [], "o", color=vcolor[v], markersize=PT, label=vnames[v])
+        ax.legend(frameon=False, fontsize=7.5, ncol=5, loc="lower center", bbox_to_anchor=(0.5, 1.0))
+        fig.savefig(out / "named_latent.png")
+        plt.close(fig)
+
+
+advantage_figure()
+share_figure(bench_rows, bench_groups, (6.4, 3.4), "share_benchmarks.png")
+share_figure([("kang/hallmark", "all 12,034 genes", 0.0), ("kang_drop250/hallmark", "250 strongest\nresponse genes\ndropped", 1.2)], [],
+             (6.4, 2.0), "share_Q1c.png")
+levels_figures()
+named_latent_figure()
 
 print("saved", *sorted(p.name for p in out.glob("*.png")))
