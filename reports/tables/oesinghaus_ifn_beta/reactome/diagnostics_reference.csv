@@ -1,0 +1,3 @@
+reference,test_auroc
+"mean log expression of the 62 interferon-alpha genes present (no model, no labels)",0.843675
+best of 58 principal components (chosen on validation labels),0.858648

@@ -1,5 +1,5 @@
 # Checks on the scored runs. Run after 08_evaluate.py (and 08_evaluate.py --learning-curves for the slopes). Rules and
-# reasons are in the README (Robustness checks). Tables go to reports/tables/ (reports/tables_<tag>/ with SC_TAG).
+# reasons are in the README (Robustness checks). Tables go to reports/tables/<data>/<collection>/ (reports/tables/kang/hallmark/ for the main experiment).
 #   robustness_best_latent.csv, robustness_donors*.csv, robustness_slopes.csv
 #     A. every variant scored on its best active latent (chosen on validation cells) and on its named latent;
 #     B. per-donor scores of the named latents; C. per-seed slopes of the learning-curve differences (main benchmark only).
@@ -25,12 +25,13 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import balanced_accuracy_score, roc_auc_score
 from sklearn.preprocessing import StandardScaler
 
-from scoring import (alpha_name, auroc, donor, gamma_name, min_variance, results_dir, rows, split, stim, suffix, tables_dir,
+from gene_sets import collection, data, file_tag
+from scoring import (alpha_name, auroc, donor, gamma_name, min_variance, main, results_dir, rows, split, stim, tables_dir, tag,
                      types, val_all, cell_type)
 
 out = tables_dir
 out.mkdir(parents=True, exist_ok=True)
-main_benchmark = suffix == ""
+main_benchmark = main
 variants = [("plain", "vanilla"), ("real", "real"), ("shuffled", "shuffled"), ("setshuffle", "setshuffle"), ("coexpression", "coexpression")]
 
 
@@ -86,8 +87,8 @@ if main_benchmark:
     pd.DataFrame(slopes).to_csv(out / "robustness_slopes.csv", index=False, float_format="%.6g")
 
 # Expression for E, F, G ------------------------------------------------------------------------------------------
-adata = ad.read_h5ad(f"data/processed/kang{suffix}.h5ad")
-masks = np.load(f"data/processed/masks_hallmark{suffix}.npz", allow_pickle=True)
+adata = ad.read_h5ad(f"data/processed/{data}{tag}.h5ad")
+masks = np.load(f"data/processed/masks_{collection}{file_tag}.npz", allow_pickle=True)
 assert (masks["genes"] == adata.var_names).all()
 sets, real = list(masks["sets"]), masks["real"]
 alpha_genes, gamma_genes = real[:, sets.index(alpha_name)], real[:, sets.index(gamma_name)]
@@ -147,7 +148,7 @@ print(reference.to_string(index=False))
 # megakaryocytes excluded). Each condition was sequenced in its own 10x run, so a remaining separation can be a run effect
 # or a wider biological response; the data cannot tell them apart.
 if main_benchmark:
-    train_rows = np.flatnonzero((split == "train") & (cell_type != "Megakaryocytes"))
+    train_rows = np.flatnonzero((split == "train") & np.isin(cell_type, types))
     x_train, s_train = logx[train_rows], stim[train_rows]
     mean_stim = np.asarray(x_train[s_train].mean(axis=0)).ravel()
     mean_ctrl = np.asarray(x_train[~s_train].mean(axis=0)).ravel()
@@ -244,7 +245,10 @@ print(response.groupby("variant")[["lfc_corr", "lfc_corr_ifn"]].agg(["mean", "st
 # Cell-type labels were never used in training (only for QC thresholds and for scoring within types). A linear probe on the
 # latent means, fitted on validation cells and scored on test cells, shows what the latents learned beyond the stimulation.
 # Few-shot: the probe sees only k validation cells per type (drawn with the run's seed). Hard pairs: AUROC between two similar types.
-pairs = [("CD4 T cells", "CD8 T cells", "auroc_cd4_vs_cd8"), ("CD14+ Monocytes", "FCGR3A+ Monocytes", "auroc_cd14_vs_fcgr3a")]
+if data == "kang":
+    pairs = [("CD4 T cells", "CD8 T cells", "auroc_cd4_vs_cd8"), ("CD14+ Monocytes", "FCGR3A+ Monocytes", "auroc_cd14_vs_fcgr3a")]
+else:  # the Oesinghaus data name the types differently; the same two pairs (T cells, monocytes)
+    pairs = [("CD4 Memory", "CD8 Memory", "auroc_cd4_vs_cd8"), ("CD14 Mono", "CD16 Mono", "auroc_cd14_vs_fcgr3a")]
 celltype = []
 for folder, variant in variants:
     for run in runs(folder):

@@ -1,7 +1,6 @@
 # Shared setup for the scoring and check scripts (imported by 08_evaluate.py and 10_checks.py, not run on its own).
 # The cells, the splits and the AUROC rule are defined here once. SC_TAG selects a derived benchmark (README, weaker-signal
-# benchmark): SC_TAG=drop250 reads data/processed/*_drop250.* and writes results_drop250/ and reports/tables_drop250/.
-import os
+# benchmark): SC_TAG=drop250 reads data/processed/*_drop250.* and writes results/kang_drop250/ and reports/tables/kang_drop250/.
 from pathlib import Path
 
 import anndata as ad
@@ -9,21 +8,25 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 
-suffix = "_" + os.environ["SC_TAG"] if os.environ.get("SC_TAG") else ""
-results_dir = Path(f"results{suffix}")
-tables_dir = Path(f"reports/tables{suffix}")
+from gene_sets import alpha_name, data, gamma_name, main, run, tag  # noqa: F401  (re-exported to the scoring scripts)
 
-alpha_name = "HALLMARK_INTERFERON_ALPHA_RESPONSE"
-gamma_name = "HALLMARK_INTERFERON_GAMMA_RESPONSE"
+results_dir = Path(f"results/{run}")
+tables_dir = Path(f"reports/tables/{run}")
+
 min_variance = 0.01  # a latent whose posterior means vary less across validation cells is inactive
 
-obs = ad.read_h5ad("data/processed/kang.h5ad", backed="r").obs  # the cells are the same in every benchmark
+obs = ad.read_h5ad(f"data/processed/{data}.h5ad", backed="r").obs  # the cells are the same in every benchmark
 stim = (obs["condition"] == "stim").values
 cell_type = obs["cell_type"].astype(str).values
 donor = obs["donor"].astype(str).values
 split = obs["split"].values
-types = sorted(set(cell_type) - {"Megakaryocytes"})  # no nucleus, so no interferon response to find
-rows = {s: np.flatnonzero((split == s) & (cell_type != "Megakaryocytes")) for s in ["val", "test"]}
+if data == "kang":
+    types = sorted(set(cell_type) - {"Megakaryocytes"})  # no nucleus, so no interferon response to find
+else:  # a cell type is scored when the test split has at least 20 cells of both conditions
+    test = split == "test"
+    n = pd.crosstab(cell_type[test], stim[test])
+    types = sorted(n.index[(n >= 20).all(axis=1)])
+rows = {s: np.flatnonzero((split == s) & np.isin(cell_type, types)) for s in ["val", "test"]}
 val_all = np.flatnonzero(split == "val")
 full = int((split == "train").sum())
 

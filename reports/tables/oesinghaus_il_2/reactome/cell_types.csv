@@ -1,0 +1,651 @@
+variant,train_size,seed,score,cell_type,auroc
+vanilla,20115,0,ifn_alpha,B Intermediate/Memory,0.721122
+vanilla,20115,0,ifn_alpha,B Naive,0.718014
+vanilla,20115,0,ifn_alpha,CD14 Mono,0.682506
+vanilla,20115,0,ifn_alpha,CD16 Mono,0.713906
+vanilla,20115,0,ifn_alpha,CD4 Memory,0.847023
+vanilla,20115,0,ifn_alpha,CD4 Naive,0.857016
+vanilla,20115,0,ifn_alpha,CD8 Memory,0.856016
+vanilla,20115,0,ifn_alpha,CD8 Naive,0.911794
+vanilla,20115,0,ifn_alpha,MAIT,0.87551
+vanilla,20115,0,ifn_alpha,NK,0.870034
+vanilla,20115,0,ifn_alpha,NK CD56bright,0.643478
+vanilla,20115,0,ifn_alpha,Treg,0.778695
+vanilla,20115,0,ifn_alpha,cDC,0.601307
+vanilla,20115,1,ifn_alpha,B Intermediate/Memory,0.681645
+vanilla,20115,1,ifn_alpha,B Naive,0.687886
+vanilla,20115,1,ifn_alpha,CD14 Mono,0.787411
+vanilla,20115,1,ifn_alpha,CD16 Mono,0.693389
+vanilla,20115,1,ifn_alpha,CD4 Memory,0.774391
+vanilla,20115,1,ifn_alpha,CD4 Naive,0.736593
+vanilla,20115,1,ifn_alpha,CD8 Memory,0.827552
+vanilla,20115,1,ifn_alpha,CD8 Naive,0.81844
+vanilla,20115,1,ifn_alpha,MAIT,0.844558
+vanilla,20115,1,ifn_alpha,NK,0.829804
+vanilla,20115,1,ifn_alpha,NK CD56bright,0.811858
+vanilla,20115,1,ifn_alpha,Treg,0.733683
+vanilla,20115,1,ifn_alpha,cDC,0.506536
+vanilla,20115,2,ifn_alpha,B Intermediate/Memory,0.748667
+vanilla,20115,2,ifn_alpha,B Naive,0.747874
+vanilla,20115,2,ifn_alpha,CD14 Mono,0.826339
+vanilla,20115,2,ifn_alpha,CD16 Mono,0.767097
+vanilla,20115,2,ifn_alpha,CD4 Memory,0.85323
+vanilla,20115,2,ifn_alpha,CD4 Naive,0.870562
+vanilla,20115,2,ifn_alpha,CD8 Memory,0.913861
+vanilla,20115,2,ifn_alpha,CD8 Naive,0.924718
+vanilla,20115,2,ifn_alpha,MAIT,0.908503
+vanilla,20115,2,ifn_alpha,NK,0.928816
+vanilla,20115,2,ifn_alpha,NK CD56bright,0.894862
+vanilla,20115,2,ifn_alpha,Treg,0.775694
+vanilla,20115,2,ifn_alpha,cDC,0.603486
+vanilla,20115,3,ifn_alpha,B Intermediate/Memory,0.703732
+vanilla,20115,3,ifn_alpha,B Naive,0.742099
+vanilla,20115,3,ifn_alpha,CD14 Mono,0.802642
+vanilla,20115,3,ifn_alpha,CD16 Mono,0.75152
+vanilla,20115,3,ifn_alpha,CD4 Memory,0.801617
+vanilla,20115,3,ifn_alpha,CD4 Naive,0.837744
+vanilla,20115,3,ifn_alpha,CD8 Memory,0.907808
+vanilla,20115,3,ifn_alpha,CD8 Naive,0.877331
+vanilla,20115,3,ifn_alpha,MAIT,0.920068
+vanilla,20115,3,ifn_alpha,NK,0.880419
+vanilla,20115,3,ifn_alpha,NK CD56bright,0.879842
+vanilla,20115,3,ifn_alpha,Treg,0.740435
+vanilla,20115,3,ifn_alpha,cDC,0.635076
+vanilla,20115,4,ifn_alpha,B Intermediate/Memory,0.763519
+vanilla,20115,4,ifn_alpha,B Naive,0.764393
+vanilla,20115,4,ifn_alpha,CD14 Mono,0.623967
+vanilla,20115,4,ifn_alpha,CD16 Mono,0.645517
+vanilla,20115,4,ifn_alpha,CD4 Memory,0.851715
+vanilla,20115,4,ifn_alpha,CD4 Naive,0.858654
+vanilla,20115,4,ifn_alpha,CD8 Memory,0.852139
+vanilla,20115,4,ifn_alpha,CD8 Naive,0.911426
+vanilla,20115,4,ifn_alpha,MAIT,0.820068
+vanilla,20115,4,ifn_alpha,NK,0.788264
+vanilla,20115,4,ifn_alpha,NK CD56bright,0.608696
+vanilla,20115,4,ifn_alpha,Treg,0.746437
+vanilla,20115,4,ifn_alpha,cDC,0.840959
+vanilla,20115,5,ifn_alpha,B Intermediate/Memory,0.765423
+vanilla,20115,5,ifn_alpha,B Naive,0.754096
+vanilla,20115,5,ifn_alpha,CD14 Mono,0.826215
+vanilla,20115,5,ifn_alpha,CD16 Mono,0.805851
+vanilla,20115,5,ifn_alpha,CD4 Memory,0.870367
+vanilla,20115,5,ifn_alpha,CD4 Naive,0.878871
+vanilla,20115,5,ifn_alpha,CD8 Memory,0.906924
+vanilla,20115,5,ifn_alpha,CD8 Naive,0.900289
+vanilla,20115,5,ifn_alpha,MAIT,0.908163
+vanilla,20115,5,ifn_alpha,NK,0.91702
+vanilla,20115,5,ifn_alpha,NK CD56bright,0.915415
+vanilla,20115,5,ifn_alpha,Treg,0.820705
+vanilla,20115,5,ifn_alpha,cDC,0.880174
+vanilla,20115,6,ifn_alpha,B Intermediate/Memory,0.667809
+vanilla,20115,6,ifn_alpha,B Naive,0.697421
+vanilla,20115,6,ifn_alpha,CD14 Mono,0.813166
+vanilla,20115,6,ifn_alpha,CD16 Mono,0.75076
+vanilla,20115,6,ifn_alpha,CD4 Memory,0.757902
+vanilla,20115,6,ifn_alpha,CD4 Naive,0.764138
+vanilla,20115,6,ifn_alpha,CD8 Memory,0.842821
+vanilla,20115,6,ifn_alpha,CD8 Naive,0.840242
+vanilla,20115,6,ifn_alpha,MAIT,0.911224
+vanilla,20115,6,ifn_alpha,NK,0.830712
+vanilla,20115,6,ifn_alpha,NK CD56bright,0.894071
+vanilla,20115,6,ifn_alpha,Treg,0.747937
+vanilla,20115,6,ifn_alpha,cDC,0.836601
+vanilla,20115,7,ifn_alpha,B Intermediate/Memory,0.705763
+vanilla,20115,7,ifn_alpha,B Naive,0.751097
+vanilla,20115,7,ifn_alpha,CD14 Mono,0.76321
+vanilla,20115,7,ifn_alpha,CD16 Mono,0.717705
+vanilla,20115,7,ifn_alpha,CD4 Memory,0.833098
+vanilla,20115,7,ifn_alpha,CD4 Naive,0.835393
+vanilla,20115,7,ifn_alpha,CD8 Memory,0.889852
+vanilla,20115,7,ifn_alpha,CD8 Naive,0.87875
+vanilla,20115,7,ifn_alpha,MAIT,0.909524
+vanilla,20115,7,ifn_alpha,NK,0.884654
+vanilla,20115,7,ifn_alpha,NK CD56bright,0.884585
+vanilla,20115,7,ifn_alpha,Treg,0.737434
+vanilla,20115,7,ifn_alpha,cDC,0.433551
+vanilla,20115,8,ifn_alpha,B Intermediate/Memory,0.702589
+vanilla,20115,8,ifn_alpha,B Naive,0.743263
+vanilla,20115,8,ifn_alpha,CD14 Mono,0.850569
+vanilla,20115,8,ifn_alpha,CD16 Mono,0.822568
+vanilla,20115,8,ifn_alpha,CD4 Memory,0.806848
+vanilla,20115,8,ifn_alpha,CD4 Naive,0.837751
+vanilla,20115,8,ifn_alpha,CD8 Memory,0.81429
+vanilla,20115,8,ifn_alpha,CD8 Naive,0.922669
+vanilla,20115,8,ifn_alpha,MAIT,0.839796
+vanilla,20115,8,ifn_alpha,NK,0.818915
+vanilla,20115,8,ifn_alpha,NK CD56bright,0.700395
+vanilla,20115,8,ifn_alpha,Treg,0.747187
+vanilla,20115,8,ifn_alpha,cDC,0.616558
+vanilla,20115,9,ifn_alpha,B Intermediate/Memory,0.682788
+vanilla,20115,9,ifn_alpha,B Naive,0.681843
+vanilla,20115,9,ifn_alpha,CD14 Mono,0.75851
+vanilla,20115,9,ifn_alpha,CD16 Mono,0.856383
+vanilla,20115,9,ifn_alpha,CD4 Memory,0.812187
+vanilla,20115,9,ifn_alpha,CD4 Naive,0.847874
+vanilla,20115,9,ifn_alpha,CD8 Memory,0.816772
+vanilla,20115,9,ifn_alpha,CD8 Naive,0.88353
+vanilla,20115,9,ifn_alpha,MAIT,0.861905
+vanilla,20115,9,ifn_alpha,NK,0.824561
+vanilla,20115,9,ifn_alpha,NK CD56bright,0.887747
+vanilla,20115,9,ifn_alpha,Treg,0.782446
+vanilla,20115,9,ifn_alpha,cDC,0.663399
+real,20115,0,ifn_alpha,B Intermediate/Memory,0.474867
+real,20115,0,ifn_alpha,B Naive,0.538902
+real,20115,0,ifn_alpha,CD14 Mono,0.719858
+real,20115,0,ifn_alpha,CD16 Mono,0.629939
+real,20115,0,ifn_alpha,CD4 Memory,0.55491
+real,20115,0,ifn_alpha,CD4 Naive,0.657812
+real,20115,0,ifn_alpha,CD8 Memory,0.437972
+real,20115,0,ifn_alpha,CD8 Naive,0.608773
+real,20115,0,ifn_alpha,MAIT,0.372789
+real,20115,0,ifn_alpha,NK,0.567251
+real,20115,0,ifn_alpha,NK CD56bright,0.368379
+real,20115,0,ifn_alpha,Treg,0.633908
+real,20115,0,ifn_alpha,cDC,0.318083
+real,20115,1,ifn_alpha,B Intermediate/Memory,0.444529
+real,20115,1,ifn_alpha,B Naive,0.500806
+real,20115,1,ifn_alpha,CD14 Mono,0.635579
+real,20115,1,ifn_alpha,CD16 Mono,0.530015
+real,20115,1,ifn_alpha,CD4 Memory,0.520902
+real,20115,1,ifn_alpha,CD4 Naive,0.635957
+real,20115,1,ifn_alpha,CD8 Memory,0.311943
+real,20115,1,ifn_alpha,CD8 Naive,0.55897
+real,20115,1,ifn_alpha,MAIT,0.314626
+real,20115,1,ifn_alpha,NK,0.404416
+real,20115,1,ifn_alpha,NK CD56bright,0.26087
+real,20115,1,ifn_alpha,Treg,0.538635
+real,20115,1,ifn_alpha,cDC,0.283224
+real,20115,2,ifn_alpha,B Intermediate/Memory,0.455192
+real,20115,2,ifn_alpha,B Naive,0.527039
+real,20115,2,ifn_alpha,CD14 Mono,0.697446
+real,20115,2,ifn_alpha,CD16 Mono,0.62196
+real,20115,2,ifn_alpha,CD4 Memory,0.564723
+real,20115,2,ifn_alpha,CD4 Naive,0.625311
+real,20115,2,ifn_alpha,CD8 Memory,0.435455
+real,20115,2,ifn_alpha,CD8 Naive,0.629682
+real,20115,2,ifn_alpha,MAIT,0.377891
+real,20115,2,ifn_alpha,NK,0.564428
+real,20115,2,ifn_alpha,NK CD56bright,0.378656
+real,20115,2,ifn_alpha,Treg,0.565641
+real,20115,2,ifn_alpha,cDC,0.366013
+real,20115,3,ifn_alpha,B Intermediate/Memory,0.491114
+real,20115,3,ifn_alpha,B Naive,0.541633
+real,20115,3,ifn_alpha,CD14 Mono,0.611473
+real,20115,3,ifn_alpha,CD16 Mono,0.517477
+real,20115,3,ifn_alpha,CD4 Memory,0.575355
+real,20115,3,ifn_alpha,CD4 Naive,0.66557
+real,20115,3,ifn_alpha,CD8 Memory,0.404101
+real,20115,3,ifn_alpha,CD8 Naive,0.640767
+real,20115,3,ifn_alpha,MAIT,0.361224
+real,20115,3,ifn_alpha,NK,0.512099
+real,20115,3,ifn_alpha,NK CD56bright,0.425296
+real,20115,3,ifn_alpha,Treg,0.671418
+real,20115,3,ifn_alpha,cDC,0.312636
+real,20115,4,ifn_alpha,B Intermediate/Memory,0.491622
+real,20115,4,ifn_alpha,B Naive,0.514236
+real,20115,4,ifn_alpha,CD14 Mono,0.631083
+real,20115,4,ifn_alpha,CD16 Mono,0.548632
+real,20115,4,ifn_alpha,CD4 Memory,0.523781
+real,20115,4,ifn_alpha,CD4 Naive,0.589507
+real,20115,4,ifn_alpha,CD8 Memory,0.427702
+real,20115,4,ifn_alpha,CD8 Naive,0.586026
+real,20115,4,ifn_alpha,MAIT,0.354082
+real,20115,4,ifn_alpha,NK,0.464307
+real,20115,4,ifn_alpha,NK CD56bright,0.403953
+real,20115,4,ifn_alpha,Treg,0.573893
+real,20115,4,ifn_alpha,cDC,0.344227
+real,20115,5,ifn_alpha,B Intermediate/Memory,0.508378
+real,20115,5,ifn_alpha,B Naive,0.512759
+real,20115,5,ifn_alpha,CD14 Mono,0.658481
+real,20115,5,ifn_alpha,CD16 Mono,0.579027
+real,20115,5,ifn_alpha,CD4 Memory,0.538047
+real,20115,5,ifn_alpha,CD4 Naive,0.58254
+real,20115,5,ifn_alpha,CD8 Memory,0.469802
+real,20115,5,ifn_alpha,CD8 Naive,0.559758
+real,20115,5,ifn_alpha,MAIT,0.384354
+real,20115,5,ifn_alpha,NK,0.593567
+real,20115,5,ifn_alpha,NK CD56bright,0.408696
+real,20115,5,ifn_alpha,Treg,0.604651
+real,20115,5,ifn_alpha,cDC,0.37146
+real,20115,6,ifn_alpha,B Intermediate/Memory,0.478675
+real,20115,6,ifn_alpha,B Naive,0.499866
+real,20115,6,ifn_alpha,CD14 Mono,0.635294
+real,20115,6,ifn_alpha,CD16 Mono,0.541033
+real,20115,6,ifn_alpha,CD4 Memory,0.54741
+real,20115,6,ifn_alpha,CD4 Naive,0.623617
+real,20115,6,ifn_alpha,CD8 Memory,0.382065
+real,20115,6,ifn_alpha,CD8 Naive,0.591279
+real,20115,6,ifn_alpha,MAIT,0.319728
+real,20115,6,ifn_alpha,NK,0.527627
+real,20115,6,ifn_alpha,NK CD56bright,0.36917
+real,20115,6,ifn_alpha,Treg,0.633908
+real,20115,6,ifn_alpha,cDC,0.318083
+real,20115,7,ifn_alpha,B Intermediate/Memory,0.481467
+real,20115,7,ifn_alpha,B Naive,0.488092
+real,20115,7,ifn_alpha,CD14 Mono,0.667122
+real,20115,7,ifn_alpha,CD16 Mono,0.605243
+real,20115,7,ifn_alpha,CD4 Memory,0.498914
+real,20115,7,ifn_alpha,CD4 Naive,0.559753
+real,20115,7,ifn_alpha,CD8 Memory,0.342039
+real,20115,7,ifn_alpha,CD8 Naive,0.531074
+real,20115,7,ifn_alpha,MAIT,0.314966
+real,20115,7,ifn_alpha,NK,0.556967
+real,20115,7,ifn_alpha,NK CD56bright,0.366008
+real,20115,7,ifn_alpha,Treg,0.588147
+real,20115,7,ifn_alpha,cDC,0.320261
+real,20115,8,ifn_alpha,B Intermediate/Memory,0.478802
+real,20115,8,ifn_alpha,B Naive,0.49709
+real,20115,8,ifn_alpha,CD14 Mono,0.678864
+real,20115,8,ifn_alpha,CD16 Mono,0.604103
+real,20115,8,ifn_alpha,CD4 Memory,0.523883
+real,20115,8,ifn_alpha,CD4 Naive,0.630705
+real,20115,8,ifn_alpha,CD8 Memory,0.38567
+real,20115,8,ifn_alpha,CD8 Naive,0.557762
+real,20115,8,ifn_alpha,MAIT,0.267347
+real,20115,8,ifn_alpha,NK,0.481045
+real,20115,8,ifn_alpha,NK CD56bright,0.317787
+real,20115,8,ifn_alpha,Treg,0.625656
+real,20115,8,ifn_alpha,cDC,0.334423
+real,20115,9,ifn_alpha,B Intermediate/Memory,0.447322
+real,20115,9,ifn_alpha,B Naive,0.502955
+real,20115,9,ifn_alpha,CD14 Mono,0.636126
+real,20115,9,ifn_alpha,CD16 Mono,0.574088
+real,20115,9,ifn_alpha,CD4 Memory,0.59459
+real,20115,9,ifn_alpha,CD4 Naive,0.663248
+real,20115,9,ifn_alpha,CD8 Memory,0.389206
+real,20115,9,ifn_alpha,CD8 Naive,0.593591
+real,20115,9,ifn_alpha,MAIT,0.319048
+real,20115,9,ifn_alpha,NK,0.504235
+real,20115,9,ifn_alpha,NK CD56bright,0.32332
+real,20115,9,ifn_alpha,Treg,0.656414
+real,20115,9,ifn_alpha,cDC,0.344227
+shuffled,20115,0,ifn_alpha,B Intermediate/Memory,0.628332
+shuffled,20115,0,ifn_alpha,B Naive,0.596741
+shuffled,20115,0,ifn_alpha,CD14 Mono,0.527485
+shuffled,20115,0,ifn_alpha,CD16 Mono,0.571429
+shuffled,20115,0,ifn_alpha,CD4 Memory,0.540695
+shuffled,20115,0,ifn_alpha,CD4 Naive,0.496425
+shuffled,20115,0,ifn_alpha,CD8 Memory,0.592328
+shuffled,20115,0,ifn_alpha,CD8 Naive,0.477436
+shuffled,20115,0,ifn_alpha,MAIT,0.571769
+shuffled,20115,0,ifn_alpha,NK,0.539726
+shuffled,20115,0,ifn_alpha,NK CD56bright,0.648221
+shuffled,20115,0,ifn_alpha,Treg,0.634659
+shuffled,20115,0,ifn_alpha,cDC,0.528322
+shuffled,20115,1,ifn_alpha,B Intermediate/Memory,0.5
+shuffled,20115,1,ifn_alpha,B Naive,0.5
+shuffled,20115,1,ifn_alpha,CD14 Mono,0.5
+shuffled,20115,1,ifn_alpha,CD16 Mono,0.5
+shuffled,20115,1,ifn_alpha,CD4 Memory,0.5
+shuffled,20115,1,ifn_alpha,CD4 Naive,0.5
+shuffled,20115,1,ifn_alpha,CD8 Memory,0.5
+shuffled,20115,1,ifn_alpha,CD8 Naive,0.5
+shuffled,20115,1,ifn_alpha,MAIT,0.5
+shuffled,20115,1,ifn_alpha,NK,0.5
+shuffled,20115,1,ifn_alpha,NK CD56bright,0.5
+shuffled,20115,1,ifn_alpha,Treg,0.5
+shuffled,20115,1,ifn_alpha,cDC,0.5
+shuffled,20115,2,ifn_alpha,B Intermediate/Memory,0.459
+shuffled,20115,2,ifn_alpha,B Naive,0.407198
+shuffled,20115,2,ifn_alpha,CD14 Mono,0.667421
+shuffled,20115,2,ifn_alpha,CD16 Mono,0.597264
+shuffled,20115,2,ifn_alpha,CD4 Memory,0.46984
+shuffled,20115,2,ifn_alpha,CD4 Naive,0.429793
+shuffled,20115,2,ifn_alpha,CD8 Memory,0.553867
+shuffled,20115,2,ifn_alpha,CD8 Naive,0.469241
+shuffled,20115,2,ifn_alpha,MAIT,0.472109
+shuffled,20115,2,ifn_alpha,NK,0.562513
+shuffled,20115,2,ifn_alpha,NK CD56bright,0.503557
+shuffled,20115,2,ifn_alpha,Treg,0.583646
+shuffled,20115,2,ifn_alpha,cDC,0.526144
+shuffled,20115,3,ifn_alpha,B Intermediate/Memory,0.533892
+shuffled,20115,3,ifn_alpha,B Naive,0.504029
+shuffled,20115,3,ifn_alpha,CD14 Mono,0.536287
+shuffled,20115,3,ifn_alpha,CD16 Mono,0.546733
+shuffled,20115,3,ifn_alpha,CD4 Memory,0.597699
+shuffled,20115,3,ifn_alpha,CD4 Naive,0.623886
+shuffled,20115,3,ifn_alpha,CD8 Memory,0.573624
+shuffled,20115,3,ifn_alpha,CD8 Naive,0.627423
+shuffled,20115,3,ifn_alpha,MAIT,0.558844
+shuffled,20115,3,ifn_alpha,NK,0.593466
+shuffled,20115,3,ifn_alpha,NK CD56bright,0.49249
+shuffled,20115,3,ifn_alpha,Treg,0.645161
+shuffled,20115,3,ifn_alpha,cDC,0.380174
+shuffled,20115,4,ifn_alpha,B Intermediate/Memory,0.608276
+shuffled,20115,4,ifn_alpha,B Naive,0.530352
+shuffled,20115,4,ifn_alpha,CD14 Mono,0.577638
+shuffled,20115,4,ifn_alpha,CD16 Mono,0.512918
+shuffled,20115,4,ifn_alpha,CD4 Memory,0.524879
+shuffled,20115,4,ifn_alpha,CD4 Naive,0.503413
+shuffled,20115,4,ifn_alpha,CD8 Memory,0.530368
+shuffled,20115,4,ifn_alpha,CD8 Naive,0.480641
+shuffled,20115,4,ifn_alpha,MAIT,0.390136
+shuffled,20115,4,ifn_alpha,NK,0.499899
+shuffled,20115,4,ifn_alpha,NK CD56bright,0.547036
+shuffled,20115,4,ifn_alpha,Treg,0.564891
+shuffled,20115,4,ifn_alpha,cDC,0.575163
+shuffled,20115,5,ifn_alpha,B Intermediate/Memory,0.5
+shuffled,20115,5,ifn_alpha,B Naive,0.5
+shuffled,20115,5,ifn_alpha,CD14 Mono,0.5
+shuffled,20115,5,ifn_alpha,CD16 Mono,0.5
+shuffled,20115,5,ifn_alpha,CD4 Memory,0.5
+shuffled,20115,5,ifn_alpha,CD4 Naive,0.5
+shuffled,20115,5,ifn_alpha,CD8 Memory,0.5
+shuffled,20115,5,ifn_alpha,CD8 Naive,0.5
+shuffled,20115,5,ifn_alpha,MAIT,0.5
+shuffled,20115,5,ifn_alpha,NK,0.5
+shuffled,20115,5,ifn_alpha,NK CD56bright,0.5
+shuffled,20115,5,ifn_alpha,Treg,0.5
+shuffled,20115,5,ifn_alpha,cDC,0.5
+shuffled,20115,6,ifn_alpha,B Intermediate/Memory,0.5
+shuffled,20115,6,ifn_alpha,B Naive,0.5
+shuffled,20115,6,ifn_alpha,CD14 Mono,0.5
+shuffled,20115,6,ifn_alpha,CD16 Mono,0.5
+shuffled,20115,6,ifn_alpha,CD4 Memory,0.5
+shuffled,20115,6,ifn_alpha,CD4 Naive,0.5
+shuffled,20115,6,ifn_alpha,CD8 Memory,0.5
+shuffled,20115,6,ifn_alpha,CD8 Naive,0.5
+shuffled,20115,6,ifn_alpha,MAIT,0.5
+shuffled,20115,6,ifn_alpha,NK,0.5
+shuffled,20115,6,ifn_alpha,NK CD56bright,0.5
+shuffled,20115,6,ifn_alpha,Treg,0.5
+shuffled,20115,6,ifn_alpha,cDC,0.5
+shuffled,20115,7,ifn_alpha,B Intermediate/Memory,0.520564
+shuffled,20115,7,ifn_alpha,B Naive,0.513833
+shuffled,20115,7,ifn_alpha,CD14 Mono,0.530331
+shuffled,20115,7,ifn_alpha,CD16 Mono,0.458967
+shuffled,20115,7,ifn_alpha,CD4 Memory,0.603766
+shuffled,20115,7,ifn_alpha,CD4 Naive,0.575269
+shuffled,20115,7,ifn_alpha,CD8 Memory,0.671428
+shuffled,20115,7,ifn_alpha,CD8 Naive,0.557709
+shuffled,20115,7,ifn_alpha,MAIT,0.656803
+shuffled,20115,7,ifn_alpha,NK,0.671607
+shuffled,20115,7,ifn_alpha,NK CD56bright,0.662451
+shuffled,20115,7,ifn_alpha,Treg,0.726182
+shuffled,20115,7,ifn_alpha,cDC,0.460784
+shuffled,20115,8,ifn_alpha,B Intermediate/Memory,0.618685
+shuffled,20115,8,ifn_alpha,B Naive,0.704271
+shuffled,20115,8,ifn_alpha,CD14 Mono,0.547927
+shuffled,20115,8,ifn_alpha,CD16 Mono,0.517477
+shuffled,20115,8,ifn_alpha,CD4 Memory,0.799836
+shuffled,20115,8,ifn_alpha,CD4 Naive,0.826111
+shuffled,20115,8,ifn_alpha,CD8 Memory,0.828844
+shuffled,20115,8,ifn_alpha,CD8 Naive,0.884949
+shuffled,20115,8,ifn_alpha,MAIT,0.782993
+shuffled,20115,8,ifn_alpha,NK,0.775156
+shuffled,20115,8,ifn_alpha,NK CD56bright,0.586561
+shuffled,20115,8,ifn_alpha,Treg,0.744186
+shuffled,20115,8,ifn_alpha,cDC,0.830065
+shuffled,20115,9,ifn_alpha,B Intermediate/Memory,0.581112
+shuffled,20115,9,ifn_alpha,B Naive,0.625078
+shuffled,20115,9,ifn_alpha,CD14 Mono,0.706488
+shuffled,20115,9,ifn_alpha,CD16 Mono,0.6269
+shuffled,20115,9,ifn_alpha,CD4 Memory,0.67416
+shuffled,20115,9,ifn_alpha,CD4 Naive,0.672763
+shuffled,20115,9,ifn_alpha,CD8 Memory,0.744678
+shuffled,20115,9,ifn_alpha,CD8 Naive,0.661623
+shuffled,20115,9,ifn_alpha,MAIT,0.727551
+shuffled,20115,9,ifn_alpha,NK,0.790583
+shuffled,20115,9,ifn_alpha,NK CD56bright,0.793676
+shuffled,20115,9,ifn_alpha,Treg,0.732183
+shuffled,20115,9,ifn_alpha,cDC,0.481481
+setshuffle,20115,0,ifn_alpha,B Intermediate/Memory,0.5
+setshuffle,20115,0,ifn_alpha,B Naive,0.5
+setshuffle,20115,0,ifn_alpha,CD14 Mono,0.5
+setshuffle,20115,0,ifn_alpha,CD16 Mono,0.5
+setshuffle,20115,0,ifn_alpha,CD4 Memory,0.5
+setshuffle,20115,0,ifn_alpha,CD4 Naive,0.5
+setshuffle,20115,0,ifn_alpha,CD8 Memory,0.5
+setshuffle,20115,0,ifn_alpha,CD8 Naive,0.5
+setshuffle,20115,0,ifn_alpha,MAIT,0.5
+setshuffle,20115,0,ifn_alpha,NK,0.5
+setshuffle,20115,0,ifn_alpha,NK CD56bright,0.5
+setshuffle,20115,0,ifn_alpha,Treg,0.5
+setshuffle,20115,0,ifn_alpha,cDC,0.5
+setshuffle,20115,1,ifn_alpha,B Intermediate/Memory,0.60688
+setshuffle,20115,1,ifn_alpha,B Naive,0.542349
+setshuffle,20115,1,ifn_alpha,CD14 Mono,0.577449
+setshuffle,20115,1,ifn_alpha,CD16 Mono,0.528116
+setshuffle,20115,1,ifn_alpha,CD4 Memory,0.561219
+setshuffle,20115,1,ifn_alpha,CD4 Naive,0.497787
+setshuffle,20115,1,ifn_alpha,CD8 Memory,0.700231
+setshuffle,20115,1,ifn_alpha,CD8 Naive,0.530917
+setshuffle,20115,1,ifn_alpha,MAIT,0.722449
+setshuffle,20115,1,ifn_alpha,NK,0.674128
+setshuffle,20115,1,ifn_alpha,NK CD56bright,0.786561
+setshuffle,20115,1,ifn_alpha,Treg,0.636909
+setshuffle,20115,1,ifn_alpha,cDC,0.614379
+setshuffle,20115,2,ifn_alpha,B Intermediate/Memory,0.432343
+setshuffle,20115,2,ifn_alpha,B Naive,0.337362
+setshuffle,20115,2,ifn_alpha,CD14 Mono,0.487075
+setshuffle,20115,2,ifn_alpha,CD16 Mono,0.401216
+setshuffle,20115,2,ifn_alpha,CD4 Memory,0.246164
+setshuffle,20115,2,ifn_alpha,CD4 Naive,0.204131
+setshuffle,20115,2,ifn_alpha,CD8 Memory,0.182582
+setshuffle,20115,2,ifn_alpha,CD8 Naive,0.127712
+setshuffle,20115,2,ifn_alpha,MAIT,0.217347
+setshuffle,20115,2,ifn_alpha,NK,0.233112
+setshuffle,20115,2,ifn_alpha,NK CD56bright,0.414229
+setshuffle,20115,2,ifn_alpha,Treg,0.346587
+setshuffle,20115,2,ifn_alpha,cDC,0.369281
+setshuffle,20115,3,ifn_alpha,B Intermediate/Memory,0.541635
+setshuffle,20115,3,ifn_alpha,B Naive,0.534829
+setshuffle,20115,3,ifn_alpha,CD14 Mono,0.470391
+setshuffle,20115,3,ifn_alpha,CD16 Mono,0.417553
+setshuffle,20115,3,ifn_alpha,CD4 Memory,0.653934
+setshuffle,20115,3,ifn_alpha,CD4 Naive,0.707255
+setshuffle,20115,3,ifn_alpha,CD8 Memory,0.586037
+setshuffle,20115,3,ifn_alpha,CD8 Naive,0.678224
+setshuffle,20115,3,ifn_alpha,MAIT,0.631973
+setshuffle,20115,3,ifn_alpha,NK,0.53418
+setshuffle,20115,3,ifn_alpha,NK CD56bright,0.572332
+setshuffle,20115,3,ifn_alpha,Treg,0.705176
+setshuffle,20115,3,ifn_alpha,cDC,0.529412
+setshuffle,20115,4,ifn_alpha,B Intermediate/Memory,0.614242
+setshuffle,20115,4,ifn_alpha,B Naive,0.623377
+setshuffle,20115,4,ifn_alpha,CD14 Mono,0.716224
+setshuffle,20115,4,ifn_alpha,CD16 Mono,0.672872
+setshuffle,20115,4,ifn_alpha,CD4 Memory,0.663051
+setshuffle,20115,4,ifn_alpha,CD4 Naive,0.649002
+setshuffle,20115,4,ifn_alpha,CD8 Memory,0.729409
+setshuffle,20115,4,ifn_alpha,CD8 Naive,0.656422
+setshuffle,20115,4,ifn_alpha,MAIT,0.64932
+setshuffle,20115,4,ifn_alpha,NK,0.717685
+setshuffle,20115,4,ifn_alpha,NK CD56bright,0.754941
+setshuffle,20115,4,ifn_alpha,Treg,0.689422
+setshuffle,20115,4,ifn_alpha,cDC,0.541394
+setshuffle,20115,5,ifn_alpha,B Intermediate/Memory,0.537954
+setshuffle,20115,5,ifn_alpha,B Naive,0.464142
+setshuffle,20115,5,ifn_alpha,CD14 Mono,0.489512
+setshuffle,20115,5,ifn_alpha,CD16 Mono,0.490881
+setshuffle,20115,5,ifn_alpha,CD4 Memory,0.421664
+setshuffle,20115,5,ifn_alpha,CD4 Naive,0.301181
+setshuffle,20115,5,ifn_alpha,CD8 Memory,0.484527
+setshuffle,20115,5,ifn_alpha,CD8 Naive,0.258314
+setshuffle,20115,5,ifn_alpha,MAIT,0.441837
+setshuffle,20115,5,ifn_alpha,NK,0.545271
+setshuffle,20115,5,ifn_alpha,NK CD56bright,0.737549
+setshuffle,20115,5,ifn_alpha,Treg,0.473368
+setshuffle,20115,5,ifn_alpha,cDC,0.472767
+setshuffle,20115,6,ifn_alpha,B Intermediate/Memory,0.5
+setshuffle,20115,6,ifn_alpha,B Naive,0.5
+setshuffle,20115,6,ifn_alpha,CD14 Mono,0.5
+setshuffle,20115,6,ifn_alpha,CD16 Mono,0.5
+setshuffle,20115,6,ifn_alpha,CD4 Memory,0.5
+setshuffle,20115,6,ifn_alpha,CD4 Naive,0.5
+setshuffle,20115,6,ifn_alpha,CD8 Memory,0.5
+setshuffle,20115,6,ifn_alpha,CD8 Naive,0.5
+setshuffle,20115,6,ifn_alpha,MAIT,0.5
+setshuffle,20115,6,ifn_alpha,NK,0.5
+setshuffle,20115,6,ifn_alpha,NK CD56bright,0.5
+setshuffle,20115,6,ifn_alpha,Treg,0.5
+setshuffle,20115,6,ifn_alpha,cDC,0.5
+setshuffle,20115,7,ifn_alpha,B Intermediate/Memory,0.5
+setshuffle,20115,7,ifn_alpha,B Naive,0.5
+setshuffle,20115,7,ifn_alpha,CD14 Mono,0.5
+setshuffle,20115,7,ifn_alpha,CD16 Mono,0.5
+setshuffle,20115,7,ifn_alpha,CD4 Memory,0.5
+setshuffle,20115,7,ifn_alpha,CD4 Naive,0.5
+setshuffle,20115,7,ifn_alpha,CD8 Memory,0.5
+setshuffle,20115,7,ifn_alpha,CD8 Naive,0.5
+setshuffle,20115,7,ifn_alpha,MAIT,0.5
+setshuffle,20115,7,ifn_alpha,NK,0.5
+setshuffle,20115,7,ifn_alpha,NK CD56bright,0.5
+setshuffle,20115,7,ifn_alpha,Treg,0.5
+setshuffle,20115,7,ifn_alpha,cDC,0.5
+setshuffle,20115,8,ifn_alpha,B Intermediate/Memory,0.675806
+setshuffle,20115,8,ifn_alpha,B Naive,0.617692
+setshuffle,20115,8,ifn_alpha,CD14 Mono,0.637177
+setshuffle,20115,8,ifn_alpha,CD16 Mono,0.591945
+setshuffle,20115,8,ifn_alpha,CD4 Memory,0.727293
+setshuffle,20115,8,ifn_alpha,CD4 Naive,0.684334
+setshuffle,20115,8,ifn_alpha,CD8 Memory,0.799837
+setshuffle,20115,8,ifn_alpha,CD8 Naive,0.683005
+setshuffle,20115,8,ifn_alpha,MAIT,0.77551
+setshuffle,20115,8,ifn_alpha,NK,0.777374
+setshuffle,20115,8,ifn_alpha,NK CD56bright,0.766008
+setshuffle,20115,8,ifn_alpha,Treg,0.762191
+setshuffle,20115,8,ifn_alpha,cDC,0.555556
+setshuffle,20115,9,ifn_alpha,B Intermediate/Memory,0.654862
+setshuffle,20115,9,ifn_alpha,B Naive,0.700063
+setshuffle,20115,9,ifn_alpha,CD14 Mono,0.634382
+setshuffle,20115,9,ifn_alpha,CD16 Mono,0.605623
+setshuffle,20115,9,ifn_alpha,CD4 Memory,0.860211
+setshuffle,20115,9,ifn_alpha,CD4 Naive,0.878913
+setshuffle,20115,9,ifn_alpha,CD8 Memory,0.887098
+setshuffle,20115,9,ifn_alpha,CD8 Naive,0.91752
+setshuffle,20115,9,ifn_alpha,MAIT,0.862245
+setshuffle,20115,9,ifn_alpha,NK,0.849566
+setshuffle,20115,9,ifn_alpha,NK CD56bright,0.747036
+setshuffle,20115,9,ifn_alpha,Treg,0.762191
+setshuffle,20115,9,ifn_alpha,cDC,0.803922
+coexpression,20115,0,ifn_alpha,B Intermediate/Memory,0.751333
+coexpression,20115,0,ifn_alpha,B Naive,0.766497
+coexpression,20115,0,ifn_alpha,CD14 Mono,0.812385
+coexpression,20115,0,ifn_alpha,CD16 Mono,0.81155
+coexpression,20115,0,ifn_alpha,CD4 Memory,0.829387
+coexpression,20115,0,ifn_alpha,CD4 Naive,0.865861
+coexpression,20115,0,ifn_alpha,CD8 Memory,0.879548
+coexpression,20115,0,ifn_alpha,CD8 Naive,0.913265
+coexpression,20115,0,ifn_alpha,MAIT,0.826871
+coexpression,20115,0,ifn_alpha,NK,0.842004
+coexpression,20115,0,ifn_alpha,NK CD56bright,0.81502
+coexpression,20115,0,ifn_alpha,Treg,0.806452
+coexpression,20115,0,ifn_alpha,cDC,0.625272
+coexpression,20115,1,ifn_alpha,B Intermediate/Memory,0.750825
+coexpression,20115,1,ifn_alpha,B Naive,0.770436
+coexpression,20115,1,ifn_alpha,CD14 Mono,0.855809
+coexpression,20115,1,ifn_alpha,CD16 Mono,0.788374
+coexpression,20115,1,ifn_alpha,CD4 Memory,0.794547
+coexpression,20115,1,ifn_alpha,CD4 Naive,0.870675
+coexpression,20115,1,ifn_alpha,CD8 Memory,0.925253
+coexpression,20115,1,ifn_alpha,CD8 Naive,0.887838
+coexpression,20115,1,ifn_alpha,MAIT,0.905102
+coexpression,20115,1,ifn_alpha,NK,0.910365
+coexpression,20115,1,ifn_alpha,NK CD56bright,0.936759
+coexpression,20115,1,ifn_alpha,Treg,0.765191
+coexpression,20115,1,ifn_alpha,cDC,0.77342
+coexpression,20115,2,ifn_alpha,B Intermediate/Memory,0.728357
+coexpression,20115,2,ifn_alpha,B Naive,0.785075
+coexpression,20115,2,ifn_alpha,CD14 Mono,0.863108
+coexpression,20115,2,ifn_alpha,CD16 Mono,0.852964
+coexpression,20115,2,ifn_alpha,CD4 Memory,0.861457
+coexpression,20115,2,ifn_alpha,CD4 Naive,0.879019
+coexpression,20115,2,ifn_alpha,CD8 Memory,0.838842
+coexpression,20115,2,ifn_alpha,CD8 Naive,0.923037
+coexpression,20115,2,ifn_alpha,MAIT,0.820748
+coexpression,20115,2,ifn_alpha,NK,0.874571
+coexpression,20115,2,ifn_alpha,NK CD56bright,0.798419
+coexpression,20115,2,ifn_alpha,Treg,0.788447
+coexpression,20115,2,ifn_alpha,cDC,0.610022
+coexpression,20115,3,ifn_alpha,B Intermediate/Memory,0.776085
+coexpression,20115,3,ifn_alpha,B Naive,0.763497
+coexpression,20115,3,ifn_alpha,CD14 Mono,0.794001
+coexpression,20115,3,ifn_alpha,CD16 Mono,0.770897
+coexpression,20115,3,ifn_alpha,CD4 Memory,0.872895
+coexpression,20115,3,ifn_alpha,CD4 Naive,0.879175
+coexpression,20115,3,ifn_alpha,CD8 Memory,0.894817
+coexpression,20115,3,ifn_alpha,CD8 Naive,0.914421
+coexpression,20115,3,ifn_alpha,MAIT,0.89932
+coexpression,20115,3,ifn_alpha,NK,0.891006
+coexpression,20115,3,ifn_alpha,NK CD56bright,0.853755
+coexpression,20115,3,ifn_alpha,Treg,0.774944
+coexpression,20115,3,ifn_alpha,cDC,0.667756
+coexpression,20115,4,ifn_alpha,B Intermediate/Memory,0.738893
+coexpression,20115,4,ifn_alpha,B Naive,0.780553
+coexpression,20115,4,ifn_alpha,CD14 Mono,0.865297
+coexpression,20115,4,ifn_alpha,CD16 Mono,0.849544
+coexpression,20115,4,ifn_alpha,CD4 Memory,0.818055
+coexpression,20115,4,ifn_alpha,CD4 Naive,0.886615
+coexpression,20115,4,ifn_alpha,CD8 Memory,0.890873
+coexpression,20115,4,ifn_alpha,CD8 Naive,0.902653
+coexpression,20115,4,ifn_alpha,MAIT,0.867687
+coexpression,20115,4,ifn_alpha,NK,0.895745
+coexpression,20115,4,ifn_alpha,NK CD56bright,0.875099
+coexpression,20115,4,ifn_alpha,Treg,0.768192
+coexpression,20115,4,ifn_alpha,cDC,0.543573
+coexpression,20115,5,ifn_alpha,B Intermediate/Memory,0.753872
+coexpression,20115,5,ifn_alpha,B Naive,0.791074
+coexpression,20115,5,ifn_alpha,CD14 Mono,0.872741
+coexpression,20115,5,ifn_alpha,CD16 Mono,0.848784
+coexpression,20115,5,ifn_alpha,CD4 Memory,0.855844
+coexpression,20115,5,ifn_alpha,CD4 Naive,0.887822
+coexpression,20115,5,ifn_alpha,CD8 Memory,0.905597
+coexpression,20115,5,ifn_alpha,CD8 Naive,0.898923
+coexpression,20115,5,ifn_alpha,MAIT,0.882313
+coexpression,20115,5,ifn_alpha,NK,0.927606
+coexpression,20115,5,ifn_alpha,NK CD56bright,0.927273
+coexpression,20115,5,ifn_alpha,Treg,0.796699
+coexpression,20115,5,ifn_alpha,cDC,0.572985
+coexpression,20115,6,ifn_alpha,B Intermediate/Memory,0.774943
+coexpression,20115,6,ifn_alpha,B Naive,0.761259
+coexpression,20115,6,ifn_alpha,CD14 Mono,0.73398
+coexpression,20115,6,ifn_alpha,CD16 Mono,0.68693
+coexpression,20115,6,ifn_alpha,CD4 Memory,0.867727
+coexpression,20115,6,ifn_alpha,CD4 Naive,0.875469
+coexpression,20115,6,ifn_alpha,CD8 Memory,0.89866
+coexpression,20115,6,ifn_alpha,CD8 Naive,0.925663
+coexpression,20115,6,ifn_alpha,MAIT,0.882993
+coexpression,20115,6,ifn_alpha,NK,0.866505
+coexpression,20115,6,ifn_alpha,NK CD56bright,0.839526
+coexpression,20115,6,ifn_alpha,Treg,0.794449
+coexpression,20115,6,ifn_alpha,cDC,0.857298
+coexpression,20115,7,ifn_alpha,B Intermediate/Memory,0.708048
+coexpression,20115,7,ifn_alpha,B Naive,0.702032
+coexpression,20115,7,ifn_alpha,CD14 Mono,0.678478
+coexpression,20115,7,ifn_alpha,CD16 Mono,0.710106
+coexpression,20115,7,ifn_alpha,CD4 Memory,0.80525
+coexpression,20115,7,ifn_alpha,CD4 Naive,0.847112
+coexpression,20115,7,ifn_alpha,CD8 Memory,0.920526
+coexpression,20115,7,ifn_alpha,CD8 Naive,0.874442
+coexpression,20115,7,ifn_alpha,MAIT,0.92517
+coexpression,20115,7,ifn_alpha,NK,0.912079
+coexpression,20115,7,ifn_alpha,NK CD56bright,0.894862
+coexpression,20115,7,ifn_alpha,Treg,0.716429
+coexpression,20115,7,ifn_alpha,cDC,0.827887
+coexpression,20115,8,ifn_alpha,B Intermediate/Memory,0.799695
+coexpression,20115,8,ifn_alpha,B Naive,0.756514
+coexpression,20115,8,ifn_alpha,CD14 Mono,0.726938
+coexpression,20115,8,ifn_alpha,CD16 Mono,0.717705
+coexpression,20115,8,ifn_alpha,CD4 Memory,0.876715
+coexpression,20115,8,ifn_alpha,CD4 Naive,0.869193
+coexpression,20115,8,ifn_alpha,CD8 Memory,0.895361
+coexpression,20115,8,ifn_alpha,CD8 Naive,0.89845
+coexpression,20115,8,ifn_alpha,MAIT,0.908844
+coexpression,20115,8,ifn_alpha,NK,0.896451
+coexpression,20115,8,ifn_alpha,NK CD56bright,0.881423
+coexpression,20115,8,ifn_alpha,Treg,0.788447
+coexpression,20115,8,ifn_alpha,cDC,0.895425
+coexpression,20115,9,ifn_alpha,B Intermediate/Memory,0.752983
+coexpression,20115,9,ifn_alpha,B Naive,0.765691
+coexpression,20115,9,ifn_alpha,CD14 Mono,0.815494
+coexpression,20115,9,ifn_alpha,CD16 Mono,0.821049
+coexpression,20115,9,ifn_alpha,CD4 Memory,0.840797
+coexpression,20115,9,ifn_alpha,CD4 Naive,0.867047
+coexpression,20115,9,ifn_alpha,CD8 Memory,0.890329
+coexpression,20115,9,ifn_alpha,CD8 Naive,0.915261
+coexpression,20115,9,ifn_alpha,MAIT,0.835374
+coexpression,20115,9,ifn_alpha,NK,0.879613
+coexpression,20115,9,ifn_alpha,NK CD56bright,0.862451
+coexpression,20115,9,ifn_alpha,Treg,0.780945
+coexpression,20115,9,ifn_alpha,cDC,0.733115

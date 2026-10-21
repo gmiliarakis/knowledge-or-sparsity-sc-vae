@@ -1,5 +1,5 @@
 # Score every run: how well its interferon latents separate stimulated from control test cells. Rules are in the README
-# (Evaluation). Writes one row per run, the per-cell-type AUROCs and the paired comparisons to reports/tables/. With
+# (Evaluation). Writes one row per run, the per-cell-type AUROCs and the paired comparisons to reports/tables/<data>/<collection>/. With
 # --learning-curves, the runs on training subsamples are scored by the same rules, together with the main runs as the
 # full-size point, into separate tables.
 import argparse

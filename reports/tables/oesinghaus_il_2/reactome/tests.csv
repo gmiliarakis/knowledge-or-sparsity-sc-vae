@@ -1,0 +1,13 @@
+family,test,pairs,mean_difference,p_raw,method,p_adj,reject,ci_level,hodges_lehmann,ci_low,ci_high,m_in_family
+Q1c,test loss per cell (lower is better): real - shuffled,10,-8.242,0.00195312,Holm,0.0234375,True,0.995833,-8.465,-12.185,-4.54,12
+Q1c,test loss per cell (lower is better): real - setshuffle,10,-8.11,0.00195312,Holm,0.0234375,True,0.995833,-8.085,-10.195,-5.57,12
+Q1c,test loss per cell (lower is better): real - coexpression,10,-2.865,0.0488281,Holm,0.195312,False,0.995833,-2.72,-7.845,2.045,12
+Q1c,decoded response correlation: real - shuffled,10,0.0100056,0.00195312,Holm,0.0234375,True,0.995833,0.010046,0.002922,0.0181815,12
+Q1c,decoded response correlation: real - setshuffle,10,0.0318683,0.00195312,Holm,0.0234375,True,0.995833,0.032776,0.024433,0.036844,12
+Q1c,decoded response correlation: real - coexpression,10,-0.026901,0.00195312,Holm,0.0234375,True,0.995833,-0.027891,-0.0352195,-0.0148425,12
+Q1c,cell-type balanced accuracy: real - shuffled,10,0.0199267,0.0195312,Holm,0.136719,False,0.995833,0.019583,-0.0058245,0.0411185,12
+Q1c,cell-type balanced accuracy: real - setshuffle,10,0.0064281,0.193359,Holm,0.261719,False,0.995833,0.006501,-0.01139,0.0234805,12
+Q1c,cell-type balanced accuracy: real - coexpression,10,-0.0104348,0.130859,Holm,0.261719,False,0.995833,-0.0082,-0.0386635,0.008049,12
+Q1c,stimulation probe AUROC: real - shuffled,10,0.0051033,0.0371094,Holm,0.185547,False,0.995833,0.005425,-0.0028335,0.013981,12
+Q1c,stimulation probe AUROC: real - setshuffle,10,0.0037379,0.0644531,Holm,0.195312,False,0.995833,0.004164,-0.0045135,0.010558,12
+Q1c,stimulation probe AUROC: real - coexpression,10,-0.0058194,0.0195312,Holm,0.136719,False,0.995833,-0.006152,-0.0147555,0.000664,12

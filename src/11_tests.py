@@ -1,5 +1,5 @@
 # Every hypothesis test of the project, with multiplicity correction. Run after 08_evaluate.py (both modes) and
-# 10_checks.py. Writes reports/tables/tests.csv; the README quotes this table and no other p-value.
+# 10_checks.py. Writes tests.csv in reports/tables/<data>/<collection>/; the README quotes this table and no other p-value.
 #
 # All tests are paired by seed (10 seeds). The p-value is the exact two-sided Wilcoxon signed-rank test; zero differences
 # are dropped. Its smallest possible value with 10 pairs is 2/2^10 = 0.00195, so a Holm or Bonferroni correction over more
@@ -35,10 +35,10 @@ from scipy import stats
 # within +-0.005 means both are at the ceiling, and the test cannot reveal a difference there.
 margin = 0.005
 alpha = 0.05
-suffix = "_" + os.environ["SC_TAG"] if os.environ.get("SC_TAG") else ""  # SC_TAG=drop250: weaker-signal benchmark
-out = Path(f"reports/tables{suffix}")  # with SC_TAG only the latent-free family is tested, on that benchmark
+from gene_sets import main, run  # SC_DATA, SC_SETS and SC_TAG select the benchmark
+out = Path(f"reports/tables/{run}")  # outside the main experiment only the latent-free family is tested
 
-if not suffix:
+if main:
     scores = pd.read_csv(out / "scores.csv")
     best = pd.read_csv(out / "robustness_best_latent.csv").replace({"variant": {"plain": "vanilla"}})  # that table says plain
     curves = pd.read_csv(out / "learning_curves_scores.csv")
@@ -100,7 +100,7 @@ def diff(frame, column, a, b):
 
 
 tests = []  # (family, test, differences, kind)
-if not suffix:
+if main:
     at_full = scores[scores["train_size"] == full]
     for other in ["shuffled", "setshuffle", "vanilla", "coexpression"]:
         tests.append(("Q1", f"fixed latent: real - {other}", diff(at_full, "ifn_alpha", "real", other), "difference"))

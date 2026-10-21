@@ -1,18 +1,18 @@
 # Co-expression null for the Hallmark masks: for every Hallmark set, a module of the same size built only from
 # gene-gene correlation in training cells (a random seed gene and its most correlated genes). It asks whether
 # curated knowledge adds anything beyond groups of genes that are simply expressed together.
-import os
 
 import anndata as ad
 import numpy as np
 import scanpy as sc
 
-suffix = "_" + os.environ["SC_TAG"] if os.environ.get("SC_TAG") else ""  # SC_TAG=drop250 selects the weaker-signal benchmark
-masks = np.load(f"data/processed/masks_hallmark{suffix}.npz")
+from gene_sets import alpha_name, collection, data, file_tag, gamma_name, tag
+
+masks = np.load(f"data/processed/masks_{collection}{file_tag}.npz")
 real = masks["real"]
 sizes = real.sum(axis=0)
 
-adata = ad.read_h5ad(f"data/processed/kang{suffix}.h5ad")
+adata = ad.read_h5ad(f"data/processed/{data}{tag}.h5ad")
 assert (adata.var_names == masks["genes"]).all()
 train = adata[adata.obs["split"] == "train"]
 
@@ -64,7 +64,7 @@ print(f"mean within-set correlation, median over sets: real {np.median(coherence
 # Known-answer check: the module most raised by IFN-beta in each seed, and the share of its genes that belong to the
 # Hallmark interferon sets (share, because modules and sets differ in size)
 sets = list(masks["sets"])
-ifn = real[:, sets.index("HALLMARK_INTERFERON_ALPHA_RESPONSE")] | real[:, sets.index("HALLMARK_INTERFERON_GAMMA_RESPONSE")]
+ifn = real[:, sets.index(alpha_name)] | real[:, sets.index(gamma_name)]
 for s in seeds:
     m = modules[s].astype(np.float32)
     score = (x.X @ m) / m.sum(axis=0)
@@ -72,9 +72,9 @@ for s in seeds:
     best = diff.argmax()
     members = modules[s][:, best]
     print(f"  seed {s}: most raised module +{diff[best]:.3f}, {members.sum()} genes, "
-          f"{ifn[members].mean():.0%} in Hallmark IFN-alpha or IFN-gamma")
+          f"{ifn[members].mean():.0%} in the {collection} interferon sets")
 
 np.savez_compressed(
-    f"data/processed/coexpression_hallmark{suffix}.npz",
+    f"data/processed/coexpression_{collection}{file_tag}.npz",
     genes=masks["genes"], sets=masks["sets"], modules=modules, seed_genes=seed_genes,
 )

@@ -3,7 +3,6 @@
 import argparse
 import copy
 import json
-import os
 import time
 from pathlib import Path
 
@@ -14,7 +13,9 @@ import torch
 from torch import nn
 from tqdm import tqdm
 
-suffix = "_" + os.environ["SC_TAG"] if os.environ.get("SC_TAG") else ""  # SC_TAG=drop250: weaker-signal benchmark
+from gene_sets import collection, file_tag, run, tag
+from gene_sets import data as dataset  # `data` is the training tensors in main()
+
 n_sets = 50  # one latent per Hallmark set
 n_free = 8  # free latents, reaching only genes in no set
 n_latent = n_sets + n_free
@@ -74,7 +75,7 @@ def build_mask(kind, var_names, seed, train_size, subsamples):
     if kind == "none":
         return np.ones((len(var_names), n_latent), dtype=np.float32), [f"latent {k + 1}" for k in range(n_latent)]
 
-    masks = np.load(f"data/processed/masks_hallmark{suffix}.npz")
+    masks = np.load(f"data/processed/masks_{collection}{file_tag}.npz")
     assert (masks["genes"] == var_names).all(), "gene order in the mask file does not match the data"
     sets = masks["real"]
     latent_ids = list(masks["sets"])
@@ -88,12 +89,12 @@ def build_mask(kind, var_names, seed, train_size, subsamples):
     elif kind == "setshuffle":
         # labels permuted among set genes only: the genes in no set, and so the free latents' reach, stay as in the real mask
         assert not train_size, "setshuffle masks are built for the full training set only"
-        sets = sets[np.load(f"data/processed/masks_hallmark_setshuffle{suffix}.npz")["perms"][seed]]
+        sets = sets[np.load(f"data/processed/masks_{collection}_setshuffle{file_tag}.npz")["perms"][seed]]
     elif kind == "coexpression":
         if train_size:
             modules = subsamples[f"modules_{train_size}"]
         else:
-            modules = np.load(f"data/processed/coexpression_hallmark{suffix}.npz")["modules"]
+            modules = np.load(f"data/processed/coexpression_{collection}{file_tag}.npz")["modules"]
         sets = modules[seed]
         latent_ids = [f"module {k + 1}" for k in range(n_sets)]
 
@@ -170,7 +171,7 @@ def main():
     parser.add_argument("--min-delta", type=float, default=0.0,
                         help="relative drop in validation loss that counts as an improvement (0: any drop, as in the "
                              "reported results; 1e-3 stops about 40%% earlier)")
-    parser.add_argument("--results-dir", default=f"results{suffix}")
+    parser.add_argument("--results-dir", default=f"results/{run}")
     parser.add_argument("--verbose", action="store_true", help="show a progress bar over epochs")
     args = parser.parse_args()
 
@@ -178,7 +179,7 @@ def main():
     torch.manual_seed(args.seed)
     rng = np.random.default_rng(args.seed)
 
-    adata = ad.read_h5ad(f"data/processed/kang{suffix}.h5ad")
+    adata = ad.read_h5ad(f"data/processed/{dataset}{tag}.h5ad")
     counts = adata.layers["counts"].tocsr().astype(np.float32)
     total = np.asarray(counts.sum(axis=1)).ravel().astype(np.float32)
     donor = pd.get_dummies(adata.obs["donor"]).values.astype(np.float32)

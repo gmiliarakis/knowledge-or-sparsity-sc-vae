@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from gene_sets import collection, data, run
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -30,7 +32,80 @@ plt.rcParams.update({
     "savefig.dpi": 400, "savefig.bbox": "tight", "pdf.fonttype": 42,
 })
 
-tables, out = Path("reports/tables"), Path("reports/figures")
+mask_name = "Reactome" if collection == "reactome" else "Hallmark"
+if data != "kang":  # Oesinghaus benchmark (SC_DATA=oesinghaus_ifn_beta or oesinghaus_il_2, SC_SETS=hallmark or reactome): one figure, then stop
+    # a the score of the known-answer latent, b-e the four measures that choose no latent, f the 12 paired contrasts of those measures
+    ticks["real"] = mask_name
+    answer = {"oesinghaus_ifn_beta": "interferon-α/β set", "oesinghaus_il_2": "IL-2 set"}.get(data, "known-answer set")
+    tables, out = Path(f"reports/tables/{run}"), Path("reports/figures")
+    out.mkdir(parents=True, exist_ok=True)
+    scores = pd.read_csv(tables / "scores.csv")
+    tests = pd.read_csv(tables / "tests.csv")
+    n_types = pd.read_csv(tables / "cell_types.csv")["cell_type"].nunique()
+    offset = dict(zip(range(10), np.linspace(-0.18, 0.18, 10)))  # each seed keeps its position in every panel
+
+
+    def strip(ax, frame, column, hollow=None):
+        # one dot per seed (open when the named latent was inactive) and the mean as a short bar
+        for i, v in enumerate(order):
+            runs = frame[frame["variant"] == v]
+            if runs.empty:
+                continue
+            xs = i + runs["seed"].map(offset)
+            empty = runs[hollow].eq(False) if hollow else pd.Series(False, index=runs.index)
+            ax.scatter(xs[~empty], runs.loc[~empty, column], s=24, color=colors[v], edgecolor=surface, lw=0.8, zorder=3)
+            ax.scatter(xs[empty], runs.loc[empty, column], s=24, color=surface, edgecolor=colors[v], lw=1.2, zorder=3)
+            ax.plot([i - 0.3, i + 0.3], [runs[column].mean()] * 2, color=ink, lw=1.1, zorder=4)
+        ax.set_xticks(range(len(order)), [ticks[v] for v in order])
+        ax.set_xlim(-0.6, len(order) - 0.4)
+        ax.grid(axis="x", visible=False)
+        ax.tick_params(axis="x", labelsize=6.5)
+
+
+    measures = [("b  Test loss per cell", "diagnostics_fit.csv", "test_loss", "negative log-likelihood + KL\n(lower is better)"),
+                ("c  Decoded response", "diagnostics_response.csv", "lfc_corr", "correlation across genes with\nthe observed shift"),
+                ("d  Cell-type probe", "diagnostics_celltype.csv", "balanced_acc_full", "balanced accuracy"),
+                ("e  Stimulation probe", "diagnostics_probe.csv", "probe_auroc", "AUROC stim vs ctrl")]
+    fig, axes = plt.subplots(2, 3, figsize=(10.2, 5.8), gridspec_kw={"hspace": 0.6, "wspace": 0.38})
+    ax = axes[0, 0]
+    strip(ax, scores, "ifn_alpha", hollow="ifn_alpha_active")
+    ax.axhline(0.5, color=muted, lw=0.8, zorder=0)
+    ax.set(title=f"a  Score of the {answer}", ylabel=f"AUROC stim vs ctrl\nmean over {n_types} cell types")
+    for ax, (title, file, column, ylabel) in zip([axes[0, 1], axes[0, 2], axes[1, 0], axes[1, 1]], measures):
+        strip(ax, pd.read_csv(tables / file), column)
+        ax.set(title=title, ylabel=ylabel)
+
+    # f: the 12 paired contrasts of the latent-free family (real minus each other mask) as a grid. The sign says who is better
+    # (the loss is lower-is-better), the cell is dark when Holm rejects and grey when not, the number is the adjusted p.
+    ax = axes[1, 2]
+    other = {"shuffled": "fully\nrandom", "setshuffle": "within-set\nrandom", "coexpression": "co-\nexpression"}
+    labels = {"test loss per cell": "test loss", "decoded response correlation": "decoded response",
+              "cell-type balanced accuracy": "cell-type probe", "stimulation probe AUROC": "stimulation probe"}
+    for r, (key, label) in enumerate(labels.items()):
+        for c, variant in enumerate(other):
+            row = tests[tests["test"].str.startswith(key) & tests["test"].str.endswith(f"real - {variant}")].iloc[0]
+            better = row["mean_difference"] < 0 if key.startswith("test loss") else row["mean_difference"] > 0
+            color = ink if row["reject"] else muted
+            ax.text(c, r - 0.12, 'better' if better else 'worse', ha="center", va="center", fontsize=6.5, color=color,
+                    fontweight="bold" if row["reject"] else "normal")
+            ax.text(c, r + 0.18, f"p = {row['p_adj']:.3f}", ha="center", va="center", fontsize=6, color=color)
+    ax.set_xlim(-0.5, 2.5)
+    ax.set_ylim(3.5, -0.5)
+    ax.set_xticks(range(3), list(other.values()))
+    ax.set_yticks(range(4), list(labels.values()))
+    ax.xaxis.tick_top()
+    ax.tick_params(axis="both", labelsize=6.5)
+    ax.grid(False)
+    for side in ax.spines.values():
+        side.set_visible(False)
+    ax.set_title(f"f  {mask_name}: better or worse than", pad=24)
+    fig.suptitle(f"{data}, {collection}   (black: rejected after Holm correction, grey: not)", x=0.02, ha="left", fontsize=8, color=secondary)
+    fig.savefig(out / f"{data}_{collection}.png")
+    plt.close(fig)
+    print("saved", out / f"{data}_{collection}.png")
+    raise SystemExit
+
+tables, out = Path("reports/tables/kang/hallmark"), Path("reports/figures")
 out.mkdir(parents=True, exist_ok=True)
 scores = pd.read_csv(tables / "scores.csv")
 tests = pd.read_csv(tables / "tests.csv").set_index("test")  # intervals and corrected p-values (src/11_tests.py)

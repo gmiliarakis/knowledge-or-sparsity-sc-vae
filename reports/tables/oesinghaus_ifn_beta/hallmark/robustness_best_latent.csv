@@ -1,0 +1,51 @@
+variant,seed,named_latent,best_latent,best_is_named,best_latent_name,named_latent_active
+plain,0,0.854353,0.854353,True,latent 3,True
+plain,1,0.862547,0.862547,True,latent 10,True
+plain,2,0.804446,0.804446,True,latent 42,True
+plain,3,0.849413,0.849413,True,latent 38,True
+plain,4,0.824864,0.824864,True,latent 10,True
+plain,5,0.862564,0.862564,True,latent 52,True
+plain,6,0.8033,0.8033,True,latent 50,True
+plain,7,0.856539,0.856539,True,latent 53,True
+plain,8,0.811166,0.811166,True,latent 16,True
+plain,9,0.841465,0.841465,True,latent 34,True
+real,0,0.871428,0.883221,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+real,1,0.874479,0.884542,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+real,2,0.872692,0.877984,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+real,3,0.878563,0.883449,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+real,4,0.870682,0.899354,False,free 3,True
+real,5,0.8694,0.886915,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+real,6,0.867176,0.897146,False,free 2,True
+real,7,0.875075,0.883909,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+real,8,0.870022,0.89947,False,free 1,True
+real,9,0.873499,0.887746,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+shuffled,0,0.365455,0.86958,False,HALLMARK_TNFA_SIGNALING_VIA_NFKB,True
+shuffled,1,0.362792,0.883883,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+shuffled,2,0.694296,0.886538,False,HALLMARK_ALLOGRAFT_REJECTION,True
+shuffled,3,0.595693,0.880876,False,free 2,True
+shuffled,4,0.656303,0.899299,False,free 5,True
+shuffled,5,0.689477,0.890033,False,HALLMARK_ALLOGRAFT_REJECTION,True
+shuffled,6,0.548774,0.891059,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+shuffled,7,0.610412,0.909507,False,free 3,True
+shuffled,8,0.423502,0.883196,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+shuffled,9,0.627279,0.900976,False,HALLMARK_PI3K_AKT_MTOR_SIGNALING,True
+setshuffle,0,0.740889,0.88565,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+setshuffle,1,0.512126,0.893805,False,HALLMARK_INTERFERON_GAMMA_RESPONSE,True
+setshuffle,2,0.790417,0.89527,False,HALLMARK_APOPTOSIS,True
+setshuffle,3,0.689052,0.883961,False,HALLMARK_IL2_STAT5_SIGNALING,True
+setshuffle,4,0.868601,0.895203,False,HALLMARK_COMPLEMENT,True
+setshuffle,5,0.722563,0.903047,False,HALLMARK_ESTROGEN_RESPONSE_EARLY,True
+setshuffle,6,0.790847,0.898985,False,free 7,True
+setshuffle,7,0.871464,0.889549,False,HALLMARK_IL2_STAT5_SIGNALING,True
+setshuffle,8,0.755731,0.900857,False,HALLMARK_ALLOGRAFT_REJECTION,True
+setshuffle,9,0.885903,0.897864,False,HALLMARK_G2M_CHECKPOINT,True
+coexpression,0,0.880078,0.880078,True,module 39,True
+coexpression,1,0.880447,0.880447,True,module 16,True
+coexpression,2,0.867293,0.867293,True,module 16,True
+coexpression,3,0.885195,0.885195,True,module 7,True
+coexpression,4,0.894015,0.894015,True,module 21,True
+coexpression,5,0.892411,0.892411,True,module 29,True
+coexpression,6,0.888282,0.888282,True,module 26,True
+coexpression,7,0.889557,0.889557,True,module 22,True
+coexpression,8,0.897122,0.897122,True,module 9,True
+coexpression,9,0.882826,0.882826,True,module 39,True
