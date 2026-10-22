@@ -22,8 +22,8 @@ order = list(colors)
 plt.rcParams.update({
     "font.family": "sans-serif", "font.sans-serif": ["Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans"],
     "font.size": 8, "axes.titlesize": 9, "axes.titleweight": "medium", "axes.titlelocation": "left",
-    "axes.titlepad": 10, "axes.labelsize": 8, "text.color": ink, "axes.labelcolor": secondary,
-    "xtick.color": baseline, "ytick.color": baseline, "xtick.labelcolor": secondary, "ytick.labelcolor": secondary,
+    "axes.titlepad": 10, "axes.labelsize": 8, "axes.labelweight": "bold", "text.color": ink, "axes.labelcolor": "#1f1f1f",
+    "xtick.color": baseline, "ytick.color": baseline, "xtick.labelcolor": "#1f1f1f", "ytick.labelcolor": "#1f1f1f",
     "xtick.major.size": 0, "ytick.major.size": 0, "xtick.major.pad": 4, "ytick.major.pad": 4,
     "axes.edgecolor": baseline, "axes.linewidth": 0.8, "axes.spines.top": False, "axes.spines.right": False,
     "axes.grid": True, "grid.color": grid, "grid.linewidth": 0.6, "axes.axisbelow": True,
@@ -51,7 +51,7 @@ mask_name = "Reactome" if collection == "reactome" else "Hallmark"
 if True:  # one figure per benchmark (SC_DATA, SC_SETS); the main experiment (kang/hallmark) continues below, every other benchmark stops here
     # the four measures that choose no latent, one dot per seed
     ticks["real"] = mask_name
-    bench_label = {"kang": "Kang IFN-β", "oesinghaus_ifn_beta": "Oesinghaus IFN-β", "oesinghaus_il_2": "Oesinghaus IL-2"}[data]
+    bench_label = {"kang": "Kang et al. IFN-β", "oesinghaus_ifn_beta": "Theis et al. IFN-β", "oesinghaus_il_2": "Theis et al. IL-2"}[data]
     tables, out = Path(f"reports/tables/{run}"), Path("reports/figures")
     out.mkdir(parents=True, exist_ok=True)
     offset = dict(zip(range(10), np.linspace(-0.18, 0.18, 10)))  # each seed keeps its position in every panel
@@ -169,7 +169,7 @@ for x, head in [(0.7, "1  Data"), (2.3, "2  Model"), (4.55, "3  Decoder masks"),
     label(x, 2.53, head, size=8.5, color=ink, weight="bold")  # each title centred over its panel
 
 # 1 data: two clouds of cells
-for (cy, c, text) in [(1.8, baseline, "control"), (0.9, "#CC79A7", "IFN-β, 6 h")]:
+for (cy, c, text) in [(1.8, "#6f6e68", "control"), (0.9, "#CC79A7", "IFN-β, 6 h")]:
     xy = np.clip(rng.normal([0.5, cy], [0.15, 0.11], size=(80, 2)), [0.2, cy - 0.24], [0.8, cy + 0.24])
     bg.scatter(xy[:, 0], xy[:, 1], s=5.5, color=c, lw=0, zorder=2)
     label(0.88, cy, text, ha="left", color=ink)
@@ -338,11 +338,11 @@ if (tables / "learning_curves_scores.csv").exists():
 
 # 6. Pipeline: the phases of the analysis, one box per step; what varies between benchmarks under the step that varies it,
 # and the two extra analyses as dashed boxes under the step they change
-phases = {"Data": ("#e3eef7", "#5b9bd5"), "Design": ("#fbe6cf", "#e69f00"), "Model": ("#ecdcf0", "#a86fb5"),
+phases = {"Data": ("#e3eef7", "#5b9bd5"), "Design": ("#f1dfe8", "#882255"), "Model": ("#ecdcf0", "#a86fb5"),
           "Evaluation": ("#d6eeea", "#2a9d8f")}
-steps = [("Data", "Cells of a\ncontrast"), ("Data", "Cell QC"), ("Data", "Gene\nfilter"), ("Design", "Split"),
+steps = [("Data", "Single-cell\ndata"), ("Data", "Cell QC"), ("Data", "Gene\nfilter"), ("Design", "Split"),
          ("Design", "Gene sets"), ("Design", "Five\nmasks"), ("Model", "VAE"), ("Evaluation", "Measures"), ("Evaluation", "Tests")]
-stacks = {0: [("Kang IFN-β", 0), ("Oesinghaus", 0), ("IFN-β", 1), ("IL-2", 1)], 4: [("Hallmark", 0), ("Reactome", 0)],
+stacks = {0: [("Kang et al. IFN-β", 0), ("Theis et al.", 0), ("IFN-β", 1), ("IL-2", 1)], 4: [("Hallmark", 0), ("Reactome", 0)],
           5: [("gene sets", 0), ("co-expression", 0), ("random", 0), ("fully random", 1), ("within-set random", 1), ("no mask", 0)],
           2: [("Without the 250\nstrongest genes", 0)],
           3: [("Learning curves", 0), ("500 cells", 1), ("1,000 cells", 1), ("2,000 cells", 1), ("4,000 cells", 1),
@@ -401,6 +401,57 @@ for phase, (lo, hi) in span.items():  # a label and a line above each phase
 fig.savefig(out / "pipeline.png")
 plt.close(fig)
 
+# Stages of the pipeline, one figure per part of the Methods (the paper places each beside its subsection)
+def stage_figure(first, last, name, width=6.3, scale=1.0):
+    bw_, bh_, gap_, gp_ = 1.55, 0.6, 0.35, 0.35
+    ks = list(range(first, last + 1))
+    fw = 0.2 + len(ks) * bw_ + sum(gp_ if steps[k][0] != steps[k + 1][0] else gap_ for k in ks[:-1])
+    tall = max(len(stacks.get(k, [])) for k in ks)
+    def stack_h(k):  # the height of the small boxes under a step, as drawn below
+        return sum((0.26 * 1.7 if "\n" in i else 0.26) + 0.07 for i, _ in stacks.get(k, []))
+    fh = 0.95 + 0.12 + max(stack_h(k) for k in ks) + 0.1
+    f = plt.figure(figsize=(fw, fh))
+    ax = f.add_axes([0, 0, 1, 1]); ax.set(xlim=(0, fw), ylim=(0, fh)); ax.axis("off")
+    x, y = 0.1, fh - 0.95
+    first_x, spanx = x, {}
+    for k in ks:
+        phase, nm = steps[k]
+        fill, edge = phases[phase]
+        ax.add_patch(matplotlib.patches.FancyBboxPatch((x, y), bw_, bh_, boxstyle="round,pad=0,rounding_size=0.06", fc=fill, ec=edge, lw=1.1))
+        ax.text(x + bw_ / 2, y + bh_ / 2, nm, ha="center", va="center", fontsize=9, color=ink, linespacing=1.1)
+        lo, hi = spanx.get(phase, (x, x)); spanx[phase] = (min(lo, x), x + bw_)
+        if k in stacks:
+            h, pad, left0, indent, right = 0.26, 0.07, x + 0.16, 0.22, x + bw_ - 0.04
+            yt, boxes = y - 0.12, []
+            for item, level in stacks[k]:
+                bh2 = h * 1.7 if "\n" in item else h
+                yt -= bh2; boxes.append((item, level, left0 + level * indent, yt, bh2)); yt -= pad
+            top_level = [b for b in boxes if b[1] == 0]
+            ax.plot([x + 0.05] * 2, [y, top_level[-1][3] + top_level[-1][4] / 2], color=muted, lw=0.9, zorder=0)
+            for n, (item, level, left, yb, bh2) in enumerate(boxes):
+                ax.add_patch(matplotlib.patches.FancyBboxPatch((left, yb), right - left, bh2, boxstyle="round,pad=0,rounding_size=0.05", fc="#f3f2ee" if k in (2, 3) else surface, ec=muted if k in (2, 3) else phases[phase][1], lw=0.9, zorder=2))
+                ax.text((left + right) / 2, yb + bh2 / 2, item, ha="center", va="center", fontsize=7.5 if level else 8, color=ink, linespacing=1.1, zorder=3)
+                if level == 0:
+                    ax.plot([x + 0.05, left], [yb + bh2 / 2] * 2, color=muted, lw=0.9, zorder=0)
+                else:
+                    parent = next(b for b in reversed(boxes[:n]) if b[1] == 0)
+                    el = parent[2] + 0.1
+                    ax.plot([el, el, left], [parent[3], yb + bh2 / 2, yb + bh2 / 2], color=muted, lw=0.9, zorder=0)
+        if k != ks[-1]:
+            st = gp_ if steps[k + 1][0] != phase else gap_
+            ax.annotate("", (x + bw_ + st, y + bh_ / 2), (x + bw_, y + bh_ / 2), arrowprops=dict(arrow, lw=1.8, color=ink, mutation_scale=10) if phase == "Model" else arrow)
+            x += bw_ + st
+    for ph, (lo, hi) in spanx.items():
+        ax.plot([lo, hi], [y + bh_ + 0.12] * 2, color=phases[ph][1], lw=1.5, solid_capstyle="round")
+        ax.text((lo + hi) / 2, y + bh_ + 0.25, ph, ha="center", va="center", fontsize=9.5, fontweight="bold", color=ink)
+    f.savefig(out / name, dpi=300); plt.close(f)
+
+
+stage_figure(0, 2, "stage_data.png")
+stage_figure(3, 5, "stage_design.png")
+stage_figure(6, 8, "stage_evaluation.png")
+
+
 # 7. Overarching figures: the six benchmarks side by side (Q1c to Q1f). One line weight and one point size for every line plot.
 import matplotlib.transforms as mtransforms
 
@@ -409,7 +460,7 @@ grey = "#9a9a9a"
 vcolor = {**colors, "vanilla": grey}
 vnames = {**names, "real": "gene sets"}
 bench_rows, bench_groups, y_ = [], [], 0.0
-for d_, label_ in [("kang", "Kang IFN-β"), ("oesinghaus_ifn_beta", "Oesinghaus IFN-β"), ("oesinghaus_il_2", "Oesinghaus IL-2")]:
+for d_, label_ in [("kang", "Kang et al. IFN-β"), ("oesinghaus_ifn_beta", "Theis et al.\nIFN-β"), ("oesinghaus_il_2", "Theis et al.\nIL-2")]:
     first = y_
     for c_ in ("hallmark", "reactome"):
         bench_rows.append((f"{d_}/{c_}", c_.capitalize(), y_))
@@ -430,7 +481,7 @@ def advantage_figure(measures, name, size):
     # advantage of the gene sets over each other mask, with the interval of the paired test
     others = [(v, names[v], vcolor[v]) for v in ("shuffled", "setshuffle", "coexpression")]  # each line in the colour of the mask it is compared with
     rows, groups, ya = [], [], 0.0
-    for d_, label_ in [("kang", "Kang IFN-β"), ("oesinghaus_ifn_beta", "Oesinghaus IFN-β"), ("oesinghaus_il_2", "Oesinghaus IL-2")]:
+    for d_, label_ in [("kang", "Kang et al. IFN-β"), ("oesinghaus_ifn_beta", "Theis et al.\nIFN-β"), ("oesinghaus_il_2", "Theis et al.\nIL-2")]:
         first = ya
         for c_ in ("hallmark", "reactome"):
             rows.append((f"{d_}/{c_}", c_.capitalize(), ya))
@@ -459,7 +510,7 @@ def advantage_figure(measures, name, size):
         group_names(axs[0], groups)
         for _, label, c in others:
             axs[0].plot([], [], color=c, label=f"gene sets minus {label}")
-        fig.legend(*axs[0].get_legend_handles_labels(), frameon=False, fontsize=7.5, ncol=3, loc="upper center", bbox_to_anchor=(0.55, 1.03))
+        fig.legend(*axs[0].get_legend_handles_labels(), frameon=False, fontsize=7.5, ncol=3, loc="upper center", bbox_to_anchor=(0.55, -0.02))
         fig.savefig(out / name)
         plt.close(fig)
 
@@ -507,11 +558,11 @@ def share_figure(name):
         fig, (ax_a, ax_b) = plt.subplots(2, 1, figsize=(6.4, 5.0), gridspec_kw={"height_ratios": [3.4, 1.6], "hspace": 0.35})
         share_panel(ax_a, bench_rows, bench_groups, "a  Six benchmarks")
         share_panel(ax_b, [("kang/hallmark", "all 12,034 genes", 0.0), ("kang_drop250/hallmark", "250 strongest\nresponse genes\ndropped", 1.2)], [],
-                    "b  Kang, Hallmark sets, without the 250 strongest genes")
+                    "b  Kang et al. data, Hallmark sets, without the 250 strongest genes")
         ax_b.set_xlabel("relative decoded response (%)")
         for v in ("real", "coexpression", "setshuffle"):
             ax_a.plot([], [], color=vcolor[v], label=vnames[v])
-        ax_a.legend(frameon=False, fontsize=7.5, ncol=3, loc="lower center", bbox_to_anchor=(0.4, 1.12))
+        fig.legend(*ax_a.get_legend_handles_labels(), frameon=False, fontsize=7.5, ncol=3, loc="upper center", bbox_to_anchor=(0.55, -0.005))
         fig.savefig(out / name)
         plt.close(fig)
 
@@ -538,7 +589,7 @@ def levels_figures():
             ax.text(ci * 12 + 5, -0.16, label, ha="center", va="top", fontsize=8, fontweight="bold", transform=belows)
         for v in order_:
             ax.plot([], [], "o", color=vcolor[v], markersize=PT, label=vnames[v])
-        ax.legend(frameon=False, fontsize=7.5, ncol=5, loc="lower center", bbox_to_anchor=(0.5, 1.0))
+        ax.legend(frameon=False, fontsize=7.5, ncol=5, loc="upper center", bbox_to_anchor=(0.5, -0.3))
         fig.savefig(out / "levels_benchmarks.png")
         plt.close(fig)
         fig, ax = plt.subplots(figsize=(4.6, 3.0))
@@ -555,7 +606,7 @@ def levels_figures():
         ax.grid(axis="y", color=grid, lw=0.6)
         for v in order_:
             ax.plot([], [], "o", color=vcolor[v], markersize=PT, label=vnames[v])
-        ax.legend(frameon=False, fontsize=7, ncol=3, loc="lower center", bbox_to_anchor=(0.5, 1.0), columnspacing=1, handletextpad=0.2)
+        ax.legend(frameon=False, fontsize=7, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.2), columnspacing=1, handletextpad=0.2)
         fig.savefig(out / "levels_Q1c.png")
         plt.close(fig)
 
@@ -583,7 +634,7 @@ def named_latent_figure():
             ax.text(ci * 12 + 5, -0.16, label, ha="center", va="top", fontsize=8, fontweight="bold", transform=belows)
         for v in order_:
             ax.plot([], [], "o", color=vcolor[v], markersize=PT, label=vnames[v])
-        ax.legend(frameon=False, fontsize=7.5, ncol=5, loc="lower center", bbox_to_anchor=(0.5, 1.0))
+        ax.legend(frameon=False, fontsize=7.5, ncol=5, loc="upper center", bbox_to_anchor=(0.5, -0.3))
         fig.savefig(out / "named_latent.png")
         plt.close(fig)
 
