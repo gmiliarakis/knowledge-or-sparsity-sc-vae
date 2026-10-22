@@ -49,3 +49,13 @@ coexpression,6,0.789973,0.789973,True,free 7,True
 coexpression,7,0.851339,0.851339,True,free 2,True
 coexpression,8,0.831309,0.831309,True,free 1,True
 coexpression,9,0.825637,0.825637,True,free 8,True
+responsematch,0,0.260309,0.833262,False,free 3,True
+responsematch,1,0.299675,0.817133,False,free 8,True
+responsematch,2,0.277665,0.824393,False,free 4,True
+responsematch,3,0.475665,0.84288,False,HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION,True
+responsematch,4,0.278026,0.845658,False,free 8,True
+responsematch,5,0.526598,0.833518,False,free 5,True
+responsematch,6,0.481885,0.789282,False,free 7,True
+responsematch,7,0.634747,0.799305,False,free 6,True
+responsematch,8,0.446753,0.78783,False,free 5,True
+responsematch,9,0.47653,0.837388,False,free 4,True

@@ -32,7 +32,8 @@ from scoring import (alpha_name, auroc, donor, gamma_name, min_variance, main, r
 out = tables_dir
 out.mkdir(parents=True, exist_ok=True)
 main_benchmark = main
-variants = [("plain", "vanilla"), ("real", "real"), ("shuffled", "shuffled"), ("setshuffle", "setshuffle"), ("coexpression", "coexpression")]
+variants = [("plain", "vanilla"), ("real", "real"), ("shuffled", "shuffled"), ("setshuffle", "setshuffle"), ("coexpression", "coexpression"),
+            ("responsematch", "responsematch")]  # only where its runs exist
 
 
 def runs(folder):
@@ -50,7 +51,7 @@ for folder, _ in variants:
         val_auc = np.array([auroc(z[:, k], "val") for k in range(z.shape[1])])
         best = [k for k in np.argsort(-np.abs(val_auc - 0.5)) if active[k]][0]
         best_sign = 1.0 if val_auc[best] > 0.5 else -1.0
-        if folder in ("real", "shuffled", "setshuffle"):
+        if folder in ("real", "shuffled", "setshuffle", "responsematch"):
             named = ids.index(alpha_name)
             named_sign = np.sign(w[w[:, named] != 0, named].mean())
         else:
@@ -247,7 +248,7 @@ print(response.groupby("variant")[["lfc_corr", "lfc_corr_ifn"]].agg(["mean", "st
 # Few-shot: the probe sees only k validation cells per type (drawn with the run's seed). Hard pairs: AUROC between two similar types.
 if data == "kang":
     pairs = [("CD4 T cells", "CD8 T cells", "auroc_cd4_vs_cd8"), ("CD14+ Monocytes", "FCGR3A+ Monocytes", "auroc_cd14_vs_fcgr3a")]
-else:  # the Oesinghaus data name the types differently; the same two pairs (T cells, monocytes)
+else:  # the Cytokine Dictionary data name the types differently; the same two pairs (T cells, monocytes)
     pairs = [("CD4 Memory", "CD8 Memory", "auroc_cd4_vs_cd8"), ("CD14 Mono", "CD16 Mono", "auroc_cd14_vs_fcgr3a")]
 celltype = []
 for folder, variant in variants:

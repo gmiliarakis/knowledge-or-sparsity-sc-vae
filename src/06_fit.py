@@ -90,6 +90,11 @@ def build_mask(kind, var_names, seed, train_size, subsamples):
         # labels permuted among set genes only: the genes in no set, and so the free latents' reach, stay as in the real mask
         assert not train_size, "setshuffle masks are built for the full training set only"
         sets = sets[np.load(f"data/processed/masks_{collection}_setshuffle{file_tag}.npz")["perms"][seed]]
+    elif kind == "responsematch":
+        # labels permuted among set genes only, inside bins of expression level x stimulation effect (04b_build_responsematch.py): every set keeps
+        # its size, overlaps, expression level and number of strongly responding genes. It uses the stimulation labels of the training cells
+        assert not train_size, "responsematch masks are built for the full training set only"
+        sets = sets[np.load(f"data/processed/masks_{collection}_responsematch{file_tag}.npz")["perms"][seed]]
     elif kind == "coexpression":
         if train_size:
             modules = subsamples[f"modules_{train_size}"]
@@ -161,7 +166,7 @@ def save_run(out, model, latents, history, info):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mask", choices=["none", "real", "shuffled", "setshuffle", "coexpression"], default="none")
+    parser.add_argument("--mask", choices=["none", "real", "shuffled", "setshuffle", "coexpression", "responsematch"], default="none")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max-epochs", type=int, default=2000)
     parser.add_argument("--train-size", type=int, help="learning curves: train on a subsample")

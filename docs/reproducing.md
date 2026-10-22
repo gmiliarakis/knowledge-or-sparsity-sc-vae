@@ -74,3 +74,18 @@ for c in reactome hallmark; do
   SC_DATA=oesinghaus_il_2 SC_SETS=$c python src/09_figures.py
 done
 ```
+
+## Response-matched random mask (Q1c control)
+
+Run from the project root, one stage at a time. The runs cover the six benchmarks with 10 seeds each.
+
+```
+bash src/extras/response_matched_control.sh build   # the masks, minutes
+bash src/extras/response_matched_control.sh fit     # 60 runs, about 4 to 5 hours
+bash src/extras/response_matched_control.sh check   # rewrites the diagnostics tables with the response-matched runs
+for c in hallmark reactome; do
+  SC_DATA=kang SC_SETS=$c python src/11_tests.py
+  SC_DATA=oesinghaus_ifn_beta SC_SETS=$c python src/11_tests.py
+  SC_DATA=oesinghaus_il_2 SC_SETS=$c SC_TARGET=il2 python src/11_tests.py
+done
+```

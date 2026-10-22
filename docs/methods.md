@@ -98,7 +98,7 @@ VAE(
 )
 ```
 
-The encoder input is the 12,034 genes after a shifted-log transform (see the README), plus a one-hot code for the 8 donors. These are the Kang data. The Oesinghaus data have about 11,340 genes and 12 donors, so the encoder, `w` and `v` are smaller. The
+The encoder input is the 12,034 genes after a shifted-log transform (see the README), plus a one-hot code for the 8 donors. These are the Kang et al. data. The Theis et al. data have about 11,340 genes and 12 donors, so the encoder, `w` and `v` are smaller. The
 decoder has no layers of its own, only the three parameters $W$, $V$ and $\log\theta$ (`w`, `v` and `log_theta` in the code).
 
 | Parameter | Shape | Role | Count |
@@ -154,7 +154,7 @@ The table lists the steps at which biological knowledge or an assumption about t
 
 | Step | Script | Choice | Reason |
 |---|---|---|---|
-| Data | `03c` | Oesinghaus data for Q1e and Q1f: 12 healthy donors, cells read in place from the published archive, at most 1,200 per donor × condition group, genes shared with the Kang data (`SC_DATA`) | stimulated and control cells of a donor share a plate; the cytokine was chosen from the published differential-expression table before any model was fitted |
+| Data | `03c` | Theis et al. data for Q1e and Q1f: 12 healthy donors, cells read in place from the published archive, at most 1,200 per donor × condition group, genes shared with the Kang et al. data (`SC_DATA`) | stimulated and control cells of a donor share a plate; the cytokine was chosen from the published differential-expression table before any model was fitted |
 | Cell identity | `03` | the authors' demuxlet singlet calls and cell-type labels, used as given | a droplet containing cells of two donors is identified from their genotypes, which is stronger evidence than an expression-based doublet score |
 | Cell QC | `03` | thresholds per condition × cell type | monocytes, dendritic cells and megakaryocytes differ in RNA content, and stimulation shifts it |
 | Genes | `03` | all genes detected in ≥ 20 cells; no highly-variable-gene selection | selection drops interferon-induced genes |
@@ -169,7 +169,7 @@ The table lists the steps at which biological knowledge or an assumption about t
 | Likelihood | `06` | negative binomial on raw counts, observed total counts as library size | droplet counts are not zero-inflated [22] |
 | Target latent | `08` | Hallmark interferon-α response or Reactome interferon α/β signaling for IFN-β; IL-2 STAT5 signaling or interleukin-2 family signaling for IL-2 (`SC_TARGET=il2`) | IFN-β is a type I interferon; IL-2 is scored against its own set |
 | Orientation | `08` | sign set so the latent's mean weight on its own genes is positive | a gene set that is switched on raises its own genes |
-| Scoring | `08` | AUROC per cell type on the test set, unweighted mean over the scored types (7 for Kang, 13 for the Oesinghaus data) | the question is whether every cell type responds to IFN-β, and a latent should not score by separating cell types |
+| Scoring | `08` | AUROC per cell type on the test set, unweighted mean over the scored types (7 for the Kang et al. data, 13 for the Theis et al. data) | the question is whether every cell type responds to IFN-β, and a latent should not score by separating cell types |
 | Megakaryocytes | `08` | excluded from scores, kept in training | mostly platelets, which have no nucleus |
 
 ## Data sets used and for future work
@@ -177,7 +177,7 @@ The table lists the steps at which biological knowledge or an assumption about t
 | Question | Dataset | Access |
 |---|---|---|
 | Q1, Q1a to Q1e | Kang et al. 2018 [17] | GEO GSE96583 (batch 2) |
-| Q1d to Q1f | Human Cytokine Dictionary of Oesinghaus et al. [41], as distributed by Parse Biosciences [42] | Parse Biosciences, "10 Million Human PBMCs in a Single Experiment" (CC BY-NC 4.0) |
+| Q1d to Q1f | Human Cytokine Dictionary of Theis et al. [41], as distributed by Parse Biosciences [42] | Parse Biosciences, "10 Million Human PBMCs in a Single Experiment" (CC BY-NC 4.0) |
 | Known regulators, and B cells | Human tonsil atlas [24] | Zenodo 10.5281/zenodo.8373756 |
 | Known regulators | B cell activation time course and IRF4 / PRDM1 CRISPR perturbations [23] | Zenodo 10.5281/zenodo.17984776 |
 | Protein as reference | Tonsil CITE-seq [24]; 10x Genomics 10k PBMCs with TotalSeq-B antibodies | Zenodo 10.5281/zenodo.8373756; 10x Genomics |

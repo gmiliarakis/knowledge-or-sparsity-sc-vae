@@ -17,6 +17,9 @@
 #   response, cell-type probe, stimulation probe), each with three contrasts: Hallmark minus each of the two random masks and
 #   minus the co-expression mask. The no-mask VAE is a descriptive reference, and the few-shot and hard-pair cell-type scores
 #   are descriptive.
+# Family responsematch (response-matched random mask, Q1c control; 4 tests per benchmark, confirmatory): Holm, as S1. The four measures
+#   that choose no latent, Hallmark minus the response-matched mask. It is its own family so that the 12 tests of the latent-free
+#   family keep their correction; it exists only where the response-matched runs exist (the six benchmarks, not the 250-gene repeat).
 # Per-cell-type and per-donor scores are descriptive and get no p-values.
 # Symmetry check: every row also carries the exact sign-test interval at the same level (no symmetry assumption), the skewness of
 # the paired differences, and whether the sign-test interval and the Hodges-Lehmann interval agree on excluding zero.
@@ -142,6 +145,8 @@ for label, file, column in latent_free:
     frame = pd.read_csv(out / file)
     for other in ["shuffled", "setshuffle", "coexpression"]:
         tests.append(("latent-free", f"{label}: real - {other}", diff(frame, column, "real", other), "difference"))
+    if "responsematch" in set(frame["variant"]):
+        tests.append(("responsematch", f"{label}: real - responsematch", diff(frame, column, "real", "responsematch"), "difference"))
 
 rows = []
 for family, name, d, kind in tests:
@@ -152,7 +157,7 @@ for family, name, d, kind in tests:
     rows.append({"family": family, "test": name, "pairs": len(d), "mean_difference": d.mean(), "p_raw": p, "_d": d, "_kind": kind})
 result = pd.DataFrame(rows)
 
-for family, method in [("S1", "Holm"), ("S3", "Benjamini-Hochberg"), ("latent-free", "Holm")]:
+for family, method in [("S1", "Holm"), ("S3", "Benjamini-Hochberg"), ("latent-free", "Holm"), ("responsematch", "Holm")]:
     sel = result["family"] == family
     if not sel.any():
         continue

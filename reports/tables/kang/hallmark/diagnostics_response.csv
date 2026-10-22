@@ -49,3 +49,13 @@ coexpression,6,0.897825,0.974563
 coexpression,7,0.906361,0.982263
 coexpression,8,0.885014,0.965165
 coexpression,9,0.89126,0.974521
+responsematch,0,0.779872,0.750326
+responsematch,1,0.840601,0.884817
+responsematch,2,0.817871,0.835139
+responsematch,3,0.821549,0.813861
+responsematch,4,0.833346,0.86282
+responsematch,5,0.826114,0.866814
+responsematch,6,0.845565,0.891606
+responsematch,7,0.824959,0.882195
+responsematch,8,0.75867,0.737495
+responsematch,9,0.826761,0.851356

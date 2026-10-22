@@ -49,3 +49,13 @@ coexpression,6,0.828108,0.828108,True,free 7,True
 coexpression,7,0.809417,0.809417,True,free 2,True
 coexpression,8,0.83932,0.83932,True,free 3,True
 coexpression,9,0.827704,0.827704,True,free 1,True
+responsematch,0,0.5,0.824891,False,free 3,False
+responsematch,1,0.609114,0.82595,False,free 6,True
+responsematch,2,0.507482,0.817512,False,free 1,True
+responsematch,3,0.590231,0.7876,False,free 1,True
+responsematch,4,0.5,0.819843,False,free 4,False
+responsematch,5,0.525828,0.823011,False,free 1,True
+responsematch,6,0.365354,0.820481,False,free 3,True
+responsematch,7,0.5,0.844821,False,free 2,False
+responsematch,8,0.531879,0.841374,False,free 7,True
+responsematch,9,0.5,0.834284,False,free 8,False
