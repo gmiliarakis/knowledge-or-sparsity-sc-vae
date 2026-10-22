@@ -18,6 +18,8 @@
 #   minus the co-expression mask. The no-mask VAE is a descriptive reference, and the few-shot and hard-pair cell-type scores
 #   are descriptive.
 # Per-cell-type and per-donor scores are descriptive and get no p-values.
+# Symmetry check: every row also carries the exact sign-test interval at the same level (no symmetry assumption), the skewness of
+# the paired differences, and whether the sign-test interval and the Hodges-Lehmann interval agree on excluding zero.
 #
 # Equivalence of the Hallmark and co-expression masks is tested with two one-sided Wilcoxon tests against +-margin;
 # the p-value is the larger of the two (intersection-union), so it needs no further correction within the test.
@@ -72,6 +74,17 @@ def interval(d, level):
     if k < 0:
         return estimate, walsh[0], walsh[-1]
     return estimate, walsh[k], walsh[len(walsh) - 1 - k]
+
+
+def sign_interval(d, level):
+    """Exact interval of at least the given level from the sign test (order statistics of the differences); needs no symmetry."""
+    d = np.sort(np.asarray(d, dtype=float))
+    n = len(d)
+    cdf = np.cumsum([stats.binom.pmf(i, n, 0.5) for i in range(n + 1)])
+    k = int(np.searchsorted(cdf, (1 - level) / 2, side="right")) - 1  # largest k with P(B <= k) <= alpha/2
+    if k < 0:
+        return d[0], d[-1]
+    return d[k], d[n - 1 - k]
 
 
 def holm(p):
@@ -156,7 +169,11 @@ for family, method in [("S1", "Holm"), ("S3", "Benjamini-Hochberg"), ("latent-fr
         d, kind = result.at[i, "_d"], result.at[i, "_kind"]
         est, lo, hi = interval(d, level if kind == "difference" else 1 - 2 * (1 - level))
         result.at[i, "hodges_lehmann"], result.at[i, "ci_low"], result.at[i, "ci_high"] = est, lo, hi
+        s_lo, s_hi = sign_interval(d, level if kind == "difference" else 1 - 2 * (1 - level))
+        result.at[i, "sign_ci_low"], result.at[i, "sign_ci_high"] = s_lo, s_hi
+        result.at[i, "skew"] = stats.skew(d) if len(d) > 2 and np.ptp(d) > 0 else 0.0
+        result.at[i, "sign_same_decision"] = bool((lo > 0 or hi < 0) == (s_lo > 0 or s_hi < 0))
 result["m_in_family"] = result.groupby("family")["test"].transform("count")
 result = result.drop(columns=["_d", "_kind"])
 result.to_csv(out / "tests.csv", index=False, float_format="%.6g")
-print(result[["family", "test", "mean_difference", "hodges_lehmann", "ci_low", "ci_high", "p_raw", "p_adj", "reject"]].round(4).to_string(index=False))
+print(result[["family", "test", "mean_difference", "hodges_lehmann", "ci_low", "ci_high", "p_raw", "p_adj", "reject", "skew", "sign_same_decision"]].round(4).to_string(index=False))

@@ -14,7 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 surface, ink, secondary, muted, grid, baseline = "#ffffff", "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7"
-colors = {"vanilla": "#cfcfcf", "real": "#0072B2", "shuffled": "#882255", "setshuffle": "#56B4E9", "coexpression": "#117733"}  # blue, green, sky blue and wine: distinct under red-green colour blindness
+colors = {"vanilla": "#cfcfcf", "real": "#0072B2", "shuffled": "#882255", "setshuffle": "#56B4E9", "coexpression": "#009E73"}  # Okabe-Ito blue, bluish green and sky blue with wine: distinct under red-green colour blindness
 names = {"vanilla": "no mask", "real": "Hallmark", "shuffled": "fully random", "setshuffle": "within-set random", "coexpression": "co-expression"}
 ticks = {"vanilla": "no\nmask", "real": "Hallmark", "shuffled": "fully\nrandom", "setshuffle": "within-set\nrandom", "coexpression": "co-\nexpression"}
 folders = {"vanilla": "plain", "real": "real", "shuffled": "shuffled", "setshuffle": "setshuffle", "coexpression": "coexpression"}
@@ -36,9 +36,9 @@ SEED_S, MEAN_S = 9, 15  # point area (pt²) of a seed and of the black mean: the
 
 
 def seed_dots(ax, x, y, color, filled=True, zorder=3):
-    # a seed: one translucent dot in the colour of its variant (an open ring when `filled` is False, an inactive latent)
+    # a seed: one opaque dot in the colour of its variant (an open ring when `filled` is False, an inactive latent)
     if filled:
-        ax.scatter(x, y, s=SEED_S, color=matplotlib.colors.to_rgba(color, 0.65), lw=0, zorder=zorder)
+        ax.scatter(x, y, s=SEED_S, color=color, lw=0, zorder=zorder)
     else:
         ax.scatter(x, y, s=SEED_S, facecolor="none", edgecolor=color, lw=0.8, zorder=zorder)
 
@@ -260,7 +260,6 @@ for i, v in enumerate(variants):
     x_ = i + swarm(y_, dot_in / (width_in / len(variants)), dot_in / (height_in / (high - low)))
     seed_dots(ax, x_, y_, colors[v])
     mean_dot(ax, i, y_.mean())
-    ax.text(i, y_.mean() - 0.025, f"{y_.mean():.2f}", ha="center", va="top", fontsize=6.5, color=ink, zorder=5)
 ax.set(xlim=(-0.5, len(variants) - 0.5), ylim=(low, high), yticks=[0.7, 0.8, 0.9, 1.0], yticklabels=["0.7", "0.8", "0.9", "1.0"])
 ax.set_ylabel("correlation")
 ax.yaxis.set_label_coords(-0.12, 0.5)
@@ -344,7 +343,7 @@ phases = {"Data": ("#e3eef7", "#5b9bd5"), "Design": ("#fbe6cf", "#e69f00"), "Mod
 steps = [("Data", "Cells of a\ncontrast"), ("Data", "Cell QC"), ("Data", "Gene\nfilter"), ("Design", "Split"),
          ("Design", "Gene sets"), ("Design", "Five\nmasks"), ("Model", "VAE"), ("Evaluation", "Measures"), ("Evaluation", "Tests")]
 stacks = {0: [("Kang IFN-β", 0), ("Oesinghaus", 0), ("IFN-β", 1), ("IL-2", 1)], 4: [("Hallmark", 0), ("Reactome", 0)],
-          5: [("real sets", 0), ("co-expression", 0), ("random", 0), ("fully random", 1), ("within-set random", 1), ("no mask", 0)],
+          5: [("gene sets", 0), ("co-expression", 0), ("random", 0), ("fully random", 1), ("within-set random", 1), ("no mask", 0)],
           2: [("Without the 250\nstrongest genes", 0)],
           3: [("Learning curves", 0), ("500 cells", 1), ("1,000 cells", 1), ("2,000 cells", 1), ("4,000 cells", 1),
               ("8,000 cells", 1), ("all 16,749", 1)],
@@ -408,7 +407,7 @@ import matplotlib.transforms as mtransforms
 LW, PT = 1.0, 3  # line weight and point size
 grey = "#9a9a9a"
 vcolor = {**colors, "vanilla": grey}
-vnames = {**names, "real": "real sets"}
+vnames = {**names, "real": "gene sets"}
 bench_rows, bench_groups, y_ = [], [], 0.0
 for d_, label_ in [("kang", "Kang IFN-β"), ("oesinghaus_ifn_beta", "Oesinghaus IFN-β"), ("oesinghaus_il_2", "Oesinghaus IL-2")]:
     first = y_
@@ -427,12 +426,8 @@ def group_names(ax, groups, inches=0.7):
                 linespacing=1.1)
 
 
-def advantage_figure():
-    # advantage of the real sets over each other mask, for the four measures, with the interval of the paired test
-    measures = [("test loss per cell (lower is better)", "test loss per cell\n(loss units)", -1),
-                ("decoded response correlation", "decoded response\n(correlation)", 1),
-                ("cell-type balanced accuracy", "cell-type probe\n(balanced accuracy)", 1),
-                ("stimulation probe AUROC", "stimulation probe\n(AUROC)", 1)]
+def advantage_figure(measures, name, size):
+    # advantage of the gene sets over each other mask, with the interval of the paired test
     others = [(v, names[v], vcolor[v]) for v in ("shuffled", "setshuffle", "coexpression")]  # each line in the colour of the mask it is compared with
     rows, groups, ya = [], [], 0.0
     for d_, label_ in [("kang", "Kang IFN-β"), ("oesinghaus_ifn_beta", "Oesinghaus IFN-β"), ("oesinghaus_il_2", "Oesinghaus IL-2")]:
@@ -440,13 +435,10 @@ def advantage_figure():
         for c_ in ("hallmark", "reactome"):
             rows.append((f"{d_}/{c_}", c_.capitalize(), ya))
             ya += 1
-        if d_ == "kang":  # the repeat without the 250 strongest genes belongs to the Kang group
-            rows.append(("kang_drop250/hallmark", "Hallmark, 250 strongest\ngenes dropped", ya))
-            ya += 1
         groups.append((label_, first, ya - 1))
         ya += 0.6
     with plt.rc_context({"lines.linewidth": LW, "lines.markersize": PT, "axes.grid": False, "axes.spines.left": False}):
-        fig, axs = plt.subplots(1, 4, figsize=(10.4, 4.3), sharey=True, gridspec_kw={"wspace": 0.12})
+        fig, axs = plt.subplots(1, len(measures), figsize=size, sharey=True, gridspec_kw={"wspace": 0.12})
         for ax, (key, title, sign) in zip(axs, measures):
             ax.axvline(0, color=ink, lw=0.6)
             for path, _, y in rows:
@@ -456,8 +448,9 @@ def advantage_figure():
                     yy = y + (j - 1) * 0.26
                     lo, hi = sorted([sign * r["ci_low"], sign * r["ci_high"]])
                     ax.plot([lo, hi], [yy, yy], color=c, zorder=2)
-                    if r["reject"]:
-                        ax.plot(sign * r["hodges_lehmann"], yy, "o", color=ink, zorder=3)
+                    if r["reject"]:  # filled: adjusted p below 0.05 and the interval excludes zero; open: the interval reaches zero
+                        excludes = lo > 0 or hi < 0
+                        ax.plot(sign * r["hodges_lehmann"], yy, "o", color=ink, markerfacecolor=ink if excludes else surface, zorder=3)
             ax.set_title(title, fontsize=8, loc="left")
             ax.tick_params(axis="y", length=0)
             ax.grid(axis="x", color=grid, lw=0.6)
@@ -465,11 +458,9 @@ def advantage_figure():
         axs[0].set_ylim(rows[-1][2] + 0.7, -0.7)
         group_names(axs[0], groups)
         for _, label, c in others:
-            axs[0].plot([], [], color=c, label=f"real sets minus {label}")
+            axs[0].plot([], [], color=c, label=f"gene sets minus {label}")
         fig.legend(*axs[0].get_legend_handles_labels(), frameon=False, fontsize=7.5, ncol=3, loc="upper center", bbox_to_anchor=(0.55, 1.03))
-        fig.text(0.55, -0.01, "right of the line: real sets better (test loss flipped); black dot: adjusted p < 0.05", ha="center",
-                 fontsize=7.5, color=secondary)
-        fig.savefig(out / "advantage.png")
+        fig.savefig(out / name)
         plt.close(fig)
 
 
@@ -480,32 +471,47 @@ def share_scores(path):
     return {v: (w[v] - zero) / (w["vanilla"].mean() - zero) * 100 for v in ("real", "coexpression", "setshuffle")}
 
 
-def share_figure(rows, groups, size, name):
+def share_gap(path):
+    # the denominator of the relative scale: decoded response of the no-mask VAE minus that of the fully random mask
+    w = pd.read_csv(f"reports/tables/{path}/diagnostics_response.csv").pivot(index="seed", columns="variant", values="lfc_corr")
+    return w["vanilla"].mean() - w["shuffled"].mean()
+
+
+def share_panel(ax, rows, groups, title):
+    # one panel: each variant placed between the fully random mask (0) and no mask (100)
+    top = rows[0][2] - 0.8
+    ax.axvline(0, color=colors["shuffled"], lw=0.6, zorder=1)
+    ax.axvline(100, color=grey, lw=0.6, zorder=1)
+    for path, _, y in rows:
+        s = share_scores(path)
+        for j, v in enumerate(("real", "coexpression", "setshuffle")):
+            yy = y + (j - 1) * 0.28
+            ax.plot([s[v].min(), s[v].max()], [yy, yy], color=vcolor[v], zorder=2)
+            ax.plot(s[v].mean(), yy, "o", color=vcolor[v], zorder=3)
+    ax.text(1.5, top, "fully random mask", va="center", ha="left", fontsize=7, color=colors["shuffled"])
+    ax.text(101.5, top, "no mask", va="center", ha="left", fontsize=7, color=grey)
+    ax.set_yticks([y for _, _, y in rows], [f"{l}\n(gap {share_gap(p):.2f})" for p, l, _ in rows], fontsize=7.5)
+    ax.tick_params(axis="y", length=0)
+    ax.set_xticks([-50, -25, 0, 25, 50, 75, 100])
+    ax.set_xlim(-70, 125)
+    ax.set_ylim(max(y for _, _, y in rows) + 0.7, top - 0.5)
+    ax.grid(axis="x", color=grid, lw=0.6)
+    ax.set_title(title, fontsize=8, loc="left")
+    if groups:
+        group_names(ax, groups)
+
+
+def share_figure(name):
+    # a: the six benchmarks (Q1d to Q1f); b: the main experiment with and without the 250 strongest genes (Q1c)
     with plt.rc_context({"lines.linewidth": LW, "lines.markersize": PT, "axes.grid": False, "axes.spines.left": False}):
-        fig, ax = plt.subplots(figsize=size)
-        top = rows[0][2] - 0.8
-        ax.axvline(0, color=colors["shuffled"], lw=0.6, zorder=1)
-        ax.axvline(100, color=grey, lw=0.6, zorder=1)
-        for path, _, y in rows:
-            s = share_scores(path)
-            for j, v in enumerate(("real", "coexpression", "setshuffle")):
-                yy = y + (j - 1) * 0.28
-                ax.plot([s[v].min(), s[v].max()], [yy, yy], color=vcolor[v], zorder=2)
-                ax.plot(s[v].mean(), yy, "o", color=vcolor[v], zorder=3)
-        ax.text(1.5, top, "fully random mask", va="center", ha="left", fontsize=7, color=colors["shuffled"])
-        ax.text(101.5, top, "no mask", va="center", ha="left", fontsize=7, color=grey)
-        ax.set_yticks([y for _, _, y in rows], [l for _, l, _ in rows], fontsize=7.5)
-        ax.tick_params(axis="y", length=0)
-        ax.set_xticks([-50, -25, 0, 25, 50, 75, 100])
-        ax.set_xlim(-70, 125)
-        ax.set_ylim(max(y for _, _, y in rows) + 0.7, top - 0.5)
-        ax.grid(axis="x", color=grid, lw=0.6)
-        ax.set_xlabel("relative decoded response (%)")
+        fig, (ax_a, ax_b) = plt.subplots(2, 1, figsize=(6.4, 5.0), gridspec_kw={"height_ratios": [3.4, 1.6], "hspace": 0.35})
+        share_panel(ax_a, bench_rows, bench_groups, "a  Six benchmarks")
+        share_panel(ax_b, [("kang/hallmark", "all 12,034 genes", 0.0), ("kang_drop250/hallmark", "250 strongest\nresponse genes\ndropped", 1.2)], [],
+                    "b  Kang, Hallmark sets, without the 250 strongest genes")
+        ax_b.set_xlabel("relative decoded response (%)")
         for v in ("real", "coexpression", "setshuffle"):
-            ax.plot([], [], color=vcolor[v], label=vnames[v])
-        ax.legend(frameon=False, fontsize=7.5, ncol=3, loc="lower center", bbox_to_anchor=(0.4, 1.0))
-        if groups:
-            group_names(ax, groups)
+            ax_a.plot([], [], color=vcolor[v], label=vnames[v])
+        ax_a.legend(frameon=False, fontsize=7.5, ncol=3, loc="lower center", bbox_to_anchor=(0.4, 1.12))
         fig.savefig(out / name)
         plt.close(fig)
 
@@ -582,10 +588,13 @@ def named_latent_figure():
         plt.close(fig)
 
 
-advantage_figure()
-share_figure(bench_rows, bench_groups, (6.4, 3.4), "share_benchmarks.png")
-share_figure([("kang/hallmark", "all 12,034 genes", 0.0), ("kang_drop250/hallmark", "250 strongest\nresponse genes\ndropped", 1.2)], [],
-             (6.4, 2.0), "share_Q1c.png")
+MEASURES = {"loss": ("test loss per cell (lower is better)", "test loss per cell\n(loss units)", -1),
+            "response": ("decoded response correlation", "decoded response\n(correlation)", 1),
+            "celltype": ("cell-type balanced accuracy", "cell-type probe\n(balanced accuracy)", 1),
+            "probe": ("stimulation probe AUROC", "stimulation probe\n(AUROC)", 1)}
+advantage_figure([MEASURES["loss"], MEASURES["response"]], "advantage.png", (6.6, 3.9))
+advantage_figure([MEASURES["celltype"], MEASURES["probe"]], "advantage_probes.png", (6.6, 3.9))
+share_figure("share.png")
 levels_figures()
 named_latent_figure()
 

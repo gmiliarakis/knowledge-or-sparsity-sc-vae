@@ -32,6 +32,8 @@ python src/09_figures.py
 `10_checks.py` reads the scored runs and adds the robustness checks, the reference scores, the principal-component check after removing genes and the probe. `11_tests.py` runs every hypothesis test with its multiplicity correction. The
 tables label the no-mask VAE `vanilla`, and its results folder is `plain`.
 
+`10b_response_measures.py` (run after `10_checks.py`, trains nothing) adds the alternative decoded-response measures and the noise ceiling (`diagnostics_response_alt.csv`, `diagnostics_response_ceiling.csv`). For the main benchmark, `python src/10b_response_measures.py --learning-curves` also scores the decoded response of the learning-curve runs. Like `10_checks.py`, it takes `SC_DATA`, `SC_SETS` and `SC_TAG` in the command itself.
+
 The Reactome analysis reuses the same scripts through `SC_SETS`; its results go to `results/kang/reactome/` and `reports/tables/kang/reactome/`, and only the latent-free tests are run on it. A script never uses a variable set in an earlier command: set `SC_DATA`, `SC_SETS` and `SC_TAG` in the command itself and do not export them.
 
 ```

@@ -82,6 +82,21 @@ Interferon-α score, mean over 10 seeds at each training size.
 - No data-efficiency benefit of Hallmark knowledge appeared, and this task cannot show one: with 500 cells the no-mask VAE already scores 0.992 and the Hallmark mask 0.996. Hallmark and co-expression do not differ at any size (adjusted p 0.089 to 1.0; Supplementary Figure 2).
 - The Hallmark latent scores higher than the fully random mask's latent at every size (all 10 seeds, adjusted p = 0.003). This advantage is not shown to depend on training size (slope adjusted p = 0.14). The random mask's latent is unreliable at every size (single seeds 0.01 to 0.99).
 
+### Decoded response on the learning curves
+
+The interferon-α score saturates, so the learning curves are repeated with the decoded response (defined in the README, Evaluation), which does not. Same runs and sizes as above (Kang, Hallmark, 10 seeds; the within-set random mask was run at full size only, 0.746 ± 0.044). Mean ± SD over seeds.
+
+| Training cells | No mask | Hallmark | Fully random | Co-expression |
+|---|---|---|---|---|
+| 500 | 0.821 ± 0.023 | 0.742 ± 0.016 | 0.620 ± 0.047 | 0.745 ± 0.028 |
+| 1,000 | 0.880 ± 0.012 | 0.797 ± 0.009 | 0.656 ± 0.054 | 0.808 ± 0.033 |
+| 2,000 | 0.911 ± 0.007 | 0.821 ± 0.007 | 0.695 ± 0.040 | 0.836 ± 0.025 |
+| 4,000 | 0.926 ± 0.005 | 0.859 ± 0.009 | 0.780 ± 0.029 | 0.866 ± 0.012 |
+| 8,000 | 0.938 ± 0.001 | 0.869 ± 0.002 | 0.759 ± 0.034 | 0.890 ± 0.007 |
+| 16,749 | 0.942 ± 0.001 | 0.873 ± 0.001 | 0.784 ± 0.034 | 0.898 ± 0.008 |
+
+Hallmark minus no mask: -0.079, -0.083, -0.090, -0.067, -0.069, -0.069 from 500 to 16,749 cells. Hallmark minus fully random: +0.122, +0.141, +0.127, +0.079, +0.110, +0.089. The Hallmark minus fully random difference has a negative slope against the logarithm of the training size in 8 of 10 seeds (mean −0.009 per doubling). These differences are descriptive and carry no test.
+
 ## S4. Dropping the 250 strongest stimulation genes (Q1c)
 
 This analysis asks whether the Hallmark advantage over the random masks rests on the strongest stimulation genes. It drops them and repeats the comparison for test loss and decoded response. Dropping them also shrinks the Hallmark sets (32 of the 95 interferon-α genes remain), so the analysis also shows what happens when a gene set is incomplete.
@@ -114,6 +129,34 @@ Hallmark minus each other mask over 10 seeds. Each cell gives the median differe
 Against the fully random mask the Hallmark advantage is gone (Supplementary Figure 3): the difference in test loss is +0.3 units and in decoded response +0.006. With all genes the differences are −3.7 and +0.087. Against the within-set random mask the advantage persists at about one fifth of its size (−2.1 units against −10.1, and +0.022 against +0.129). The groups of co-expressed genes still fit better than the Hallmark sets (8.1 units) and reproduce the shift better (0.023 higher).
 
 The decoded response falls for every masked variant to 0.51 to 0.55, against 0.77 without a mask. The named interferon-α latent was inactive in all Hallmark and within-set random runs, and the best latent of the Hallmark and random masks scored 0.879 to 0.904 on average. Cell-type accuracy shows no difference (adjusted p of at least 0.26). The stimulation probe is lower for Hallmark than for the within-set random mask by 0.003 (adjusted p 0.031) and does not differ otherwise.
+
+### Alternative measures and the noise ceiling
+
+The decoded response is recomputed from the saved runs with five other measures, all across the genes detected in at least 1% of training cells and averaged over cell types: the rank correlation (Spearman), the correlation weighted by the absolute observed shift, the correlation on the 10% of genes with the largest observed shift in each cell type and on the other 90%, and, on the main benchmark, the correlation on the 250 strongest stimulation genes and on all other genes. The noise ceiling is the highest correlation a noise-free model could reach with the observed shift: the test cells of each cell type and condition are split into two random halves 50 times, the shifts of the halves are correlated across genes, the correlation is corrected to full size (2r/(1+r)), and the square root is taken. "None" marks a measure whose halves do not correlate. Means over 10 seeds.
+
+**Kang, Hallmark (all 12,034 genes)**
+
+| Variant | Pearson (README) | Spearman | Pearson weighted | Strongest 10% of genes | Other 90% of genes | 250 strongest genes | All other genes |
+|---|---|---|---|---|---|---|---|
+| No mask | 0.942 | 0.555 | 0.987 | 0.965 | 0.482 | 0.980 | 0.784 |
+| Hallmark | 0.873 | 0.426 | 0.959 | 0.899 | 0.337 | 0.926 | 0.574 |
+| Co-expression | 0.898 | 0.461 | 0.973 | 0.924 | 0.355 | 0.953 | 0.612 |
+| Within-set random | 0.746 | 0.404 | 0.816 | 0.780 | 0.307 | 0.786 | 0.506 |
+| Fully random | 0.784 | 0.412 | 0.852 | 0.813 | 0.319 | 0.818 | 0.544 |
+| Noise ceiling | 0.96 | 0.71 | 0.99 | 0.98 | 0.38 | 0.99 | 0.85 |
+
+**Kang, Hallmark, without the 250 strongest genes**
+
+| Variant | Pearson (README) | Spearman | Pearson weighted | Strongest 10% of genes | Other 90% of genes |
+|---|---|---|---|---|---|
+| No mask | 0.766 | 0.490 | 0.897 | 0.859 | 0.412 |
+| Hallmark | 0.528 | 0.342 | 0.656 | 0.620 | 0.279 |
+| Co-expression | 0.552 | 0.381 | 0.687 | 0.646 | 0.308 |
+| Within-set random | 0.506 | 0.332 | 0.624 | 0.590 | 0.282 |
+| Fully random | 0.522 | 0.336 | 0.647 | 0.604 | 0.280 |
+| Noise ceiling | 0.84 | 0.65 | 0.95 | 0.93 | none |
+
+On every measure the Hallmark mask is above both random masks in the main benchmark, and in all benchmarks (the six and the repeat without the 250 strongest genes) on the rank and the weighted correlation. Without the 250 strongest genes the no-mask VAE (0.766) is below its ceiling (0.84) by 0.07, so the loss of the advantage over the fully random mask is not a ceiling effect. On the 90% of genes with the smaller shifts the ceiling is 0.38 on the main benchmark and the shifts of the halves do not correlate on the others, so those genes cannot separate the masks.
 
 ## S5. Reactome and the Oesinghaus data (Q1d, Q1e, Q1f)
 

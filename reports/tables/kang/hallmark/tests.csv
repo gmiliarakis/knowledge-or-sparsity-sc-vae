@@ -1,41 +1,41 @@
-family,test,pairs,mean_difference,p_raw,method,p_adj,reject,ci_level,hodges_lehmann,ci_low,ci_high,m_in_family
-S1,fixed latent: real - shuffled,10,0.238759,0.00195312,Holm,0.0175781,True,0.995,0.237508,0.013709,0.538116,10
-S1,fixed latent: real - setshuffle,10,0.181451,0.00195312,Holm,0.0175781,True,0.995,0.10984,0.003575,0.642581,10
-S1,fixed latent: real - vanilla,10,0.0311186,0.00195312,Holm,0.0175781,True,0.995,0.033128,0.006079,0.0650995,10
-S1,fixed latent: real - coexpression,10,-0.0009197,0.0371094,Holm,0.0371094,True,0.995,-0.000595,-0.003218,0.000235,10
-S1,best latent: real - shuffled,10,0.0081328,0.00195312,Holm,0.0175781,True,0.995,0.0072485,0.0032065,0.0162905,10
-S1,best latent: real - setshuffle,10,0.003177,0.00585938,Holm,0.0175781,True,0.995,0.003492,-2.7e-05,0.005897,10
-S1,best latent: real - vanilla,10,0.0316227,0.00195312,Holm,0.0175781,True,0.995,0.033128,0.006079,0.0650995,10
-S1,best latent: shuffled - vanilla,10,0.0234899,0.00585938,Holm,0.0175781,True,0.995,0.0253345,-0.000617,0.055127,10
-S1,best latent: setshuffle - vanilla,10,0.0284457,0.00390625,Holm,0.0175781,True,0.995,0.029935,0.0015485,0.0615965,10
-S1,equivalence (+-0.005): real - coexpression,10,-0.0009197,0.000976562,Holm,0.00976562,True,0.995,-0.000595,-0.002816,0.0001615,10
-S3,500 cells: real - shuffled,10,0.514401,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.514618,0.251524,0.814625,18
-S3,500 cells: real - vanilla,10,0.0040073,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.00322,0.0011025,0.008659,18
-S3,500 cells: real - coexpression,10,0.0030023,0.0644531,Benjamini-Hochberg,0.0892428,False,0.966667,0.001914,-0.000548,0.008612,18
-S3,1000 cells: real - shuffled,10,0.36156,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.379704,0.102561,0.614723,18
-S3,1000 cells: real - vanilla,10,0.0102437,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.009053,0.004171,0.0172105,18
-S3,1000 cells: real - coexpression,10,0.0015322,0.625,Benjamini-Hochberg,0.703125,False,0.966667,0.000657,-0.000414,0.003599,18
-S3,2000 cells: real - shuffled,10,0.387277,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.313668,0.218594,0.549309,18
-S3,2000 cells: real - vanilla,10,0.0147876,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.0152295,0.008501,0.0215125,18
-S3,2000 cells: real - coexpression,10,0.0001924,0.695312,Benjamini-Hochberg,0.736213,False,0.966667,-6.8e-05,-0.0007305,0.0019895,18
-S3,4000 cells: real - shuffled,10,0.324881,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.299945,0.102765,0.554921,18
-S3,4000 cells: real - vanilla,10,0.0220082,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.0210285,0.008924,0.0348185,18
-S3,4000 cells: real - coexpression,10,-2.87e-05,1,Benjamini-Hochberg,1,False,0.966667,3.55e-05,-0.0006775,0.000733,18
-S3,8000 cells: real - shuffled,10,0.44505,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.388136,0.194662,0.686216,18
-S3,8000 cells: real - vanilla,10,0.0247177,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.024949,0.0069045,0.044772,18
-S3,8000 cells: real - coexpression,10,-0.0002318,0.556641,Benjamini-Hochberg,0.667969,False,0.966667,-0.000106,-0.001307,0.000306,18
-S3,slope per doubling of cells: real - shuffled,10,-0.0338854,0.105469,Benjamini-Hochberg,0.135603,False,0.966667,-0.0312615,-0.0865703,0.0176265,18
-S3,slope per doubling of cells: real - vanilla,10,0.00526969,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.00484493,0.00215565,0.00855988,18
-S3,slope per doubling of cells: real - coexpression,10,-0.000709965,0.00976562,Benjamini-Hochberg,0.0146484,True,0.966667,-0.000567009,-0.00145059,-0.000114108,18
-latent-free,test loss per cell (lower is better): real - shuffled,10,-3.877,0.00195312,Holm,0.0234375,True,0.995833,-3.735,-6.255,-1.96,12
-latent-free,test loss per cell (lower is better): real - setshuffle,10,-9.942,0.00195312,Holm,0.0234375,True,0.995833,-10.1,-12.4,-6.89,12
-latent-free,test loss per cell (lower is better): real - coexpression,10,11.474,0.00195312,Holm,0.0234375,True,0.995833,11.755,9.18,12.71,12
-latent-free,decoded response correlation: real - shuffled,10,0.0889306,0.00195312,Holm,0.0234375,True,0.995833,0.08749,0.0449805,0.137711,12
-latent-free,decoded response correlation: real - setshuffle,10,0.126529,0.00195312,Holm,0.0234375,True,0.995833,0.12948,0.0622995,0.183265,12
-latent-free,decoded response correlation: real - coexpression,10,-0.025181,0.00195312,Holm,0.0234375,True,0.995833,-0.0255265,-0.0352145,-0.0142535,12
-latent-free,cell-type balanced accuracy: real - shuffled,10,0.000663,0.625,Holm,1,False,0.995833,0.0007425,-0.006363,0.007562,12
-latent-free,cell-type balanced accuracy: real - setshuffle,10,0.0053637,0.232422,Holm,0.697266,False,0.995833,0.006156,-0.004976,0.0176375,12
-latent-free,cell-type balanced accuracy: real - coexpression,10,-0.0085369,0.00585938,Holm,0.0292969,True,0.995833,-0.008618,-0.018214,0.000245,12
-latent-free,stimulation probe AUROC: real - shuffled,10,0.0009428,0.00976562,Holm,0.0390625,True,0.995833,0.000924,-0.000157,0.001903,12
-latent-free,stimulation probe AUROC: real - setshuffle,10,0.0008303,0.00195312,Holm,0.0234375,True,0.995833,0.00084,0.00038,0.001275,12
-latent-free,stimulation probe AUROC: real - coexpression,10,4.83e-05,0.625,Holm,1,False,0.995833,5.2e-05,-0.000412,0.0005055,12
+family,test,pairs,mean_difference,p_raw,method,p_adj,reject,ci_level,hodges_lehmann,ci_low,ci_high,sign_ci_low,sign_ci_high,skew,sign_same_decision,m_in_family
+S1,fixed latent: real - shuffled,10,0.238759,0.00195312,Holm,0.0175781,True,0.995,0.237508,0.013709,0.538116,0.013048,0.615586,0.488644,True,10
+S1,fixed latent: real - setshuffle,10,0.181451,0.00195312,Holm,0.0175781,True,0.995,0.10984,0.003575,0.642581,0.003228,0.892341,1.81097,True,10
+S1,fixed latent: real - vanilla,10,0.0311186,0.00195312,Holm,0.0175781,True,0.995,0.033128,0.006079,0.0650995,0.004769,0.068712,0.42958,True,10
+S1,fixed latent: real - coexpression,10,-0.0009197,0.0371094,Holm,0.0371094,True,0.995,-0.000595,-0.003218,0.000235,-0.004936,0.000303,-2.0248,True,10
+S1,best latent: real - shuffled,10,0.0081328,0.00195312,Holm,0.0175781,True,0.995,0.0072485,0.0032065,0.0162905,0.00287,0.02035,1.45497,True,10
+S1,best latent: real - setshuffle,10,0.003177,0.00585938,Holm,0.0175781,True,0.995,0.003492,-2.7e-05,0.005897,-0.000568,0.007107,-0.101723,True,10
+S1,best latent: real - vanilla,10,0.0316227,0.00195312,Holm,0.0175781,True,0.995,0.033128,0.006079,0.0650995,0.004769,0.068712,0.388158,True,10
+S1,best latent: shuffled - vanilla,10,0.0234899,0.00585938,Holm,0.0175781,True,0.995,0.0253345,-0.000617,0.055127,-0.003666,0.055919,0.337588,True,10
+S1,best latent: setshuffle - vanilla,10,0.0284457,0.00390625,Holm,0.0175781,True,0.995,0.029935,0.0015485,0.0615965,-0.002338,0.065484,0.352298,False,10
+S1,equivalence (+-0.005): real - coexpression,10,-0.0009197,0.000976562,Holm,0.00976562,True,0.995,-0.000595,-0.002816,0.0001615,-0.004936,0.000303,-2.0248,True,10
+S3,500 cells: real - shuffled,10,0.514401,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.514618,0.251524,0.814625,0.210562,0.898294,0.104788,True,18
+S3,500 cells: real - vanilla,10,0.0040073,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.00322,0.0011025,0.008659,0.000387,0.005844,1.79189,True,18
+S3,500 cells: real - coexpression,10,0.0030023,0.0644531,Benjamini-Hochberg,0.0892428,False,0.966667,0.001914,-0.000548,0.008612,-0.000955,0.005719,1.57244,True,18
+S3,1000 cells: real - shuffled,10,0.36156,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.379704,0.102561,0.614723,0.04149,0.790477,0.596539,True,18
+S3,1000 cells: real - vanilla,10,0.0102437,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.009053,0.004171,0.0172105,0.002779,0.015447,1.22879,True,18
+S3,1000 cells: real - coexpression,10,0.0015322,0.625,Benjamini-Hochberg,0.703125,False,0.966667,0.000657,-0.000414,0.003599,-0.000414,0.005353,0.859598,True,18
+S3,2000 cells: real - shuffled,10,0.387277,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.313668,0.218594,0.549309,0.198312,0.774594,0.891294,True,18
+S3,2000 cells: real - vanilla,10,0.0147876,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.0152295,0.008501,0.0215125,0.008501,0.02264,0.452546,True,18
+S3,2000 cells: real - coexpression,10,0.0001924,0.695312,Benjamini-Hochberg,0.736213,False,0.966667,-6.8e-05,-0.0007305,0.0019895,-0.001073,0.001163,1.77532,True,18
+S3,4000 cells: real - shuffled,10,0.324881,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.299945,0.102765,0.554921,0.080335,0.554921,1.05408,True,18
+S3,4000 cells: real - vanilla,10,0.0220082,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.0210285,0.008924,0.0348185,0.004105,0.046349,0.370768,True,18
+S3,4000 cells: real - coexpression,10,-2.87e-05,1,Benjamini-Hochberg,1,False,0.966667,3.55e-05,-0.0006775,0.000733,-0.000662,0.001002,-0.51339,True,18
+S3,8000 cells: real - shuffled,10,0.44505,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.388136,0.194662,0.686216,0.085851,0.945274,0.620495,True,18
+S3,8000 cells: real - vanilla,10,0.0247177,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.024949,0.0069045,0.044772,0.005126,0.050755,0.449196,True,18
+S3,8000 cells: real - coexpression,10,-0.0002318,0.556641,Benjamini-Hochberg,0.667969,False,0.966667,-0.000106,-0.001307,0.000306,-0.000831,0.000583,-1.58582,True,18
+S3,slope per doubling of cells: real - shuffled,10,-0.0338854,0.105469,Benjamini-Hochberg,0.135603,False,0.966667,-0.0312615,-0.0865703,0.0176265,-0.101703,0.0419625,0.108776,True,18
+S3,slope per doubling of cells: real - vanilla,10,0.00526969,0.00195312,Benjamini-Hochberg,0.00319602,True,0.966667,0.00484493,0.00215565,0.00855988,0.00133779,0.00992386,0.659256,True,18
+S3,slope per doubling of cells: real - coexpression,10,-0.000709965,0.00976562,Benjamini-Hochberg,0.0146484,True,0.966667,-0.000567009,-0.00145059,-0.000114108,-0.0013263,-6.89875e-05,-1.31159,True,18
+latent-free,test loss per cell (lower is better): real - shuffled,10,-3.877,0.00195312,Holm,0.0234375,True,0.995833,-3.735,-6.255,-1.96,-7.7,-1.26,-0.765837,True,12
+latent-free,test loss per cell (lower is better): real - setshuffle,10,-9.942,0.00195312,Holm,0.0234375,True,0.995833,-10.1,-12.4,-6.89,-12.91,-5.76,0.60677,True,12
+latent-free,test loss per cell (lower is better): real - coexpression,10,11.474,0.00195312,Holm,0.0234375,True,0.995833,11.755,9.18,12.71,8.36,12.74,-1.17626,True,12
+latent-free,decoded response correlation: real - shuffled,10,0.0889306,0.00195312,Holm,0.0234375,True,0.995833,0.08749,0.0449805,0.137711,0.043731,0.157167,0.545475,True,12
+latent-free,decoded response correlation: real - setshuffle,10,0.126529,0.00195312,Holm,0.0234375,True,0.995833,0.12948,0.0622995,0.183265,0.055419,0.190859,-0.149855,True,12
+latent-free,decoded response correlation: real - coexpression,10,-0.025181,0.00195312,Holm,0.0234375,True,0.995833,-0.0255265,-0.0352145,-0.0142535,-0.036101,-0.010905,0.163294,True,12
+latent-free,cell-type balanced accuracy: real - shuffled,10,0.000663,0.625,Holm,1,False,0.995833,0.0007425,-0.006363,0.007562,-0.007959,0.008164,-0.0293717,True,12
+latent-free,cell-type balanced accuracy: real - setshuffle,10,0.0053637,0.232422,Holm,0.697266,False,0.995833,0.006156,-0.004976,0.0176375,-0.007061,0.019373,0.197206,True,12
+latent-free,cell-type balanced accuracy: real - coexpression,10,-0.0085369,0.00585938,Holm,0.0292969,True,0.995833,-0.008618,-0.018214,0.000245,-0.01968,0.002052,-0.159899,True,12
+latent-free,stimulation probe AUROC: real - shuffled,10,0.0009428,0.00976562,Holm,0.0390625,True,0.995833,0.000924,-0.000157,0.001903,-0.000382,0.00223,-0.163298,True,12
+latent-free,stimulation probe AUROC: real - setshuffle,10,0.0008303,0.00195312,Holm,0.0234375,True,0.995833,0.00084,0.00038,0.001275,0.000261,0.001371,-0.0507957,True,12
+latent-free,stimulation probe AUROC: real - coexpression,10,4.83e-05,0.625,Holm,1,False,0.995833,5.2e-05,-0.000412,0.0005055,-0.00043,0.000534,0.0543035,True,12
