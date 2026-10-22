@@ -1,5 +1,7 @@
 # Knowledge or sparsity? Gene set masks in a single-cell VAE
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23571986.svg)](https://doi.org/10.5281/zenodo.23571986)
+
 ![From stimulated cells to a masked VAE: the five decoder masks and the decoded response each one reached](reports/figures/overview.png)
 
 **Contents**
@@ -397,7 +399,7 @@ The options of `06_fit.py`, the learning curves, checks, tests and figures, and 
 
 **Results** The tables behind every figure, test and number in this report (scores per run, paired differences and tests for each combination) are in the repository. Trained model outputs are recreated by the scripts and are not stored.
 
-**Code** The code is at https://github.com/gmiliarakis/knowledge-or-sparsity-sc-vae under the MIT licence.
+**Code** The code is at https://github.com/gmiliarakis/knowledge-or-sparsity-sc-vae under the MIT licence. The version archived on Zenodo is [10.5281/zenodo.23571986](https://doi.org/10.5281/zenodo.23571986).
 
 ## Future work
 
