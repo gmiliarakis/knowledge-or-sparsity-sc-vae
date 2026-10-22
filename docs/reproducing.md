@@ -18,7 +18,7 @@ Commands beyond the main experiment. The versions and the main commands are in t
 The defaults reproduce the reported results. Four runs (no mask and Hallmark at full size, shuffled and co-expression at
 500 cells) matched the stored runs in every epoch and in the saved latent means.
 
-The learning curves, the checks, the tests and the figures run last, in this order, because the tests read the learning-curve scores and the checks, and the figures read the tests.
+The learning curves, the checks, the tests and the figures run last, in this order. The tests read the learning-curve scores and the checks, and the figures read the tests.
 
 ```
 python src/extras/learning_curves/01_subsample.py
@@ -29,7 +29,7 @@ python src/11_tests.py
 python src/09_figures.py
 ```
 
-`10_checks.py` reads the scored runs and adds the robustness checks, the reference scores, the principal-component check after removing genes and the probe, and `11_tests.py` runs every hypothesis test with its multiplicity correction. The
+`10_checks.py` reads the scored runs and adds the robustness checks, the reference scores, the principal-component check after removing genes and the probe. `11_tests.py` runs every hypothesis test with its multiplicity correction. The
 tables label the no-mask VAE `vanilla`, and its results folder is `plain`.
 
 The Reactome analysis reuses the same scripts through `SC_SETS`; its results go to `results/kang/reactome/` and `reports/tables/kang/reactome/`, and only the latent-free tests are run on it. A script never uses a variable set in an earlier command: set `SC_DATA`, `SC_SETS` and `SC_TAG` in the command itself and do not export them.

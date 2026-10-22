@@ -1,11 +1,11 @@
 # Supplementary results
 
-Results that extend the main report ([README](../README.md)). Each part is labelled with the question it serves (README, [Questions](../README.md#questions)). Statistical tests are described there; all tests are in
+Results that extend the main report ([README](../README.md)). Each part is labelled with the question it serves (README, [Research questions](../README.md#research-questions)). Statistical tests are described there; all tests are in
 `reports/tables/kang/hallmark/tests.csv` (for S4, `reports/tables/kang_drop250/hallmark/tests.csv`; for S5, `tests.csv` in `reports/tables/kang/reactome/` and `reports/tables/oesinghaus_*/*/`), and only adjusted p-values are quoted. The `family` column of `tests.csv` is `S1` (S1), `S3` (S3) or `latent-free` (the latent-free family of Q1, Q1a and Q1c to Q1f, one per benchmark).
 
 ## Statistics
 
-The tests follow the procedure of the [README](../README.md#statistics). The correction is matched to each family. Holm [30] (family-wise error 0.05, intervals at the Bonferroni level [31]) controls the small families on which the conclusions rest: the 12 tests of S4 and the 10 tests on the interferon-α score at full size. Benjamini–Hochberg [32] (false discovery rate 0.05, valid for the positive dependence between sizes that share seeds [33], with false-coverage-rate intervals [34]) controls the 18 learning-curve tests, which are many and correlated. A single Holm family of all 52 tests is not possible, because with more than 25 tests it cannot reject at an exact p of 0.002 or larger. Equivalence of the Hallmark and co-expression masks on the interferon-α score is tested with two one-sided tests against ±0.005 AUROC (half a percentage point in the probability that a stimulated cell outranks a control cell); the margin was set before the within-set random mask was added. The 12 tests of S4 (Q1c) form their own family (Holm), and so do the 12 tests of each of the six benchmarks of S5 (Q1d to Q1f).
+The tests follow the procedure of the [README](../README.md#statistics). The correction is matched to each family. Holm [30] (family-wise error 0.05, intervals at the Bonferroni level [31]) controls the small families on which the conclusions rest. These are the 12 tests of S4 and the 10 tests on the interferon-α score at full size. Benjamini–Hochberg [32] (false discovery rate 0.05, valid for the positive dependence between sizes that share seeds [33], with false-coverage-rate intervals [34]) controls the 18 learning-curve tests. These are many and correlated. A single Holm family of all 52 tests is not possible, because with more than 25 tests it cannot reject at an exact p of 0.002 or larger. Equivalence of the Hallmark and co-expression masks on the interferon-α score is tested with two one-sided tests against ±0.005 AUROC (half a percentage point in the probability that a stimulated cell outranks a control cell). The margin was set before the within-set random mask was added. The 12 tests of S4 (Q1c) form their own family (Holm), and so do the 12 tests of each of the six benchmarks of S5 (Q1d to Q1f).
 
 ## S1. The interferon-α latent (Q1, Q1a)
 
@@ -13,7 +13,7 @@ The score of a latent named after the Hallmark interferon-α response set, and t
 
 ### Definition
 
-A latent named after the Hallmark interferon-α response set should take higher values in stimulated cells, because IFN-β is a type I interferon and these genes are induced in blood cells [17, 20, 27]. The score is the AUROC [28] of the latent's posterior mean for stimulated against control cells, computed per cell type on the test set and averaged over the 7 types (0.5 is chance). For the Hallmark and both random masks the latent at the interferon-α position is scored, oriented without labels by the sign of its mean decoder weight; it scores 0.5 when inactive (variance of its posterior means over validation cells at most 0.01). The no-mask and co-expression variants have no names, so their active latent with the largest |AUROC − 0.5| on validation cells is scored on test cells (the best latent). This choice uses validation labels and favours these two variants.
+A latent named after the Hallmark interferon-α response set should take higher values in stimulated cells. IFN-β is a type I interferon, and these genes are induced in blood cells [17, 20, 27]. The score is the AUROC [28] of the latent's posterior mean for stimulated against control cells, computed per cell type on the test set and averaged over the 7 types. A score of 0.5 is chance. For the Hallmark and both random masks the latent at the interferon-α position is scored, oriented without labels by the sign of its mean decoder weight. It scores 0.5 when inactive (variance of its posterior means over validation cells at most 0.01). The no-mask and co-expression variants have no names, so their active latent with the largest |AUROC − 0.5| on validation cells is scored on test cells (the best latent). This choice uses validation labels and favours these two variants.
 
 The score shows where the response lies; it is not specific to interferon biology. Any latent whose genes respond to the stimulation can separate the conditions, the Hallmark interferon-α and -γ sets share 71 of 95 genes, and the score saturates near 1. Scoring code: `src/08_evaluate.py`, abridged in [methods.md](methods.md#scoring-code).
 
@@ -21,11 +21,11 @@ The score shows where the response lies; it is not specific to interferon biolog
 
 ### Results
 
-The interferon-α latent of the Hallmark mask scored 0.997 ± 0.001 (Supplementary Figure 1) and was its best latent in 9 of 10 seeds (the interferon-γ latent in the tenth). It scored higher than the latent at the same position of the random masks (0.758 ± 0.218 and 0.815 ± 0.281) in all 10 seeds (adjusted p = 0.018 for both).
+The interferon-α latent of the Hallmark mask scored 0.997 ± 0.001 (Supplementary Figure 1) and was its best latent in 9 of 10 seeds (the interferon-γ latent in the tenth). It scored higher than the latent at the same position of the random masks in all 10 seeds (adjusted p = 0.018 for both). Those latents scored 0.758 ± 0.218 and 0.815 ± 0.281.
 
-The random masks carry the response in another latent (best latent 0.989 ± 0.005 and 0.994 ± 0.002; the interferon-α latent in 0 and 3 of 10 seeds). The score therefore does not show that a latent is specific: a random set of about 100 genes scored 0.93 or higher in 6 of 10 within-set random seeds. Against co-expression the Hallmark latent is equivalent within ±0.005 (difference −0.0006, adjusted p = 0.010).
+The random masks carry the response in another latent (best latent 0.989 ± 0.005 and 0.994 ± 0.002; the interferon-α latent in 0 and 3 of 10 seeds). The score therefore does not identify a specific latent. A random set of about 100 genes scored 0.93 or higher in 6 of 10 within-set random seeds. Against co-expression the Hallmark latent is equivalent within ±0.005 (difference −0.0006, adjusted p = 0.010).
 
-Every variant scores near the ceiling: without any VAE, the best principal component scores 0.997 and the mean of the interferon-α genes 0.996. After removing the 216 genes of the interferon-α and -γ sets the best component still scores 0.945, and after removing the 500, 1,000 or 2,000 strongest stimulation genes 0.744, 0.649 or 0.573. The separation rests on a few hundred genes. Because each condition was sequenced in its own 10x run, run effects among them cannot be excluded.
+Every variant scores near the ceiling: without any VAE, the best principal component scores 0.997 and the mean of the interferon-α genes 0.996. After removing the 216 genes of the interferon-α and -γ sets the best component still scores 0.945. After removing the 500, 1,000 or 2,000 strongest stimulation genes it scores 0.744, 0.649 or 0.573. The separation rests on a few hundred genes. Because each condition was sequenced in its own 10x run, run effects among them cannot be excluded.
 
 ![Interferon-α score, active latents and paired differences](../reports/figures/scores.png)
 
@@ -79,8 +79,8 @@ Interferon-α score, mean over 10 seeds at each training size.
 
 **Supplementary Figure 2. Learning curves (Kang, Hallmark).** (a) Mean over 10 seeds with a 95% t-interval band. (b) Per-seed Hallmark − fully random differences (dots), their median and the interval at the family level.*
 
-- No data-efficiency benefit of Hallmark knowledge could be detected, and this task cannot detect one: with 500 cells the no-mask VAE already scores 0.992 and the Hallmark mask 0.996. Hallmark and co-expression do not differ at any size (adjusted p 0.089 to 1.0; Supplementary Figure 2).
-- The Hallmark latent scores higher than the fully random mask's latent at every size (all 10 seeds, adjusted p = 0.003), and this advantage is not shown to depend on training size (slope adjusted p = 0.14). The random mask's latent is unreliable at every size (single seeds 0.01 to 0.99).
+- No data-efficiency benefit of Hallmark knowledge appeared, and this task cannot show one: with 500 cells the no-mask VAE already scores 0.992 and the Hallmark mask 0.996. Hallmark and co-expression do not differ at any size (adjusted p 0.089 to 1.0; Supplementary Figure 2).
+- The Hallmark latent scores higher than the fully random mask's latent at every size (all 10 seeds, adjusted p = 0.003). This advantage is not shown to depend on training size (slope adjusted p = 0.14). The random mask's latent is unreliable at every size (single seeds 0.01 to 0.99).
 
 ## S4. Dropping the 250 strongest stimulation genes (Q1c)
 
@@ -88,7 +88,7 @@ This analysis asks whether the Hallmark advantage over the random masks rests on
 
 ### Design
 
-The 250 genes with the largest |t| of stimulated against control log expression in training cells (megakaryocytes excluded) are dropped, leaving 11,784 genes (list in `reports/tables/kang_drop250/removed_genes_drop250.csv`). They are chosen from the data and never from the gene sets. The 50 Hallmark sets, both random masks and the groups of co-expressed genes are rebuilt on the remaining genes, and 3,032 genes are in at least one set. Architecture, training, scoring and the four measures are unchanged, with 10 seeds per variant (seeds 0 and 1 were also run as a pilot before the decision to run all 10). The criterion was fixed before the 10-seed run: the sign and the Holm-adjusted p of the contrasts of Hallmark against the random masks for test loss and decoded response. Without any VAE, the best principal component scores 0.864 and the mean of the 32 remaining interferon-α genes 0.724.
+The 250 genes with the largest |t| of stimulated against control log expression in training cells (megakaryocytes excluded) are dropped, leaving 11,784 genes (list in `reports/tables/kang_drop250/removed_genes_drop250.csv`). They are chosen from the data and never from the gene sets. The 50 Hallmark sets, both random masks and the groups of co-expressed genes are rebuilt on the remaining genes, and 3,032 genes are in at least one set. Architecture, training, scoring and the four measures are unchanged, with 10 seeds per variant. Seeds 0 and 1 were also run as a pilot before the decision to run all 10. The criterion was fixed before the 10-seed run: the sign and the Holm-adjusted p of the contrasts of Hallmark against the random masks for test loss and decoded response. Without any VAE, the best principal component scores 0.864 and the mean of the 32 remaining interferon-α genes 0.724.
 
 ### Results
 
@@ -111,51 +111,51 @@ Hallmark minus each other mask over 10 seeds. Each cell gives the median differe
 
 **Supplementary Figure 3. Decoded response of every variant with and without the 250 strongest genes (Kang, Hallmark).** Small points are seeds and the black point is the mean of 10 seeds.
 
-Against the fully random mask the Hallmark advantage is gone (Supplementary Figure 3): the difference in test loss is +0.3 units and in decoded response +0.006, against −3.7 and +0.087 with all genes. Against the within-set random mask the advantage persists at about one fifth of its size (−2.1 units against −10.1, and +0.022 against +0.129). The groups of co-expressed genes still fit better than the Hallmark sets (8.1 units) and reproduce the shift better (0.023 higher).
+Against the fully random mask the Hallmark advantage is gone (Supplementary Figure 3): the difference in test loss is +0.3 units and in decoded response +0.006. With all genes the differences are −3.7 and +0.087. Against the within-set random mask the advantage persists at about one fifth of its size (−2.1 units against −10.1, and +0.022 against +0.129). The groups of co-expressed genes still fit better than the Hallmark sets (8.1 units) and reproduce the shift better (0.023 higher).
 
-The decoded response falls for every masked variant to 0.51 to 0.55, against 0.77 without a mask. The named interferon-α latent was inactive in all Hallmark and within-set random runs, and the best latent of the Hallmark and random masks scored 0.879 to 0.904 on average. Cell-type accuracy shows no difference (adjusted p of at least 0.26), and the stimulation probe is lower for Hallmark than for the within-set random mask by 0.003 (adjusted p 0.031) and does not differ otherwise.
+The decoded response falls for every masked variant to 0.51 to 0.55, against 0.77 without a mask. The named interferon-α latent was inactive in all Hallmark and within-set random runs, and the best latent of the Hallmark and random masks scored 0.879 to 0.904 on average. Cell-type accuracy shows no difference (adjusted p of at least 0.26). The stimulation probe is lower for Hallmark than for the within-set random mask by 0.003 (adjusted p 0.031) and does not differ otherwise.
 
 ## S5. Reactome and the Oesinghaus data (Q1d, Q1e, Q1f)
 
-This analysis asks whether the comparison of the main report holds with a second collection of gene sets (Q1d), in a second data set (Q1e) and with a second stimulus (Q1f). The reasons for each addition are in the [README](../README.md#background); this section reports the results.
+This analysis asks whether the comparison of the main report holds with a second collection of gene sets (Q1d), a second data set (Q1e) and a second stimulus (Q1f). The reasons for each addition are in the [README](../README.md#background); this section reports the results.
 
 ### Design
 
-The six benchmarks, the data and the known-answer sets are described in the [README](../README.md#study-design). Architecture, training, scoring and the four measures are unchanged. The Reactome sets, the cytokine and the scored cell types were fixed before any model was fitted on the new data. Each benchmark has its own Holm family of 12 tests (the four measures, the real mask minus the three other masks). Supplementary Figure 4 shows the decoded response of every variant, Supplementary Figure 5 the score of the named latent and Supplementary Figures 6 to 11 the four measures of each benchmark. The learning curves, the checks that need them and the gene-removal analysis were run on the Kang data only.
+The six benchmarks, the data and the known-answer sets are described in the [README](../README.md#study-design). Architecture, training, scoring and the four measures are unchanged. The Reactome sets, the cytokine and the scored cell types were fixed before any model was fitted on the new data. Each benchmark has its own Holm family of 12 tests (the four measures, the gene set mask minus the three other masks). Supplementary Figure 4 shows the decoded response of every variant. Supplementary Figure 5 shows the score of the named latent, and Supplementary Figures 6 to 11 show the four measures of each benchmark. Supplementary Figure 12 shows the paired differences in the cell-type and stimulation probes. The learning curves, the checks that need them and the gene-removal analysis were run on the Kang data only.
 
 **Means over 10 seeds** (± SD) of the four measures that choose no latent. For the Kang data with Hallmark, the main Results table applies.
 
 | Data | Collection | Variant | Test loss per cell | Decoded response | Cell-type balanced accuracy | Stimulation probe AUROC |
 |---|---|---|---|---|---|---|
 | Kang IFN-β | Reactome | No mask | 1929.1 ± 1.0 | 0.942 ± 0.001 | 0.885 ± 0.006 | 0.9989 ± 0.0003 |
-| Kang IFN-β | Reactome | Real | 1963.0 ± 1.2 | 0.873 ± 0.002 | 0.861 ± 0.009 | 0.9987 ± 0.0002 |
+| Kang IFN-β | Reactome | Gene set | 1963.0 ± 1.2 | 0.873 ± 0.002 | 0.861 ± 0.009 | 0.9987 ± 0.0002 |
 | Kang IFN-β | Reactome | Fully random | 1973.8 ± 1.7 | 0.733 ± 0.037 | 0.856 ± 0.005 | 0.9979 ± 0.0004 |
 | Kang IFN-β | Reactome | Within-set random | 1975.0 ± 0.7 | 0.700 ± 0.046 | 0.865 ± 0.007 | 0.9976 ± 0.0005 |
 | Kang IFN-β | Reactome | Co-expression | 1958.8 ± 2.5 | 0.896 ± 0.009 | 0.863 ± 0.008 | 0.9986 ± 0.0003 |
 | Oesinghaus IFN-β | Hallmark | No mask | 5111.8 ± 2.8 | 0.794 ± 0.002 | 0.865 ± 0.005 | 0.9513 ± 0.0038 |
-| Oesinghaus IFN-β | Hallmark | Real | 5200.8 ± 2.3 | 0.691 ± 0.001 | 0.756 ± 0.007 | 0.9203 ± 0.0054 |
+| Oesinghaus IFN-β | Hallmark | Gene set | 5200.8 ± 2.3 | 0.691 ± 0.001 | 0.756 ± 0.007 | 0.9203 ± 0.0054 |
 | Oesinghaus IFN-β | Hallmark | Fully random | 5200.2 ± 2.7 | 0.636 ± 0.008 | 0.750 ± 0.014 | 0.9197 ± 0.0029 |
 | Oesinghaus IFN-β | Hallmark | Within-set random | 5213.1 ± 2.6 | 0.611 ± 0.009 | 0.753 ± 0.008 | 0.9212 ± 0.0052 |
 | Oesinghaus IFN-β | Hallmark | Co-expression | 5192.8 ± 7.9 | 0.703 ± 0.007 | 0.781 ± 0.013 | 0.9273 ± 0.0043 |
 | Oesinghaus IFN-β | Reactome | No mask | 5111.8 ± 2.8 | 0.794 ± 0.002 | 0.865 ± 0.005 | 0.9513 ± 0.0038 |
-| Oesinghaus IFN-β | Reactome | Real | 5188.8 ± 3.1 | 0.671 ± 0.004 | 0.768 ± 0.007 | 0.9256 ± 0.0033 |
+| Oesinghaus IFN-β | Reactome | Gene set | 5188.8 ± 3.1 | 0.671 ± 0.004 | 0.768 ± 0.007 | 0.9256 ± 0.0033 |
 | Oesinghaus IFN-β | Reactome | Fully random | 5197.4 ± 2.0 | 0.634 ± 0.013 | 0.744 ± 0.013 | 0.9184 ± 0.0037 |
 | Oesinghaus IFN-β | Reactome | Within-set random | 5195.2 ± 1.4 | 0.620 ± 0.005 | 0.754 ± 0.008 | 0.9206 ± 0.0045 |
 | Oesinghaus IFN-β | Reactome | Co-expression | 5189.0 ± 3.3 | 0.704 ± 0.007 | 0.785 ± 0.014 | 0.9262 ± 0.0048 |
 | Oesinghaus IL-2 | Hallmark | No mask | 5139.8 ± 2.6 | 0.720 ± 0.002 | 0.861 ± 0.004 | 0.9276 ± 0.0037 |
-| Oesinghaus IL-2 | Hallmark | Real | 5223.5 ± 1.9 | 0.566 ± 0.002 | 0.745 ± 0.008 | 0.8920 ± 0.0047 |
+| Oesinghaus IL-2 | Hallmark | Gene set | 5223.5 ± 1.9 | 0.566 ± 0.002 | 0.745 ± 0.008 | 0.8920 ± 0.0047 |
 | Oesinghaus IL-2 | Hallmark | Fully random | 5220.0 ± 1.6 | 0.534 ± 0.007 | 0.740 ± 0.006 | 0.8883 ± 0.0084 |
 | Oesinghaus IL-2 | Hallmark | Within-set random | 5232.3 ± 1.5 | 0.494 ± 0.006 | 0.737 ± 0.011 | 0.8896 ± 0.0043 |
 | Oesinghaus IL-2 | Hallmark | Co-expression | 5214.8 ± 2.4 | 0.576 ± 0.008 | 0.769 ± 0.010 | 0.8962 ± 0.0041 |
 | Oesinghaus IL-2 | Reactome | No mask | 5139.8 ± 2.6 | 0.720 ± 0.002 | 0.861 ± 0.004 | 0.9276 ± 0.0037 |
-| Oesinghaus IL-2 | Reactome | Real | 5210.8 ± 1.0 | 0.554 ± 0.001 | 0.765 ± 0.009 | 0.8914 ± 0.0049 |
+| Oesinghaus IL-2 | Reactome | Gene set | 5210.8 ± 1.0 | 0.554 ± 0.001 | 0.765 ± 0.009 | 0.8914 ± 0.0049 |
 | Oesinghaus IL-2 | Reactome | Fully random | 5219.0 ± 2.4 | 0.544 ± 0.006 | 0.746 ± 0.015 | 0.8863 ± 0.0039 |
 | Oesinghaus IL-2 | Reactome | Within-set random | 5218.9 ± 2.0 | 0.522 ± 0.005 | 0.759 ± 0.011 | 0.8877 ± 0.0042 |
 | Oesinghaus IL-2 | Reactome | Co-expression | 5213.6 ± 3.6 | 0.581 ± 0.007 | 0.776 ± 0.012 | 0.8972 ± 0.0040 |
 
-**Contrasts of the real mask.** Median of the paired differences over 10 seeds; an asterisk marks a Holm-adjusted p below 0.05 within the 12 tests of each benchmark. `reports/tables/oesinghaus_*/*/tests.csv` and `reports/tables/kang/reactome/tests.csv` have the intervals and the adjusted p-values.
+**Contrasts of the gene set mask.** Median of the paired differences over 10 seeds; an asterisk marks a Holm-adjusted p below 0.05 within the 12 tests of each benchmark. `reports/tables/oesinghaus_*/*/tests.csv` and `reports/tables/kang/reactome/tests.csv` have the intervals and the adjusted p-values.
 
-**Test loss per cell (real mask minus each other mask; lower is better)**
+**Test loss per cell (gene set mask minus each other mask; lower is better)**
 
 | Data | Collection | − fully random | − within-set random | − co-expression |
 |---|---|---|---|---|
@@ -166,7 +166,7 @@ The six benchmarks, the data and the known-answer sets are described in the [REA
 | Oesinghaus IL-2 | Hallmark | +3.7* | −8.8* | +8.7* |
 | Oesinghaus IL-2 | Reactome | −8.5* | −8.1* | −2.7 |
 
-**Decoded response (correlation; real mask minus each other mask)**
+**Decoded response (correlation; gene set mask minus each other mask)**
 
 | Data | Collection | − fully random | − within-set random | − co-expression |
 |---|---|---|---|---|
@@ -201,15 +201,15 @@ The six benchmarks, the data and the known-answer sets are described in the [REA
 
 **Score of the named latent** (AUROC of the known-answer latent, mean ± SD over 10 seeds; for the no-mask and co-expression variants the best latent, chosen on validation cells)
 
-| Data | Collection | No mask | Real | Fully random | Within-set random | Co-expression |
+| Data | Collection | No mask | Gene set | Fully random | Within-set random | Co-expression |
 |---|---|---|---|---|---|---|
 | Oesinghaus IFN-β | Hallmark | 0.837 ± 0.024 | 0.872 ± 0.003 | 0.557 ± 0.128 | 0.763 ± 0.111 | 0.886 ± 0.009 |
 | Oesinghaus IFN-β | Reactome | 0.837 ± 0.024 | 0.892 ± 0.003 | 0.666 ± 0.229 | 0.767 ± 0.200 | 0.886 ± 0.006 |
 | Oesinghaus IL-2 | Hallmark | 0.796 ± 0.030 | 0.437 ± 0.009 | 0.435 ± 0.106 | 0.490 ± 0.100 | 0.823 ± 0.022 |
 | Oesinghaus IL-2 | Reactome | 0.796 ± 0.030 | 0.502 ± 0.022 | 0.565 ± 0.079 | 0.562 ± 0.135 | 0.826 ± 0.012 |
 
-- **Interferon-β (Q1e).** The interferon-α/β latent of the real mask scores 0.87 to 0.89 with a small spread, above the random masks, whose latent at that position is unreliable, and close to the co-expression mask. As in the Kang data, it carries the response.
-- **IL-2 (Q1f).** The named IL-2 latent does not separate stimulated from control cells (Supplementary Figure 5): 0.44 for Hallmark (below 0.5 in 10 of 10 seeds, lowest in naive T cells and MAIT cells, 0.30 to 0.37) and 0.50 for Reactome (changing direction between cell types: 0.66 in CD14 monocytes, 0.34 in MAIT cells, 0.33 in cDCs). It is active in every run, and its orientation does not explain the score, which is the same for both signs. The best latent of the real mask scores 0.80 to 0.83 and is a free latent in every seed, so the model holds the response, but not in the IL-2 set. The sets most raised by IL-2 in the data are the interferon sets (Reactome interferon α/β signaling +0.115, interleukin-6 family signaling +0.077, interferon γ signaling +0.073; Hallmark interferon-α response +0.121); the IL-2 sets are not among the top five. The contrast is dominated by an interferon response, so the IL-2 benchmark tests the IL-2 set alone and is not a second interferon replication.
+- **Interferon-β (Q1e).** The interferon-α/β latent of the gene set mask scores 0.87 to 0.89 with a small spread. This is above the random masks, whose latent at that position is unreliable, and close to the co-expression mask. As in the Kang data, it carries the response.
+- **IL-2 (Q1f).** The named IL-2 latent does not separate stimulated from control cells (Supplementary Figure 5). The score is 0.44 for Hallmark (below 0.5 in 10 of 10 seeds, lowest in naive T cells and MAIT cells, 0.30 to 0.37). It is 0.50 for Reactome, changing direction between cell types (0.66 in CD14 monocytes, 0.34 in MAIT cells, 0.33 in cDCs). It is active in every run, and its orientation does not explain the score, which is the same for both signs. The best latent of the gene set mask scores 0.80 to 0.83 and is a free latent in every seed. The model therefore holds the response, but not in the IL-2 set. The sets most raised by IL-2 in the data are the interferon sets (Reactome interferon α/β signaling +0.115, interleukin-6 family signaling +0.077, interferon γ signaling +0.073; Hallmark interferon-α response +0.121). The IL-2 sets are not among the top five. The contrast is dominated by an interferon response, so the IL-2 benchmark tests the IL-2 set alone and is not a second interferon replication.
 
 ![Decoded response of every seed in the six benchmarks](../reports/figures/levels_benchmarks.png)
 
@@ -217,7 +217,7 @@ The six benchmarks, the data and the known-answer sets are described in the [REA
 
 ![Score of the named latent in the six benchmarks](../reports/figures/named_latent.png)
 
-**Supplementary Figure 5. Score of the named latent in the six benchmarks.** AUROC of the latent for stimulated against control cells, averaged over cell types. For the real sets it is the latent named after the known-answer set and for the two random masks the latent at the same position, which holds a random set. The co-expression and no-mask variants have no names, so the best latent is scored, chosen on validation cells. Points are means of 10 seeds and lines the range.
+**Supplementary Figure 5. Score of the named latent in the six benchmarks.** AUROC of the latent for stimulated against control cells, averaged over cell types. For the gene set mask it is the latent named after the known-answer set and for the two random masks it is the latent at the same position, which holds a random set. The co-expression and no-mask variants have no names, so the best latent is scored, chosen on validation cells. Points are means of 10 seeds and lines the range.
 
 ![Kang interferon-β, Hallmark sets](../reports/figures/kang_hallmark.png)
 
@@ -242,3 +242,7 @@ The six benchmarks, the data and the known-answer sets are described in the [REA
 ![Oesinghaus IL-2, Reactome sets](../reports/figures/oesinghaus_il_2_reactome.png)
 
 **Supplementary Figure 11. Oesinghaus IL-2, Reactome sets.** a to d, the four measures that choose no latent (one dot per seed, bar at the mean).
+
+![Advantage of the gene sets over the other masks in the cell-type and stimulation probes](../reports/figures/advantage_probes.png)
+
+**Supplementary Figure 12. Gene sets against the other masks in the cell-type and stimulation probes, six benchmarks.** Each line is the interval of the paired difference over 10 seeds (gene sets minus the other mask, at the Bonferroni level), so a line right of zero means the gene sets are better. Each line is drawn in the colour of the mask it is compared with, and a black dot at the median marks an adjusted p below 0.05. The dot is open when the interval reaches zero.

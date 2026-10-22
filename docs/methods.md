@@ -98,7 +98,7 @@ VAE(
 )
 ```
 
-The encoder input is the 12,034 genes (Kang data; the Oesinghaus data have about 11,340 genes and 12 donors, so the encoder, `w` and `v` are smaller) after a shifted-log transform (see the README) plus a one-hot code for the 8 donors. The
+The encoder input is the 12,034 genes after a shifted-log transform (see the README), plus a one-hot code for the 8 donors. These are the Kang data. The Oesinghaus data have about 11,340 genes and 12 donors, so the encoder, `w` and `v` are smaller. The
 decoder has no layers of its own, only the three parameters $W$, $V$ and $\log\theta$ (`w`, `v` and `log_theta` in the code).
 
 | Parameter | Shape | Role | Count |
@@ -141,10 +141,10 @@ alpha_auc = measured if active[alpha] else pd.Series(0.5, index=types)
 score = alpha_auc.mean()  # unweighted mean over the 7 cell types
 ```
 
-**The score measures** how well one latent separates stimulated from control cells. It does not show that a latent represents interferon biology specifically. Any latent
-whose genes respond to the stimulation can separate stimulated from control cells. The Hallmark interferon-α and
-interferon-γ sets share 71 of the 95 interferon-α genes. The score therefore cannot tell type I from type II
-interferon. A latent of the fully random mask contains few interferon-α genes (3 of 95 in seed 0) and still reached up to 0.98 in a seed; the latent at the interferon-α position of the within-set random mask scored 0.93 or higher in 6 of 10 seeds.
+**The score measures** how well one latent separates stimulated from control cells. Any latent
+whose genes respond to the stimulation can do so. The Hallmark interferon-α and
+interferon-γ sets share 71 of the 95 interferon-α genes. The score therefore does not distinguish type I from type II
+interferon. A latent of the fully random mask contains few interferon-α genes (3 of 95 in seed 0) and still reached up to 0.98 in a seed. The latent at the interferon-α position of the within-set random mask scored 0.93 or higher in 6 of 10 seeds.
 Near 1, the AUROC saturates and measures ranking, not the size of the effect. Rare cell types have few test cells. Their
 AUROC values are noisy.
 
