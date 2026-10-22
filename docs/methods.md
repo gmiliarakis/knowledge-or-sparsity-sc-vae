@@ -162,7 +162,7 @@ The README gives the idea. This section gives the rules that choose the 50 sets 
 
 ## Theis et al. data: full description
 
-The README describes the data set and the plate design. These are the choices that define the subset used for Q1e and Q1f.
+The README describes the data set. These are the choices that define the subset used for Q1e and Q1f.
 
 - **Cytokines** Interferon-β, as a replication of the stimulation in the Kang et al. data, and one cytokine that is not an interferon. Its choice was fixed from the published differential-expression table alone, before any model was fitted. Among TNF-α, IL-6 and IL-2, the three that have a Reactome set among the 50, it is the one with the most differentially expressed genes summed over cell types (adjusted p < 0.05, |log fold change| ≥ 0.5, well-biased rows excluded). IL-2 had 25,835, IL-6 1,521 and TNF-α 1,419 (interferon-β 31,780).
 - **Cells** The 41 GB file is read in place from the published archive (only the chosen runs of cells are transferred, about 1 GB). Cells are read until each donor × condition group has 1,800. QC as for the Kang et al. data (5 median absolute deviations per cell type and condition) removes 0.9% for IL-2, and at most 1,200 cells per group are kept, which gives 28,800 cells for each cytokine.
@@ -175,7 +175,7 @@ The table lists the steps at which biological knowledge or an assumption about t
 
 | Step | Script | Choice | Reason |
 |---|---|---|---|
-| Data | `03c` | Theis et al. data for Q1e and Q1f: 12 healthy donors, cells read in place from the published archive, at most 1,200 per donor × condition group, genes shared with the Kang et al. data (`SC_DATA`) | stimulated and control cells of a donor share a plate; the cytokine was chosen from the published differential-expression table before any model was fitted |
+| Data | `03c` | Theis et al. data for Q1e and Q1f: 12 healthy donors, cells read in place from the published archive, at most 1,200 per donor × condition group, genes shared with the Kang et al. data (`SC_DATA`) | every donor appears in both conditions; the cytokine was chosen from the published differential-expression table before any model was fitted |
 | Cell identity | `03` | the authors' demuxlet singlet calls and cell-type labels, used as given | a droplet containing cells of two donors is identified from their genotypes, which is stronger evidence than an expression-based doublet score |
 | Cell QC | `03` | thresholds per condition × cell type | monocytes, dendritic cells and megakaryocytes differ in RNA content, and stimulation shifts it |
 | Genes | `03` | all genes detected in ≥ 20 cells; no highly-variable-gene selection | selection drops interferon-induced genes |

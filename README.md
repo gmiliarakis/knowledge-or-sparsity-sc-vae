@@ -54,8 +54,7 @@ Several published models are built this way. Others use gene sets in related way
 | MOFA-FLEX [10] | factor model |
 | Moullet et al. [11] | self-supervised model |
 
-Across 29 pathway-informed neural networks trained for prediction, randomized models that kept the sparsity and architecture
-of each evaluable original consistently matched or outperformed it [1]. VEGA [3] and expiMap [4], which both evaluate on
+Across 29 pathway-informed neural networks surveyed, structure-matched randomized versions of the evaluable ones, which kept the sparsity and architecture, matched or outperformed the originals on supervised prediction tasks [1]. VEGA [3] and expiMap [4], which both evaluate on
 interferon-β-stimulated PBMCs, report masked decoders. Neither reports a random gene set control in its main text or Methods. The closest control, in
 MOFA-FLEX [10], swaps 30% of the genes of each set with random non-members and tests whether the original programs are
 recovered. It is not known whether the knowledge in the gene sets helps in unsupervised single-cell models, or only the
@@ -68,14 +67,13 @@ Each question below follows from a gap in earlier work and from the design choic
 - **Q1: knowledge or sparsity?** A gene set mask fixes 89% of the decoder weights at zero. Any improvement over a model without a mask could
   come from the sparsity alone. A random mask preserves the size and overlaps of every set and changes only its
   biology, which isolates the effect of the knowledge. Two versions are used ([Gene sets and masks](#gene-sets-and-masks)).
-- **Q1a: pre-specified sets or co-expressed genes found in the data?** A curated panel of 17 signatures, and most Hallmark sets, align with the main axes of expression more than
-  size-matched random sets do in bulk tumour data [12] (a preprint). The Hallmark sets were refined for coherent expression [20]. A
+- **Q1a: pre-specified sets or co-expressed genes found in the data?** A curated panel of 17 signatures, and most Hallmark sets, align with the principal components of expression more than size-matched random sets do in bulk tumour data [12] (a preprint). The Hallmark sets were refined for coherent expression [20]. A
   Hallmark mask could do better than a random one purely because its genes are co-expressed. Groups of co-expressed genes of the same
   sizes, found in this data set, test whether pre-specified sets add anything beyond that.
-- **Q1b: less data needed?** expiMap was reported to learn more sample-efficiently than the linear-decoder VAE LDVAE [13] with fewer training samples [4]. The report has no random gene set control in its main text or Methods. Learning curves test this ([supplementary S3](docs/supplementary.md)).
+- **Q1b: less data needed?** expiMap was reported to outperform the linear-decoder VAE LDVAE [13] in a low-data regime, which its authors read as more sample-efficient learning [4]. The report has no random gene set control in its main text or Methods. Learning curves test this ([supplementary S3](docs/supplementary.md)).
 - **Q1c: does the improvement depend on the strongest response genes?** If the Hallmark improvement over random masks came only from those genes, it would say little about gene sets in general. Dropping the 250 genes with the strongest stimulation effect from the data, rebuilding every mask on the rest and repeating the comparison tests this ([supplementary S4](docs/supplementary.md)).
 - **Q1d: does it hold with a second collection?** The Hallmark sets were refined from expression data, whereas Reactome [26] is curated pathway by pathway and was not built from expression. Repeating the comparison with Reactome sets tests whether the result depends on the kind of knowledge ([supplementary S5](docs/supplementary.md)).
-- **Q1e: does it hold in a second data set?** The Kang et al. data are one experiment in which the stimulation is confounded with the sequencing run, and stimulation classification is close to its maximum for every variant. The same stimulus in other donors, with every donor's stimulated and control cells on one plate, tests whether the result is specific to that data set ([supplementary S5](docs/supplementary.md)).
+- **Q1e: does it hold in a second data set?** The Kang et al. data are one experiment in which the stimulation is confounded with the sequencing run, and stimulation classification is close to its maximum for every variant. The same stimulus in other donors, each observed in both conditions, tests whether the result is specific to that data set ([supplementary S5](docs/supplementary.md)).
 - **Q1f: does it hold with a second stimulus?** An interferon is the response that both collections name most directly. A cytokine that is not an interferon tests whether the result is specific to interferon ([supplementary S5](docs/supplementary.md)).
 
 The six combinations pair each stimulation with both collections. Q1d compares the Hallmark and Reactome rows within a stimulation. Q1e compares the Kang et al. data with the Theis et al. data for interferon-β. Q1f compares interferon-β with IL-2 in the Theis et al. data.
@@ -142,7 +140,7 @@ Three preprocessing choices were made for this data set.
 
 The second data set is the Human Cytokine Dictionary of Theis et al. [41] (a preprint that has not been peer reviewed), distributed by Parse Biosciences as "10 Million Human PBMCs in a Single Experiment" [42]: 12 healthy donors, 90 cytokines and an unstimulated control, 24 h. The licence is CC BY-NC 4.0. The repository therefore downloads the data and does not redistribute them. One cytokine is compared with the control, with every donor in both conditions.
 
-Each donor was cultured on one 96-well plate, with the cytokines and the control on that plate [42]. Stimulated and control cells of a donor therefore share a plate. The stimulation is not confounded with a plate or sequencing run, unlike in the Kang et al. data. Position on the plate can still matter: the published table of differentially expressed genes flags well-biased rows, which were excluded when the cytokine was chosen. The same donors serve every cytokine. The cytokines are not independent replications of each other.
+Cells were seeded in 96-well plates, 12 plates across all donors [42]. The published table of differentially expressed genes flags well-biased rows, which were excluded when the cytokine was chosen. The same donors serve every cytokine. The cytokines are not independent replications of each other.
 
 The cytokine other than interferon-β is IL-2, chosen from the published differential-expression table before any model was fitted. About 28,800 cells per cytokine are used, over 11,340 or 11,344 genes, and 13 of the 18 cell types have enough test cells to be scored. The selection rule, the cell reading, the QC and the gene filter are in [docs/methods.md](docs/methods.md#theis-et-al-data-full-description).
 
