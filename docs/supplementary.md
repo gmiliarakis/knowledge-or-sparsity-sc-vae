@@ -156,7 +156,7 @@ The decoded response is recomputed from the saved runs with five other measures,
 | Fully random | 0.522 | 0.336 | 0.647 | 0.604 | 0.280 |
 | Noise ceiling | 0.84 | 0.65 | 0.95 | 0.93 | none |
 
-On every measure the Hallmark mask is above both random masks in the main benchmark, and in all benchmarks (the six and the repeat without the 250 strongest genes) on the rank and the weighted correlation. Without the 250 strongest genes the no-mask VAE (0.766) is below its ceiling (0.84) by 0.07, so the loss of the advantage over the fully random mask is not a ceiling effect. On the 90% of genes with the smaller shifts the ceiling is 0.38 on the main benchmark and the shifts of the halves do not correlate on the others, so those genes cannot separate the masks.
+On every measure the Hallmark mask is above both random masks in the main benchmark, and in all benchmarks (the six and the repeat without the 250 strongest genes) on the rank and the weighted correlation. Without the 250 strongest genes the no-mask VAE (0.766) is below its ceiling (0.84) by 0.07, so the ceiling does not explain the loss of the advantage over the fully random mask. On the 90% of genes with the smaller shifts the ceiling is 0.38 on the main benchmark and the shifts of the halves do not correlate on the others, so those genes cannot separate the masks.
 
 ## S5. Reactome and the Oesinghaus data (Q1d, Q1e, Q1f)
 
