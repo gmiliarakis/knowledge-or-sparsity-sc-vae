@@ -8,26 +8,26 @@ Supporting detail for the Methods in the [README](../README.md). Numbers in squa
   co-expressed genes found in the data. The groups are built from the data alone, without condition or cell-type
   labels.
 
-  1. **Expression.** Training cells only, stimulated and control together. Counts are scaled to the median total
+  1. **Expression** Training cells only, stimulated and control together. Counts are scaled to the median total
      count and log-transformed (ln(1 + x)), the same transform the encoder reads.
-  2. **Correlation.** Pearson correlation between all 12,034 genes. A gene with no variance in training cells has
+  2. **Correlation** Pearson correlation between all 12,034 genes. A gene with no variance in training cells has
      correlation 0 with every other gene.
-  3. **Seed genes.** For each seed, 50 distinct seed genes are drawn at random from the 6,753 genes detected in ≥ 1%
+  3. **Seed genes** For each seed, 50 distinct seed genes are drawn at random from the 6,753 genes detected in ≥ 1%
      of training cells. The nearest neighbours of rarer genes are noise, and these genes are excluded.
-  4. **Groups.** Group j is seed gene j plus the n − 1 genes most positively correlated with it, where n is the
+  4. **Groups** Group j is seed gene j plus the n − 1 genes most positively correlated with it, where n is the
      size of Hallmark set j (12–197 genes). Group j takes the size of Hallmark set j and none of its biology. Its
      latent is labelled "module j" in the code. Groups are built independently and may share genes.
 
   The groups have three properties that affect how the results are read.
 
-  - **Coherence.** The median within-set correlation is 0.096 for the groups and 0.003 for Hallmark sets. In single
-    PBMCs most members of a Hallmark set barely co-vary. A group, in contrast, is built to co-vary. The groups are therefore a demanding
+  - **Coherence** The median within-set correlation is 0.096 for the groups and 0.003 for Hallmark sets. In single
+    PBMCs most members of a Hallmark set barely co-vary, whereas a group is built to co-vary. The groups are therefore a demanding
     comparison for the Hallmark sets.
-  - **Overlap.** The groups have the same 5,568 memberships as the Hallmark sets but cover 2,338–3,233 genes (Hallmark:
+  - **Overlap** The groups have the same 5,568 memberships as the Hallmark sets but cover 2,338–3,233 genes (Hallmark:
     3,187). The overlap concentrates on genes correlated with many others. Ribosomal-protein genes (RPS6, RPL3, …)
-    and PTMA are in up to 28 groups per seed. No Hallmark gene is in more than 10 sets. Several groups
+    and PTMA are in up to 28 groups per seed, whereas no Hallmark gene is in more than 10 sets. Several groups
     partly describe the same ribosomal axis. The 8 free latents reach the 8,801–9,696 genes in no group.
-  - **Interferon.** The groups were checked against the stimulation labels after they were built. In every seed,
+  - **Interferon** The groups were checked against the stimulation labels after they were built. In every seed,
     the group most raised by IFN-β is enriched for Hallmark interferon genes: 19–89% of its genes, against a base
     rate of 1.8%. In one seed it grew around UBE2L6 and contains ISG15, IFI6, IFIT1, IFIT3, MX1, IRF7 and OAS1. The
     data alone recover the core interferon response.
@@ -41,7 +41,7 @@ shallowly sequenced cells then look alike.
 $$\tilde{x}_g = \ln\big(1 + x_g \cdot m / \ell\big)$$
 
 The encoder reads $\tilde{x}$ and the donor code $d$ and proposes where the cell lies in the latent space, as a mean and a
-variance for each of the 58 latents. This proposal is the posterior $q(z \mid x, d)$. Training draws a point $z$ from it;
+variance for each of the 58 latents, the posterior $q(z \mid x, d)$. Training draws a point $z$ from it;
 the evaluation uses its mean.
 
 The decoder turns $z$ back into expression. Each latent raises or lowers the genes that the
@@ -57,7 +57,7 @@ $$x_g \sim \mathrm{NB}\big(\mu_g = \ell \cdot \pi_g,\ \theta_g\big)$$
 
 The loss has two parts. The reconstruction term measures how unlikely the observed counts are under
 the prediction. The Kullback–Leibler (KL) term pulls the posterior of each cell towards a standard normal prior. This
-keeps the latents on a common scale and lets those that the data do not need switch off.
+keeps the latents on a common scale and lets those that the data do not need become inactive.
 
 $$\mathcal{L} = -\log p_{\mathrm{NB}}(x \mid \mu, \theta) + \beta \cdot \mathrm{KL}\big(q(z \mid x, d)\ \|\ \mathcal{N}(0, I)\big)$$
 
@@ -72,13 +72,13 @@ where, for one cell:
 - $W \in \mathbb{R}^{12034 \times 58}$: the latent → gene weights (`w` in the code). $M \in \lbrace 0,1\rbrace^{12034 \times 58}$ is
   the mask, with 1 where latent $k$ may reach gene $g$ and 0 elsewhere. The product $\odot$ is elementwise.
 - $V \in \mathbb{R}^{12034 \times 8}$: the donor offsets (`v`), which also set the baseline of each gene.
-- $\pi_g$: the share of gene $g$. The softmax is taken over genes, so the shares are positive and sum to 1.
+- $\pi_g$: the share of gene $g$ from a softmax over genes; the shares are positive and sum to 1.
 - $\mu_g = \ell\,\pi_g$: the expected count of gene $g$.
 - $\theta_g$: the dispersion of gene $g$ (`exp(log_theta)`), with $\mathrm{Var}(x_g) = \mu_g + \mu_g^2 / \theta_g$.
 - $-\log p_{\mathrm{NB}}(x \mid \mu, \theta)$: the reconstruction term, the negative log-likelihood summed over genes.
 - $\mathrm{KL}\big(q \,\|\, \mathcal{N}(0, I)\big)$: the KL divergence of the posterior from the standard normal prior,
   summed over latents.
-- $\beta$: the KL weight. It rises linearly from 0 to 1 over the first ≈ 38 epochs (KL warm-up), so the model first learns to reconstruct, and then stays at 1.
+- $\beta$: the KL weight. It rises linearly from 0 to 1 over the first ≈ 38 epochs (KL warm-up). The model first learns to reconstruct, and then stays at 1.
 - $\mathcal{L}$: the loss per cell, averaged over each batch. With $\beta = 1$ it is the negative evidence lower bound
   (ELBO).
 
@@ -98,7 +98,7 @@ VAE(
 )
 ```
 
-The encoder input is the 12,034 genes after a shifted-log transform (see the README), plus a one-hot code for the 8 donors. These are the Kang et al. data. The Theis et al. data have about 11,340 genes and 12 donors, so the encoder, `w` and `v` are smaller. The
+The encoder input is the 12,034 genes after a shifted-log transform (see the README), plus a one-hot code for the 8 donors. These are the Kang et al. data. The Theis et al. data have about 11,340 genes and 12 donors. The encoder, `w` and `v` are smaller. The
 decoder has no layers of its own, only the three parameters $W$, $V$ and $\log\theta$ (`w`, `v` and `log_theta` in the code).
 
 | Parameter | Shape | Role | Count |
@@ -145,8 +145,29 @@ score = alpha_auc.mean()  # unweighted mean over the 7 cell types
 whose genes respond to the stimulation can do so. The Hallmark interferon-α and
 interferon-γ sets share 71 of the 95 interferon-α genes. The score therefore does not distinguish type I from type II
 interferon. A latent of the fully random mask contains few interferon-α genes (3 of 95 in seed 0) and still reached up to 0.98 in a seed. The latent at the interferon-α position of the within-set random mask scored 0.93 or higher in 6 of 10 seeds.
-Near 1, the AUROC saturates and measures ranking, not the size of the effect. Rare cell types have few test cells. Their
+Near 1, the AUROC is at its maximum and says little about the size of the effect, because it measures only how the cells rank. Rare cell types have few test cells. Their
 AUROC values are noisy.
+
+## Reactome sets: full recipe
+
+The README gives the idea. This section gives the rules that choose the 50 sets and the draw that was kept.
+
+- **Other 45 slots** Each slot takes a Reactome set of the size of its Hallmark set (within 10%), drawn at random from the sets that
+  - overlap every set chosen so far by a Jaccard index below 0.34, the largest overlap between two Hallmark sets;
+  - have at least 50% of their genes among the 12,034 QC genes (the 10th percentile of the Hallmark sets, which have 0.30 to 0.98);
+  - are not under the Disease branch of Reactome's pathway hierarchy, as Hallmark has no disease or pathogen sets (the 39 sets that cannot be matched to a Reactome pathway by name are excluded only when their name contains SARS, DEFECT, INFECTION, HIV, DISEASE, CANCER or MUTANT);
+  - contain none of INTERFERON, IFN, IRF, TNF, IL-6 or IL-2 in the name, as Hallmark has no second set for those stimuli.
+- **Sparsity** Selection seeds 0, 1, 2 and so on were tried in order. The first draw with as many trainable decoder weights as the Hallmark mask (within 1%) was kept. Seed 2 gave 76,579 against 76,344 (5,003 memberships and 3,087 genes in sets, against 5,568 and 3,187; median set size 99 against 117.5; largest overlap 0.33).
+- **Draw** The draw includes developmental and tissue-specific sets that PBMCs express, as Hallmark does. The Reactome hierarchy file is Reactome's release of 20 October 2026, which differs from the release behind MSigDB v2024.1.
+
+## Theis et al. data: full description
+
+The README describes the data set and the plate design. These are the choices that define the subset used for Q1e and Q1f.
+
+- **Cytokines** Interferon-β, as a replication of the stimulation in the Kang et al. data, and one cytokine that is not an interferon. Its choice was fixed from the published differential-expression table alone, before any model was fitted. Among TNF-α, IL-6 and IL-2, the three that have a Reactome set among the 50, it is the one with the most differentially expressed genes summed over cell types (adjusted p < 0.05, |log fold change| ≥ 0.5, well-biased rows excluded). IL-2 had 25,835, IL-6 1,521 and TNF-α 1,419 (interferon-β 31,780).
+- **Cells** The 41 GB file is read in place from the published archive (only the chosen runs of cells are transferred, about 1 GB). Cells are read until each donor × condition group has 1,800. QC as for the Kang et al. data (5 median absolute deviations per cell type and condition) removes 0.9% for IL-2, and at most 1,200 cells per group are kept, which gives 28,800 cells for each cytokine.
+- **Genes** The 11,344 of the 12,031 genes of the Kang et al. data that are detected in at least 20 cells of the stimulation (11,340 for interferon-β). The masks and the weight match of the Reactome draw therefore keep their design.
+- **Split and scored cell types** 70/15/15 within every donor × condition × cell type group. A cell type is scored when the test split has at least 20 cells of both conditions: 13 of 18 types (HSPC, ILC, NKT, plasmablasts and pDC are not).
 
 ## Biology in the code
 
@@ -164,8 +185,8 @@ The table lists the steps at which biological knowledge or an assumption about t
 | Fully random | `04` | labels permuted within expression bins | random genes are as highly expressed as the genes they replace |
 | Within-set random | `04` | labels permuted within expression bins, among genes that are in a set | the genes in no set, and so the free latents' reach, stay as in the Hallmark mask |
 | Co-expression | `05` | groups of co-expressed genes, sizes matched to Hallmark | see Gene sets and masks |
-| Free latents | `06` | reach only genes in no set | when they reached all genes, they absorbed the stimulation signal |
-| Covariates | `06` | donor in encoder and decoder; condition never | the stimulation is the signal the latents should find |
+| Free latents | `06` | reach only genes in no set | when they reached all genes, they took over the stimulation signal |
+| Covariates | `06` | donor in encoder and decoder; condition not used | the stimulation is the signal the latents should find |
 | Likelihood | `06` | negative binomial on raw counts, observed total counts as library size | droplet counts are not zero-inflated [22] |
 | Target latent | `08` | Hallmark interferon-α response or Reactome interferon α/β signaling for IFN-β; IL-2 STAT5 signaling or interleukin-2 family signaling for IL-2 (`SC_TARGET=il2`) | IFN-β is a type I interferon; IL-2 is scored against its own set |
 | Orientation | `08` | sign set so the latent's mean weight on its own genes is positive | a gene set that is switched on raises its own genes |

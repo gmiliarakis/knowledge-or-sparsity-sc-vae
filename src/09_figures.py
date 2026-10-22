@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 
 surface, ink, secondary, muted, grid, baseline = "#ffffff", "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7"
 colors = {"vanilla": "#cfcfcf", "real": "#0072B2", "shuffled": "#882255", "setshuffle": "#56B4E9", "coexpression": "#009E73"}  # Okabe-Ito blue, bluish green and sky blue with wine: distinct under red-green colour blindness
-names = {"vanilla": "no mask", "real": "Hallmark", "shuffled": "fully random", "setshuffle": "within-set random", "coexpression": "co-expression"}
-ticks = {"vanilla": "no\nmask", "real": "Hallmark", "shuffled": "fully\nrandom", "setshuffle": "within-set\nrandom", "coexpression": "co-\nexpression"}
+names = {"vanilla": "vanilla", "real": "Hallmark", "shuffled": "fully random", "setshuffle": "within-set random", "coexpression": "co-expression"}
+ticks = {"vanilla": "vanilla", "real": "Hallmark", "shuffled": "fully\nrandom", "setshuffle": "within-set\nrandom", "coexpression": "co-\nexpression"}
 folders = {"vanilla": "plain", "real": "real", "shuffled": "shuffled", "setshuffle": "setshuffle", "coexpression": "coexpression"}
 order = list(colors)
 plt.rcParams.update({
@@ -74,16 +74,17 @@ if True:  # one figure per benchmark (SC_DATA, SC_SETS); the main experiment (ka
 
     measures = [("a  Test loss per cell", "diagnostics_fit.csv", "test_loss", "negative log-likelihood + KL\n(lower is better)"),
                 ("b  Decoded response", "diagnostics_response.csv", "lfc_corr", "correlation across genes with\nthe observed shift"),
-                ("c  Cell-type probe", "diagnostics_celltype.csv", "balanced_acc_full", "balanced accuracy"),
-                ("d  Stimulation probe", "diagnostics_probe.csv", "probe_auroc", "AUROC stim vs ctrl")]
+                ("c  Cell-type classifier", "diagnostics_celltype.csv", "balanced_acc_full", "balanced accuracy"),
+                ("d  Stimulation classifier", "diagnostics_probe.csv", "probe_auroc", "AUROC stim vs ctrl")]
     fig, axes = plt.subplots(2, 2, figsize=(7.4, 5.6), gridspec_kw={"hspace": 0.55, "wspace": 0.35})
     for ax, (title, file, column, ylabel) in zip(axes.ravel(), measures):
         strip(ax, pd.read_csv(tables / file), column)
         ax.set(title=title, ylabel=ylabel)
     fig.suptitle(f"{bench_label}, {mask_name} sets", x=0.02, ha="left", fontsize=9)
-    fig.savefig(out / f"{data}_{collection}.png")
+    fname = f"{data.replace('oesinghaus', 'theis')}_{collection}.png"  # figure files carry the author name used in the text
+    fig.savefig(out / fname)
     plt.close(fig)
-    print("saved", out / f"{data}_{collection}.png")
+    print("saved", out / fname)
     if not main:
         raise SystemExit
 
@@ -229,7 +230,7 @@ shuffle_row = list(hm["levels"]).index(1.0)
 masks = {"real": full(sets), "coexpression": full(co["modules"][0]), "shuffled": full(sets[hm["perms"][shuffle_row, 0]]),
          "setshuffle": full(sets[ss["perms"][0]]), "vanilla": np.ones((sets.shape[0], 58))}
 mask_names = {"real": "Hallmark", "coexpression": "co-expression", "shuffled": "fully random", "setshuffle": "within-set random",
-              "vanilla": "no mask"}
+              "vanilla": "vanilla"}
 for k, v in enumerate(["real", "coexpression", "setshuffle", "shuffled", "vanilla"]):
     if v == "vanilla":  # third column, centred on the arrows
         x, y = 4.92, 1.35 - 0.85 / 2
@@ -284,7 +285,7 @@ axes[1].set(title="b  Active latents", ylabel="active latents out of 58")
 ax = axes[2]
 y, rows = 0, []
 wide = scores.pivot(index="seed", columns="variant", values="ifn_alpha")
-for other, label_ in [("shuffled", "fully random"), ("setshuffle", "within-set random"), ("vanilla", "no mask"),
+for other, label_ in [("shuffled", "fully random"), ("setshuffle", "within-set random"), ("vanilla", "vanilla"),
                       ("coexpression", "co-expression")]:
     r = tests.loc[f"fixed latent: real - {other}"]
     primary = other == "shuffled"  # the comparison fixed before the 10-seed runs, in black
@@ -343,12 +344,12 @@ phases = {"Data": ("#e3eef7", "#5b9bd5"), "Design": ("#f1dfe8", "#882255"), "Mod
 steps = [("Data", "Single-cell\ndata"), ("Data", "Cell QC"), ("Data", "Gene\nfilter"), ("Design", "Split"),
          ("Design", "Gene sets"), ("Design", "Five\nmasks"), ("Model", "VAE"), ("Evaluation", "Measures"), ("Evaluation", "Tests")]
 stacks = {0: [("Kang et al. IFN-β", 0), ("Theis et al.", 0), ("IFN-β", 1), ("IL-2", 1)], 4: [("Hallmark", 0), ("Reactome", 0)],
-          5: [("gene sets", 0), ("co-expression", 0), ("random", 0), ("fully random", 1), ("within-set random", 1), ("no mask", 0)],
+          5: [("gene sets", 0), ("co-expression", 0), ("random", 0), ("fully random", 1), ("within-set random", 1), ("vanilla", 0)],
           2: [("Without the 250\nstrongest genes", 0)],
           3: [("Learning curves", 0), ("500 cells", 1), ("1,000 cells", 1), ("2,000 cells", 1), ("4,000 cells", 1),
               ("8,000 cells", 1), ("all 16,749", 1)],
-          7: [("test loss", 0), ("decoded response", 0), ("probes", 0), ("cell-type", 1), ("stimulation", 1),
-              ("named-latent and\nreference scores", 0)]}  # (label, level): level 1 hangs under the box above it
+          7: [("test loss", 0), ("decoded response", 0), ("classifiers", 0), ("cell-type", 1), ("stimulation", 1),
+              ("labelled-latent and\nreference scores", 0)]}  # (label, level): level 1 hangs under the box above it
 bw, bh, gap, gap_phase = 1.0, 0.52, 0.17, 0.3
 fig_w = 0.2 + len(steps) * bw + sum(gap_phase if steps[k][0] != steps[k + 1][0] else gap for k in range(len(steps) - 1))
 fig_h = 2.95
@@ -460,7 +461,7 @@ grey = "#9a9a9a"
 vcolor = {**colors, "vanilla": grey}
 vnames = {**names, "real": "gene sets"}
 bench_rows, bench_groups, y_ = [], [], 0.0
-for d_, label_ in [("kang", "Kang et al. IFN-β"), ("oesinghaus_ifn_beta", "Theis et al.\nIFN-β"), ("oesinghaus_il_2", "Theis et al.\nIL-2")]:
+for d_, label_ in [("kang", "Kang et al. IFN-β"), ("oesinghaus_ifn_beta", "Theis et al. IFN-β"), ("oesinghaus_il_2", "Theis et al. IL-2")]:
     first = y_
     for c_ in ("hallmark", "reactome"):
         bench_rows.append((f"{d_}/{c_}", c_.capitalize(), y_))
@@ -481,7 +482,7 @@ def advantage_figure(measures, name, size):
     # advantage of the gene sets over each other mask, with the interval of the paired test
     others = [(v, names[v], vcolor[v]) for v in ("shuffled", "setshuffle", "coexpression")]  # each line in the colour of the mask it is compared with
     rows, groups, ya = [], [], 0.0
-    for d_, label_ in [("kang", "Kang et al. IFN-β"), ("oesinghaus_ifn_beta", "Theis et al.\nIFN-β"), ("oesinghaus_il_2", "Theis et al.\nIL-2")]:
+    for d_, label_ in [("kang", "Kang et al. IFN-β"), ("oesinghaus_ifn_beta", "Theis et al. IFN-β"), ("oesinghaus_il_2", "Theis et al. IL-2")]:
         first = ya
         for c_ in ("hallmark", "reactome"):
             rows.append((f"{d_}/{c_}", c_.capitalize(), ya))
@@ -516,20 +517,20 @@ def advantage_figure(measures, name, size):
 
 
 def share_scores(path):
-    # decoded response of each variant, as the position between the fully random mask (0) and no mask (100)
+    # decoded response of each variant, as the position between the fully random mask (0) and vanilla VAE (100)
     w = pd.read_csv(f"reports/tables/{path}/diagnostics_response.csv").pivot(index="seed", columns="variant", values="lfc_corr")
     zero = w["shuffled"].mean()
     return {v: (w[v] - zero) / (w["vanilla"].mean() - zero) * 100 for v in ("real", "coexpression", "setshuffle")}
 
 
 def share_gap(path):
-    # the denominator of the relative scale: decoded response of the no-mask VAE minus that of the fully random mask
+    # the denominator of the relative scale: decoded response of the vanilla VAE minus that of the fully random mask
     w = pd.read_csv(f"reports/tables/{path}/diagnostics_response.csv").pivot(index="seed", columns="variant", values="lfc_corr")
     return w["vanilla"].mean() - w["shuffled"].mean()
 
 
 def share_panel(ax, rows, groups, title):
-    # one panel: each variant placed between the fully random mask (0) and no mask (100)
+    # one panel: each variant placed between the fully random mask (0) and vanilla VAE (100)
     top = rows[0][2] - 0.8
     ax.axvline(0, color=colors["shuffled"], lw=0.6, zorder=1)
     ax.axvline(100, color=grey, lw=0.6, zorder=1)
@@ -540,23 +541,28 @@ def share_panel(ax, rows, groups, title):
             ax.plot([s[v].min(), s[v].max()], [yy, yy], color=vcolor[v], zorder=2)
             ax.plot(s[v].mean(), yy, "o", color=vcolor[v], zorder=3)
     ax.text(1.5, top, "fully random mask", va="center", ha="left", fontsize=7, color=colors["shuffled"])
-    ax.text(101.5, top, "no mask", va="center", ha="left", fontsize=7, color=grey)
-    ax.set_yticks([y for _, _, y in rows], [f"{l}\n(gap {share_gap(p):.2f})" for p, l, _ in rows], fontsize=7.5)
-    ax.tick_params(axis="y", length=0)
+    ax.text(101.5, top, "vanilla", va="center", ha="left", fontsize=7, color=grey)
+    ax.set_yticks([y for _, _, y in rows], [l for _, l, _ in rows], fontsize=7.5)
+    # the difference of each row (vanilla minus fully random decoded response, the scale of the row) in a column between the row labels and the plot
+    diff_at = mtransforms.offset_copy(ax.get_yaxis_transform(), fig=ax.figure, x=-0.08, units="inches")
+    ax.text(0, top, "difference", ha="right", va="center", fontsize=7.5, color=ink, transform=diff_at)
+    for p, _, y in rows:
+        ax.text(0, y, f"{share_gap(p):.2f}", ha="right", va="center", fontsize=7.5, color=ink, transform=diff_at)
+    ax.tick_params(axis="y", length=0, pad=27)  # room for the difference column
     ax.set_xticks([-50, -25, 0, 25, 50, 75, 100])
     ax.set_xlim(-70, 125)
     ax.set_ylim(max(y for _, _, y in rows) + 0.7, top - 0.5)
     ax.grid(axis="x", color=grid, lw=0.6)
     ax.set_title(title, fontsize=8, loc="left")
     if groups:
-        group_names(ax, groups)
+        group_names(ax, groups, inches=0.95)
 
 
 def share_figure(name):
     # a: the six benchmarks (Q1d to Q1f); b: the main experiment with and without the 250 strongest genes (Q1c)
     with plt.rc_context({"lines.linewidth": LW, "lines.markersize": PT, "axes.grid": False, "axes.spines.left": False}):
         fig, (ax_a, ax_b) = plt.subplots(2, 1, figsize=(6.4, 5.0), gridspec_kw={"height_ratios": [3.4, 1.6], "hspace": 0.35})
-        share_panel(ax_a, bench_rows, bench_groups, "a  Six benchmarks")
+        share_panel(ax_a, bench_rows, bench_groups, "a  Six combinations")
         share_panel(ax_b, [("kang/hallmark", "all 12,034 genes", 0.0), ("kang_drop250/hallmark", "250 strongest\nresponse genes\ndropped", 1.2)], [],
                     "b  Kang et al. data, Hallmark sets, without the 250 strongest genes")
         ax_b.set_xlabel("relative decoded response (%)")
@@ -612,7 +618,7 @@ def levels_figures():
 
 
 def named_latent_figure():
-    # score of the latent at the position of the known-answer set (real and random masks) or of the best latent (co-expression, no mask)
+    # score of the latent at the position of the expected-response set (real and random masks) or of the highest-scoring latent (co-expression, vanilla)
     order_ = ["real", "coexpression", "setshuffle", "shuffled", "vanilla"]
     with plt.rc_context({"lines.linewidth": LW, "lines.markersize": PT, "axes.grid": False}):
         fig, ax = plt.subplots(figsize=(7.4, 3.4))
@@ -641,8 +647,8 @@ def named_latent_figure():
 
 MEASURES = {"loss": ("test loss per cell (lower is better)", "test loss per cell\n(loss units)", -1),
             "response": ("decoded response correlation", "decoded response\n(correlation)", 1),
-            "celltype": ("cell-type balanced accuracy", "cell-type probe\n(balanced accuracy)", 1),
-            "probe": ("stimulation probe AUROC", "stimulation probe\n(AUROC)", 1)}
+            "celltype": ("cell-type balanced accuracy", "cell-type classifier\n(balanced accuracy)", 1),
+            "probe": ("stimulation probe AUROC", "stimulation classifier\n(AUROC)", 1)}
 advantage_figure([MEASURES["loss"], MEASURES["response"]], "advantage.png", (6.6, 3.9))
 advantage_figure([MEASURES["celltype"], MEASURES["probe"]], "advantage_probes.png", (6.6, 3.9))
 share_figure("share.png")

@@ -1,6 +1,6 @@
 # Co-expression null for the Hallmark masks: for every Hallmark set, a module of the same size built only from
 # gene-gene correlation in training cells (a random seed gene and its most correlated genes). It asks whether
-# curated knowledge adds anything beyond groups of genes that are simply expressed together.
+# curated knowledge adds anything beyond groups of genes that are expressed together.
 
 import anndata as ad
 import numpy as np
