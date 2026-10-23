@@ -40,15 +40,15 @@ shallowly sequenced cells then look alike.
 
 $$\tilde{x}_g = \ln\big(1 + x_g \cdot m / \ell\big)$$
 
-The encoder reads $\tilde{x}$ and the donor code $d$ and proposes where the cell lies in the latent space, as a mean and a
-variance for each of the 58 latents, the posterior $q(z \mid x, d)$. Training draws a point $z$ from it;
-the evaluation uses its mean.
+The encoder reads $\tilde{x}$ and the donor code $\mathbf{s}$ (the column of the one-hot donor matrix $\mathbf{S}$ of Figure 2 that belongs to the cell) and
+proposes where the cell lies in the latent space, as a mean $\bar{\mu}$ and a log variance $\log\sigma^2$ for each of the 58 latents, the
+posterior $q(z \mid x, \mathbf{s})$. Training draws a point $z$ from it; the evaluation uses its mean. The latent matrix $\mathbf{Z}$ of Figure 2 holds the $z$ of every cell.
 
 The decoder turns $z$ back into expression. Each latent raises or lowers the genes that the
-mask $M$ lets it reach, through its weights $W$, and the donor adds its offsets $V$. A softmax over genes converts these
+mask $\mathbf{M}$ lets it reach, through its weights $\mathbf{W}$, and the donor adds its offsets $\mathbf{V}$. A softmax over genes converts these
 scores into shares $\pi_g$ that sum to 1, the fraction of the counts of the cell that each gene should receive.
 
-$$\pi = \mathrm{softmax}\big((W \odot M)\,z + V\,d\big)$$
+$$\pi = \mathrm{softmax}\big((\mathbf{W} \odot \mathbf{M})\,z + \mathbf{V}\,\mathbf{s}\big)$$
 
 The expected count of gene $g$ is the total count of the cell times its share. The observed count scatters around it as a
 negative binomial (NB). The dispersion $\theta_g$ allows each gene to be noisier than a Poisson count.
@@ -59,32 +59,32 @@ The loss has two parts. The reconstruction term measures how unlikely the observ
 the prediction. The Kullback–Leibler (KL) term pulls the posterior of each cell towards a standard normal prior. This
 keeps the latents on a common scale and lets those that the data do not need become inactive.
 
-$$\mathcal{L} = -\log p_{\mathrm{NB}}(x \mid \mu, \theta) + \beta \cdot \mathrm{KL}\big(q(z \mid x, d)\ \|\ \mathcal{N}(0, I)\big)$$
+$$\mathcal{L} = -\log p_{\mathrm{NB}}(x \mid \mu, \theta) + \beta \cdot \mathrm{KL}\big(q(z \mid x, \mathbf{s})\ \|\ \mathcal{N}(0, I)\big)$$
 
 where, for one cell:
 
-- $x_g$, $\tilde{x}_g$: the raw count of gene $g$ and its encoder input. $\ell = \sum_g x_g$ is the total count of the cell
-  and $m$ the median total count of the training cells.
-- $d \in \lbrace 0,1\rbrace^{8}$: the donor one-hot code.
-- $z \in \mathbb{R}^{58}$: the latent values. Training draws them from
-  $q(z \mid x, d) = \mathcal{N}\big(\mathrm{mean},\ \mathrm{diag}\,\exp(\mathrm{log\_var})\big)$; the evaluation uses the
-  posterior means.
-- $W \in \mathbb{R}^{12034 \times 58}$: the latent → gene weights (`w` in the code). $M \in \lbrace 0,1\rbrace^{12034 \times 58}$ is
-  the mask, with 1 where latent $k$ may reach gene $g$ and 0 elsewhere. The product $\odot$ is elementwise.
-- $V \in \mathbb{R}^{12034 \times 8}$: the donor offsets (`v`), which also set the baseline of each gene.
-- $\pi_g$: the share of gene $g$ from a softmax over genes; the shares are positive and sum to 1.
-- $\mu_g = \ell\,\pi_g$: the expected count of gene $g$.
-- $\theta_g$: the dispersion of gene $g$ (`exp(log_theta)`), with $\mathrm{Var}(x_g) = \mu_g + \mu_g^2 / \theta_g$.
-- $-\log p_{\mathrm{NB}}(x \mid \mu, \theta)$: the reconstruction term, the negative log-likelihood summed over genes.
-- $\mathrm{KL}\big(q \,\|\, \mathcal{N}(0, I)\big)$: the KL divergence of the posterior from the standard normal prior,
-  summed over latents.
-- $\beta$: the KL weight. It rises linearly from 0 to 1 over the first ≈ 38 epochs (KL warm-up). The model first learns to reconstruct, and then stays at 1.
 - $\mathcal{L}$: the loss per cell, averaged over each batch. With $\beta = 1$ it is the negative evidence lower bound
   (ELBO).
+- $-\log p_{\mathrm{NB}}(x \mid \mu, \theta)$: the reconstruction term, the negative log-likelihood summed over genes.
+- $x_g$: the raw count of gene $g$. $\ell = \sum_g x_g$ is the total count of the cell.
+- $\mu_g = \ell\,\pi_g$: the expected count of gene $g$.
+- $\pi_g$: the share of gene $g$ from a softmax over genes; the shares are positive and sum to 1.
+- $\mathbf{W} \in \mathbb{R}^{G \times 58}$: the latent → gene weights (`w` in the code), with $G$ the number of genes (12,034 in the Kang et al. data).
+  $\mathbf{M} \in \lbrace 0,1\rbrace^{G \times 58}$ is the mask, with 1 where latent $k$ may reach gene $g$ and 0 elsewhere. The product $\odot$ is elementwise.
+- $\mathbf{V} \in \mathbb{R}^{G \times D}$: the donor offsets (`v`), which also set the baseline of each gene, with $D$ the number of donors (8 in the Kang et al. data).
+- $\theta_g$: the dispersion of gene $g$ (`exp(log_theta)`), with $\mathrm{Var}(x_g) = \mu_g + \mu_g^2 / \theta_g$.
+- $\beta$: the KL weight. It rises linearly from 0 to 1 over the first ≈ 38 epochs (KL warm-up). The model first learns to reconstruct, and then stays at 1.
+- $\mathrm{KL}\big(q \,\|\, \mathcal{N}(0, I)\big)$: the KL divergence of the posterior from the standard normal prior,
+  summed over latents.
+- $z \in \mathbb{R}^{58}$: the latent values of the cell, one column of the latent matrix $\mathbf{Z}$ ($58 \times N$) in Figure 2. Training draws them from
+  $q(z \mid x, \mathbf{s}) = \mathcal{N}\big(\bar{\mu},\ \mathrm{diag}\,\sigma^2\big)$ as $z = \bar{\mu} + \sigma \odot \epsilon$, with $\sigma = \exp(\tfrac{1}{2}\log\sigma^2)$
+  and $\epsilon \sim \mathcal{N}(0, I)$ (`mean`, `log_var` in the code); the evaluation uses the posterior means.
+- $\mathbf{s} \in \lbrace 0,1\rbrace^{D}$: the donor one-hot code of the cell, one column of the donor matrix $\mathbf{S}$ ($D \times N$ for $N$ cells) in Figure 2.
+- $\tilde{x}_g$: the encoder input, the count of gene $g$ divided by $\ell$, multiplied by $m$, the median total count of the training cells, and log-transformed.
 
 ## Architecture and parameter counts
 
-Every variant uses the same VAE, with an encoder of one hidden layer and a linear decoder (binary mask on its weight matrix in four of the five variants). The PyTorch module summary is as follows.
+Every variant uses the same VAE, with an encoder of one hidden layer and a linear decoder (binary mask on its weight matrix in five of the six variants). The PyTorch module summary is as follows.
 
 ```
 VAE(
@@ -99,14 +99,14 @@ VAE(
 ```
 
 The encoder input is the 12,034 genes after a shifted-log transform (see the README), plus a one-hot code for the 8 donors. These are the Kang et al. data. The Theis et al. data have about 11,340 genes and 12 donors. The encoder, `w` and `v` are smaller. The
-decoder has no layers of its own, only the three parameters $W$, $V$ and $\log\theta$ (`w`, `v` and `log_theta` in the code).
+decoder has no layers of its own, only the three parameters $\mathbf{W}$, $\mathbf{V}$ and $\log\theta$ (`w`, `v` and `log_theta` in the code).
 
 | Parameter | Shape | Role | Count |
 |---|---|---|---|
 | encoder | 12,042 → 128 | hidden layer | 1,541,504 |
-| mean, log_var | 128 → 58 (each) | mean and log-variance of the posterior $q(z \mid x, d)$ | 14,964 |
-| $W$ (`w`) | 12,034 × 58 | latent → gene weights, multiplied elementwise by the mask $M$ | 697,972 |
-| $V$ (`v`) | 12,034 × 8 | donor offsets (also each gene's baseline) | 96,272 |
+| mean, log_var | 128 → 58 (each) | mean and log-variance of the posterior $q(z \mid x, \mathbf{s})$ | 14,964 |
+| $\mathbf{W}$ (`w`) | 12,034 × 58 | latent → gene weights, multiplied elementwise by the mask $\mathbf{M}$ | 697,972 |
+| $\mathbf{V}$ (`v`) | 12,034 × 8 | donor offsets (also each gene's baseline) | 96,272 |
 | $\log\theta$ (`log_theta`) | 12,034 | negative binomial dispersion per gene | 12,034 |
 | **total** | | | **2,362,746** |
 
@@ -160,7 +160,7 @@ The README gives the idea. This section gives the rules that choose the 50 sets 
 - **Sparsity** Selection seeds 0, 1, 2 and so on were tried in order. The first draw with as many trainable decoder weights as the Hallmark mask (within 1%) was kept. Seed 2 gave 76,579 against 76,344 (5,003 memberships and 3,087 genes in sets, against 5,568 and 3,187; median set size 99 against 117.5; largest overlap 0.33).
 - **Draw** The draw includes developmental and tissue-specific sets that PBMCs express, as Hallmark does. The Reactome hierarchy file is Reactome's release of 20 October 2026, which differs from the release behind MSigDB v2024.1.
 
-## Theis et al. data: full description
+## Human Cytokine Dictionary: full description
 
 The README describes the data set. These are the choices that define the subset used for Q1e and Q1f.
 

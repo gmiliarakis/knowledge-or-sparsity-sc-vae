@@ -1,6 +1,6 @@
 # Reproducing in detail
 
-Commands beyond the main experiment. The versions and the main commands are in the [README](../README.md#reproducing); numbers in square brackets refer to its reference list.
+Commands beyond the main experiment, and the layout of the results and tables. The versions and the main commands are in the [README](../README.md#reproducing); numbers in square brackets refer to its reference list.
 
 `src/06_fit.py` trains one model per call and is run by `07_experiment.sh`. Its options and defaults:
 
@@ -89,3 +89,19 @@ for c in hallmark reactome; do
   SC_DATA=oesinghaus_il_2 SC_SETS=$c SC_TARGET=il2 python src/11_tests.py
 done
 ```
+
+## Layout of the repository, results and tables
+
+Where the files are and which table answers which question.
+
+| Path | Contents |
+|---|---|
+| `src/` | numbered scripts in run order, with the shared set-up in `scoring.py`; `06_fit.py` trains one model per call and is run by `07_experiment.sh` |
+| `src/gene_sets.py` | the data set (`SC_DATA`), gene set collection (`SC_SETS`), benchmark (`SC_TAG`) and expected response (`SC_TARGET`) a script works on |
+| `src/extras/learning_curves/` | training subsamples and the runs on them (supplementary S3) |
+| `src/extras/hvg_inspection.py` | highly-variable-gene analysis behind the choice to model all genes |
+| `data/`, `results/` | created by the scripts and left out of the repository; `results/<data>/<collection>/<variant>/seed<k>/`, for example `results/kang/hallmark/real/seed0/` |
+| `reports/tables/<data>/<collection>/` | the main experiment is `kang/hallmark`; scores per run, AUROCs per cell type, paired differences, every hypothesis test (`tests.csv`), robustness checks (`robustness_*.csv`) and diagnostics (`diagnostics_*.csv`) |
+| `reports/tables/*/*/tests.csv`, column `family` | `S1` (interferon-α latent, supplementary S1), `S3` (learning curves, Q1b) and `latent-free` (Q1, Q1a and Q1c to Q1f: one table per benchmark) |
+| Questions and tables | Q1, Q1a, Q1b: `kang/hallmark`; Q1c: `kang_drop250/hallmark`; Q1d to Q1f: the six benchmarks `kang/{hallmark,reactome}`, `oesinghaus_ifn_beta/{hallmark,reactome}`, `oesinghaus_il_2/{hallmark,reactome}` |
+| `reports/figures/` | figures |
