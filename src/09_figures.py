@@ -125,9 +125,11 @@ def chance(ax):
         ax.set_ylim(min(low, 0.48), high)
 
 
-# 0. Overview banner: data, VAE with and without a mask, the five decoder masks as trained with seed 0, and the
+# 0. Overview banner: data, VAE with and without a mask, the six decoder masks as trained with seed 0, and the
 # decoded response of every seed
-W, H = 8.2, 2.7
+ov_colors = {**colors, "responsematch": "#999933"}  # olive of the Tol muted palette, for the expression-matched random mask of this figure only
+ov_names = {**names, "responsematch": "expression-matched random"}
+W, H = 9.1, 2.7
 fig = plt.figure(figsize=(W, H))
 bg = fig.add_axes([0, 0, 1, 1])
 bg.set(xlim=(0, W), ylim=(0, H))
@@ -166,7 +168,7 @@ def swarm(y, d_x, d_y):
     return xs
 
 
-for x, head in [(0.7, "1  Data"), (2.3, "2  Model"), (4.55, "3  Decoder masks"), (7.2, "4  Decoded response")]:
+for x, head in [(0.7, "1  Data"), (2.3, "2  Model"), (4.53, "3  Decoder masks"), (7.75, "4  Decoded response")]:
     label(x, 2.53, head, size=8.5, color=ink, weight="bold")  # each title centred over its panel
 
 # 1 data: two clouds of cells
@@ -213,6 +215,7 @@ arrow(3.29, 3.49)
 # columns the 58 latents (50 named, then 8 free)
 hm = np.load("data/processed/masks_hallmark.npz")
 co = np.load("data/processed/coexpression_hallmark.npz")
+rm = np.load("data/processed/masks_hallmark_responsematch.npz")  # the expression-matched random masks (src/04b_build_responsematch.py)
 ss = np.load("data/processed/masks_hallmark_setshuffle.npz")
 sets = hm["real"]
 
@@ -228,38 +231,36 @@ rows = np.argsort(np.where(sets.any(axis=1), sets.argmax(axis=1), 50), kind="sta
 position = np.argsort(rows)  # row of each gene in the sorted display
 shuffle_row = list(hm["levels"]).index(1.0)
 masks = {"real": full(sets), "coexpression": full(co["modules"][0]), "shuffled": full(sets[hm["perms"][shuffle_row, 0]]),
-         "setshuffle": full(sets[ss["perms"][0]]), "vanilla": np.ones((sets.shape[0], 58))}
-mask_names = {"real": "Hallmark", "coexpression": "co-expression", "shuffled": "fully random", "setshuffle": "within-set random",
-              "vanilla": "vanilla"}
-for k, v in enumerate(["real", "coexpression", "setshuffle", "shuffled", "vanilla"]):
-    if v == "vanilla":  # third column, centred on the arrows
-        x, y = 4.92, 1.35 - 0.85 / 2
-    else:  # the four masks in a 2 x 2 block
-        x, y = 3.52 + (k % 2) * 0.65, 1.5 - (k // 2) * 1.1
+         "setshuffle": full(sets[ss["perms"][0]]), "responsematch": full(sets[rm["perms"][0]]), "vanilla": np.ones((sets.shape[0], 58))}
+mask_names = {"real": "Hallmark", "coexpression": "co-expression", "shuffled": "fully\nrandom", "setshuffle": "within-set\nrandom",
+              "responsematch": "expression-\nmatched random", "vanilla": "vanilla"}
+cells = {"real": (0, 0), "shuffled": (1, 0), "setshuffle": (2, 0), "responsematch": (0, 1), "coexpression": (1, 1), "vanilla": (2, 1)}  # column and row, in the order of the tables with vanilla last
+for v in ["real", "shuffled", "setshuffle", "responsematch", "coexpression", "vanilla"]:
+    x, y = 3.52 + cells[v][0] * 0.72, 1.5 - cells[v][1] * 1.1  # the six masks in a 3 x 2 block
     ax = inset(x, y, 0.58, 0.85)
     ax.set(xlim=(-0.5, 57.5), ylim=(len(rows) - 0.5, -0.5), xticks=[], yticks=[])
     if v == "vanilla":
-        ax.add_patch(plt.Rectangle((-0.5, -0.5), 58, len(rows), color=colors[v], lw=0))  # every gene reaches every latent
+        ax.add_patch(plt.Rectangle((-0.5, -0.5), 58, len(rows), color=ov_colors[v], lw=0))  # every gene reaches every latent
     else:
         genes_, latents_ = np.nonzero(masks[v])
-        ax.scatter(latents_, position[genes_], s=0.5, marker="s", color=colors[v], lw=0)
+        ax.scatter(latents_, position[genes_], s=0.5, marker="s", color=ov_colors[v], lw=0)
     ax.grid(False)
     for side in ax.spines.values():
         side.set_visible(False)
-    label(x + 0.29, y - 0.12, mask_names[v], color=ink, size=5.2)
-arrow(5.7, 5.9)
+    label(x + 0.29, y - 0.14, mask_names[v], color=ink, size=5.2)
+arrow(5.72, 5.92)
 
 # 4 result: decoded response (correlation of the decoded and observed stimulation shift across genes) of every seed as a
 # beeswarm, the mean printed under each bar
 response = pd.read_csv(tables / "diagnostics_response.csv")
-variants = ["real", "coexpression", "setshuffle", "shuffled", "vanilla"]  # same order as the masks in stage 3
-width_in, height_in, low, high = 1.9, 1.9, 0.66, 1.0
-ax = inset(6.3, 0.45, width_in, height_in)
+variants = ["real", "shuffled", "setshuffle", "responsematch", "coexpression", "vanilla"]  # same order as the masks in stage 3
+width_in, height_in, low, high = 2.3, 1.9, 0.66, 1.0
+ax = inset(6.6, 0.45, width_in, height_in)
 dot_in = 0.04
 for i, v in enumerate(variants):
     y_ = response[response["variant"] == v]["lfc_corr"].to_numpy()
     x_ = i + swarm(y_, dot_in / (width_in / len(variants)), dot_in / (height_in / (high - low)))
-    seed_dots(ax, x_, y_, colors[v])
+    seed_dots(ax, x_, y_, ov_colors[v])
     mean_dot(ax, i, y_.mean())
 ax.set(xlim=(-0.5, len(variants) - 0.5), ylim=(low, high), yticks=[0.7, 0.8, 0.9, 1.0], yticklabels=["0.7", "0.8", "0.9", "1.0"])
 ax.set_ylabel("correlation")
@@ -267,7 +268,7 @@ ax.yaxis.set_label_coords(-0.12, 0.5)
 ax.tick_params(axis="y", labelsize=6.5)
 for side in ("left", "bottom"):
     ax.spines[side].set_color(ink)
-ax.set_xticks(range(len(variants)), [names[v] for v in variants], fontsize=5.5, rotation=45, ha="right", rotation_mode="anchor")
+ax.set_xticks(range(len(variants)), [ov_names[v] for v in variants], fontsize=5.5, rotation=45, ha="right", rotation_mode="anchor")
 ax.grid(axis="x", visible=False)
 fig.savefig(out / "overview.png")
 plt.close(fig)
@@ -342,9 +343,9 @@ if (tables / "learning_curves_scores.csv").exists():
 phases = {"Data": ("#e3eef7", "#5b9bd5"), "Design": ("#f1dfe8", "#882255"), "Model": ("#ecdcf0", "#a86fb5"),
           "Evaluation": ("#d6eeea", "#2a9d8f")}
 steps = [("Data", "Single-cell\ndata"), ("Data", "Cell QC"), ("Data", "Gene\nfilter"), ("Design", "Split"),
-         ("Design", "Gene sets"), ("Design", "Five\nmasks"), ("Model", "VAE"), ("Evaluation", "Measures"), ("Evaluation", "Tests")]
+         ("Design", "Gene sets"), ("Design", "Six\nmasks"), ("Model", "VAE"), ("Evaluation", "Measures"), ("Evaluation", "Tests")]
 stacks = {0: [("Kang et al. IFN-β", 0), ("Theis et al.", 0), ("IFN-β", 1), ("IL-2", 1)], 4: [("Hallmark", 0), ("Reactome", 0)],
-          5: [("gene sets", 0), ("co-expression", 0), ("random", 0), ("fully random", 1), ("within-set random", 1), ("vanilla", 0)],
+          5: [("gene sets", 0), ("co-expression", 0), ("random", 0), ("fully random", 1), ("within-set random", 1), ("expression-\nmatched", 1), ("vanilla", 0)],
           2: [("Without the 250\nstrongest genes", 0)],
           3: [("Learning curves", 0), ("500 cells", 1), ("1,000 cells", 1), ("2,000 cells", 1), ("4,000 cells", 1),
               ("8,000 cells", 1), ("all 16,749", 1)],
