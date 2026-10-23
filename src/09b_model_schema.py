@@ -1,5 +1,5 @@
-# Schema of the VAE (Methods, Model). Written to reports/figures/model.png and paper/figures/model.png, or to the directories
-# given as arguments. Standalone: it needs no tables. Each matrix is a solid: the height suggests its rows (the 12,034-row
+# Schema of the VAE (Methods, Model). Written to reports/figures/model.png, or to the directories given as arguments.
+# Standalone: it needs no tables. Each matrix is a solid: the height suggests its rows (the 12,034-row
 # plates are drawn shorter than to scale) and the depth its columns or cells (on a log scale).
 import math
 import sys
@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgb
 
 root = Path(__file__).resolve().parent.parent
-outs = [Path(a) for a in sys.argv[1:]] or [root / "reports" / "figures", root / "paper" / "figures"]
+outs = [Path(a) for a in sys.argv[1:]] or [root / "reports" / "figures"]
 
 ink, secondary, flow = "#0b0b0b", "#6b6a66", "#4d4d4b"  # text, brackets, arrows between layers
 C = dict(data=("#e3eef7", "#5b9bd5"), donor=("#f2f7fc", "#7aa6d0"), offsets=("#c4dbef", "#2f6fa8"), linear=("#dfe0f5", "#5b5fc7"),

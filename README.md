@@ -1,6 +1,6 @@
 # Knowledge or sparsity? Gene set masks in a single-cell VAE
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23571986.svg)](https://doi.org/10.5281/zenodo.23571986)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23571985.svg)](https://doi.org/10.5281/zenodo.23571985)
 
 ![From stimulated cells to a masked VAE: the six decoder masks and the decoded response each one reached](reports/figures/overview.png)
 
@@ -382,7 +382,7 @@ The same comparison could be repeated on harder questions and other data. Data s
 
 **Results** The tables behind every figure, test and number in this report (scores per run, paired differences and tests for each benchmark) are in the repository. Trained model outputs are recreated by the scripts and are not stored.
 
-**Code** The code is at https://github.com/gmiliarakis/knowledge-or-sparsity-sc-vae under the MIT licence. The version archived on Zenodo is [10.5281/zenodo.23571986](https://doi.org/10.5281/zenodo.23571986).
+**Code** The code is at https://github.com/gmiliarakis/knowledge-or-sparsity-sc-vae under the MIT licence. The code is archived on Zenodo under [10.5281/zenodo.23571985](https://doi.org/10.5281/zenodo.23571985), which stands for all versions and resolves to the latest.
 
 The scripts are numbered in run order and run from the repository root in a fresh virtual environment. All results were produced on an Apple M1 Pro (16 GB) under macOS 15.7 with PyTorch [39], scikit-learn [40], scanpy [19], AnnData [43], NumPy [44], pandas [45], SciPy [46] and Matplotlib [47]; `requirements.txt` lists minimum versions. Exact versions:
 
