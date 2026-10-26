@@ -1,8 +1,8 @@
-# Oesinghaus data (10M PBMCs, the Human Cytokine Dictionary) -> one stimulation contrast (a cytokine against PBS) -> cell QC -> train/val/test split. The counts are
-# read from the published zip in place (class RangeFile below), so the 41 GB file is never downloaded. Choices are explained in the README.
-#   python src/03c_preprocess_oesinghaus.py IFN-beta --dry-run     plan only: the cells and the size of the read
-#   python src/03c_preprocess_oesinghaus.py --choose DEGs.csv      the second cytokine, from the table of differentially expressed genes
-#   python src/03c_preprocess_oesinghaus.py IFN-beta               writes data/processed/oesinghaus_ifn_beta.h5ad
+# Cytokine data (10M PBMCs, the Human Cytokine Dictionary) -> one stimulation contrast (a cytokine against PBS) -> cell QC -> train/val/test split. The counts are
+# read from the published zip in place (class RangeFile below), so the 41 GB file is never downloaded. Choices are explained in the preprint.
+#   python src/03c_preprocess_cytokine.py IFN-beta --dry-run     plan only: the cells and the size of the read
+#   python src/03c_preprocess_cytokine.py --choose DEGs.csv      the second cytokine, from the table of differentially expressed genes
+#   python src/03c_preprocess_cytokine.py IFN-beta               writes data/processed/cytokine_ifn_beta.h5ad
 import argparse
 import io
 import re
@@ -14,6 +14,7 @@ import anndata as ad
 import h5py
 import numpy as np
 import pandas as pd
+import requests
 import scanpy as sc
 from scipy.sparse import csr_matrix
 from scipy.stats import median_abs_deviation
@@ -105,12 +106,12 @@ parser.add_argument("--control", default="PBS")
 parser.add_argument("--read-per-group", type=int, default=1800, help="cells read per donor x condition, before QC")
 parser.add_argument("--cells-per-group", type=int, default=1200, help="cells kept per donor x condition, after QC")
 parser.add_argument("--seed", type=int, default=0)
-parser.add_argument("--out", help="default data/processed/oesinghaus_<cytokine>.h5ad")
+parser.add_argument("--out", help="default data/processed/cytokine_<cytokine>.h5ad")
 parser.add_argument("--all-genes", action="store_true", help="keep every gene with >= 20 cells, not only the genes shared with the Kang data")
 parser.add_argument("--dry-run", action="store_true")
 args = parser.parse_args()
 
-# The cytokine besides IFN-beta, by the rule in the README (Data): the candidate with the most DEGs summed over cell types, and its
+# The cytokine besides IFN-beta, by the rule in the preprint (Data): the candidate with the most DEGs summed over cell types, and its
 # responder cell types. Reads only the DEG table of the atlas, never model results.
 if args.choose:
     candidates = ["TNF-alpha", "IL-6", "IL-2"]
@@ -143,7 +144,7 @@ if args.choose:
     raise SystemExit
 assert args.cytokine, "give a cytokine label, or --choose DEGS_CSV"
 slug = re.sub("[^a-z0-9]+", "_", args.cytokine.lower()).strip("_")
-out_file = Path(args.out or f"data/processed/oesinghaus_{slug}.h5ad")
+out_file = Path(args.out or f"data/processed/cytokine_{slug}.h5ad")
 
 # cell annotations, read without the counts
 rf = RangeFile(URL, block=2**21, cache_blocks=256)
@@ -186,6 +187,8 @@ print(f"plan: {chosen['n'].sum()} cells in {len(chosen)} runs, {nnz} counts, abo
       f"(about {len(chosen) * 2 * 0.5:.0f} MB to {nnz * 12 / 2**20:.0f} MB transferred)")
 if args.dry_run:
     print(chosen.groupby(["donor", "condition"])["n"].sum().unstack().to_string())
+    h.close()  # close the HDF5 file and its reader explicitly: leaving them to the interpreter at exit can crash it
+    rf.close()
     raise SystemExit
 
 # counts of the chosen runs
@@ -200,6 +203,8 @@ for i, (s, e) in enumerate(zip(chosen["start"], chosen["end"])):
         print(f"  read {i}/{len(chosen)} runs", flush=True)
 rows = np.concatenate(rows)
 genes = h["var/_index"][:].astype(str)
+h.close()  # the counts are read; see the note at the dry run
+rf.close()
 counts = csr_matrix((np.concatenate(data), np.concatenate(indices), np.r_[0, np.cumsum(np.concatenate(row_nnz))]),
                     shape=(len(rows), len(genes)))
 assert (counts.data == np.round(counts.data)).all(), "the counts are not integers"

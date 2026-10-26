@@ -1,4 +1,4 @@
-# Raw counts -> cell QC -> train/val/test split. Choices are explained in the README.
+# Raw counts -> cell QC -> train/val/test split. Choices are explained in the preprint.
 from pathlib import Path
 
 import anndata as ad

@@ -8,7 +8,7 @@
 # The decoded response is the one of 10_checks.py (I): within a cell type, the mean decoded log expression of stimulated minus
 # control test cells, correlated across the genes detected in at least 1% of training cells with the observed shift, and averaged
 # over the scored cell types. The labels define only the observed shift. No p-values are computed here.
-#   pearson        the measure of the README
+#   pearson        the measure of the preprint
 #   spearman       rank correlation
 #   pearson_top    Pearson on the 10% of genes with the largest absolute observed shift in each cell type
 #   pearson_rest   Pearson on the other 90%

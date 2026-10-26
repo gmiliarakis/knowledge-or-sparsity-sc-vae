@@ -7,7 +7,7 @@ set -e
 PY=.venv/bin/python
 stage=${1:?stage: build, fit or check}
 # benchmark = "<data> <collection> <target>"
-benchmarks=("kang hallmark -" "kang reactome -" "oesinghaus_ifn_beta hallmark -" "oesinghaus_ifn_beta reactome -" "oesinghaus_il_2 hallmark il2" "oesinghaus_il_2 reactome il2")
+benchmarks=("kang hallmark -" "kang reactome -" "cytokine_ifn_beta hallmark -" "cytokine_ifn_beta reactome -" "cytokine_il_2 hallmark il2" "cytokine_il_2 reactome il2")
 for b in "${benchmarks[@]}"; do
   set -- $b
   d=$1; c=$2; t=$3

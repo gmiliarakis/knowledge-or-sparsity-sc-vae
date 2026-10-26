@@ -1,5 +1,5 @@
 # Every hypothesis test of the project, with multiplicity correction. Run after 08_evaluate.py (both modes) and
-# 10_checks.py. Writes tests.csv in reports/tables/<data>/<collection>/; the README quotes this table and no other p-value.
+# 10_checks.py. Writes tests.csv in reports/tables/<data>/<collection>/; the preprint quotes this table and no other p-value.
 #
 # All tests are paired by seed (10 seeds). The p-value is the exact two-sided Wilcoxon signed-rank test; zero differences
 # are dropped. Its smallest possible value with 10 pairs is 2/2^10 = 0.00195, so a Holm or Bonferroni correction over more

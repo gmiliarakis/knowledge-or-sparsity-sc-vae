@@ -1,4 +1,4 @@
-# Evidence for using all QC genes as the gene universe (README, "Data"):
+# Evidence for using all QC genes as the gene universe (preprint, "Data"):
 # how many IFN-responding genes and Hallmark genes survive each HVG cutoff, and which responders are missed.
 from pathlib import Path
 

@@ -1,5 +1,5 @@
 # Checks on the scored runs. Run after 08_evaluate.py (and 08_evaluate.py --learning-curves for the slopes). Rules and
-# reasons are in the README (Robustness checks). Tables go to reports/tables/<data>/<collection>/ (reports/tables/kang/hallmark/ for the main experiment).
+# reasons are in the preprint (Robustness checks). Tables go to reports/tables/<data>/<collection>/ (reports/tables/kang/hallmark/ for the main experiment).
 #   robustness_best_latent.csv, robustness_donors*.csv, robustness_slopes.csv
 #     A. every variant scored on its best active latent (chosen on validation cells) and on its named latent;
 #     B. per-donor scores of the named latents; C. per-seed slopes of the learning-curve differences (main benchmark only).

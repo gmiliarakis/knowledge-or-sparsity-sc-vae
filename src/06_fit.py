@@ -1,5 +1,5 @@
 # Fit one VAE with a linear decoder and a negative binomial likelihood (LDVAE-style).
-# Choices are explained in the README.
+# Choices are explained in the preprint.
 import argparse
 import copy
 import json
@@ -20,8 +20,8 @@ n_sets = 50  # one latent per Hallmark set
 n_free = 8  # free latents, reaching only genes in no set
 n_latent = n_sets + n_free
 eval_batch = 1024
-config = {"width": 128,  # encoder width, chosen on the vanilla VAE (README)
-          "lr": 1e-3, "batch_size": 128, "patience": 3}  # patience as in Eltager et al. (README)
+config = {"width": 128,  # encoder width, chosen on the vanilla VAE (preprint)
+          "lr": 1e-3, "batch_size": 128, "patience": 3}  # patience as in Eltager et al. (preprint)
 
 
 class VAE(nn.Module):

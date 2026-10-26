@@ -1,5 +1,5 @@
 # Which dataset, gene set collection and benchmark a script works on (imported by the scripts, not run on its own).
-# SC_DATA selects the dataset (kang, the default, or a file data/processed/<name>.h5ad such as oesinghaus_ifn_beta), SC_SETS the collection
+# SC_DATA selects the dataset (kang, the default, or a file data/processed/<name>.h5ad such as cytokine_ifn_beta), SC_SETS the collection
 # (hallmark, the default, or reactome) and SC_TAG a derived data benchmark (drop250). Files that depend on the data carry the
 # dataset and SC_TAG suffixes. Results and tables go to results/<data>[_<tag>]/<collection>/ and reports/tables/<data>[_<tag>]/<collection>/.
 import os
@@ -16,5 +16,5 @@ if os.environ.get("SC_TARGET") == "il2":  # IL-2 contrast: the known answer is t
 data = os.environ.get("SC_DATA", "kang")
 tag = "_" + os.environ["SC_TAG"] if os.environ.get("SC_TAG") else ""
 file_tag = ("" if data == "kang" else "_" + data) + tag  # suffix of the mask files
-run = f"{data}{tag}/{collection}"  # folder of the results and tables of this benchmark, for example kang/hallmark or oesinghaus_il_2/reactome
+run = f"{data}{tag}/{collection}"  # folder of the results and tables of this benchmark, for example kang/hallmark or cytokine_il_2/reactome
 main = run == "kang/hallmark"  # the main experiment

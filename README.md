@@ -7,384 +7,70 @@
 **Contents**
 
 [Summary](#summary)<br>
-[Background](#background)<br>
-[Methods](#methods)<br>
-[Results](#results)<br>
-[Discussion](#discussion)<br>
+[Repository layout](#repository-layout)<br>
 [Reproducing](#reproducing)<br>
-[Back matter](#back-matter)
+[Citation and licence](#citation-and-licence)
 
 ## Summary
 
 **Key findings**
 
 - **Sparsity has a cost** The vanilla VAE has the lowest test loss in all six benchmarks. Its encoder width was chosen on it.
-- **The gene set mask beats random masks in the decoded response** in all six benchmarks, by less on the Theis et al. data.
-- **The test-loss improvement is small and less consistent** It holds against the fully random mask in four of six benchmarks.
-- **Co-expressed groups do as well or better** in all six benchmarks.
-- **The improvement depends largely on the strongest response genes** Without the 250 strongest genes it vanishes against the fully random mask and falls to a fifth against the within-set random mask.
-- **No data-efficiency benefit over the vanilla VAE** Its decoded response is above that of the Hallmark mask at every training size.
+- **The gene set mask outperforms random masks in the decoded response** in all six benchmarks, by less on the Theis et al. data.
+- **The gene set mask has a lower test loss than the within-set random mask in all six benchmarks and than the fully random mask in four.**
+- **Co-expressed groups match or exceed the Hallmark sets** in all six benchmarks.
+- **The improvement depends largely on the strongest response genes** Without the 250 strongest genes it vanishes against the fully random mask and declines to a fifth against the within-set random mask.
+- **No data-efficiency benefit over the vanilla VAE** Its decoded response exceeds that of the Hallmark mask at every training size tested.
 
 **At a glance**
 
-- **Question:** in a single-cell RNA-seq variational autoencoder (VAE) restricted to gene sets, does the knowledge in the sets or the sparsity they impose explain how well it captures an expected response? Six follow-up questions vary the comparison mask, the number of training cells, the genes, the collection, the data set and the stimulus ([Research questions](#research-questions)).
+- **Question:** in a single-cell RNA-seq variational autoencoder (VAE) restricted to gene sets, does the knowledge in the sets or the sparsity they impose explain how well it captures an expected response? Six follow-up questions vary the comparison mask, the number of training cells, the genes, the collection, the dataset and the stimulus ([Research questions](#research-questions)).
 - **Data:** stimulated against control blood cells in three stimulations: interferon-β for 6 h in 8 lupus patients (Kang et al.), and interferon-β and interleukin-2 for 24 h in 12 healthy donors (Theis et al.).
-- **Response:** the stimulation shift, the change in gene expression that the stimulus causes between control and stimulated cells, which the decoder should reproduce.
-- **Model:** a VAE whose linear decoder is restricted by a binary mask, in six variants. These are the vanilla model, gene sets, three random masks of the same sparsity (fully random, within-set random and expression-matched, which controls for the strongest response genes), and groups of co-expressed genes found in the data. The gene sets are the Hallmark collection (50 sets refined for coherent expression) or 50 Reactome sets chosen from size, overlap and pathway hierarchy alone, without using expression.
-- **Benchmarks:** the six variants fit with 10 seeds on six benchmarks, each a pairing of a stimulation with a gene set collection ([Study design](#study-design)).
-- **Evaluation:** four main measures (test loss, decoded response, cell-type classifier and stimulation classifier). The score of the latent labelled with the expected response, learning curves and a repeat without the 250 strongest stimulation genes are in the [supplementary results](docs/supplementary.md).
-- **Conclusion:** the results do not show that curated biology, rather than the grouping of genes that respond together, explains the improvement of the gene set mask over random masks.
-
-## Background
-
-Terms that may be unfamiliar are defined in the [Glossary](#glossary).
-
-Knowledge-guided single-cell models build biological knowledge into a model so that its output can be read in
-biological terms. Prior knowledge, here in the form of gene sets (lists of genes known to act together in a biological process or pathway [48]), can enter a model in three ways [2]:
-
-- as input features, such as gene set or transcription-factor activity scores (estimates of how active each regulator of gene expression is);
-- in the architecture, as sparse layers, in which most weights are fixed at zero, that mirror gene sets;
-- as a graph of gene interactions.
-
-This project tests the architecture route. Each latent variable (a hidden factor that the model infers for every cell)
-is tied to a gene set: a masked linear decoder fixes to zero the weights from latent k to all genes outside set k, so that latent k reaches only the genes of set k. Its value in a cell then represents the activity of that gene set. Because most of its weights are zero, such a decoder is called sparse: sparsity means that most entries of a table of numbers, here the decoder weights, are zero. Such models are designed to be interpretable, since every latent variable has a name. They are expected to need fewer cells,
-because they need not re-discover patterns that are already well known.
-
-Several published models are built this way. Others use gene sets in related ways.
-
-| Model | Kind |
-|---|---|
-| VEGA [3], expiMap [4] | single-cell VAE with a masked decoder |
-| pmVAE [5] | single-cell VAE with one sub-network per pathway |
-| f-scLVM [6], PLIER [7], Spectra [8] | factor model (explains the expression of a cell by a few factors, here guided by gene sets) |
-| KPNN [9] | supervised neural network (trained on labelled cells) whose connections follow a biological network |
-| MOFA-FLEX [10] | factor model (as above) |
-| Moullet et al. [11] | Tripso, a self-supervised transformer model that learns a separate embedding for each of several predefined gene programs |
-
-Across 29 pathway-informed neural networks surveyed, structure-matched randomized versions of the evaluable ones, which kept the architecture and the share of weights set to zero (the sparsity), matched or outperformed the originals on supervised prediction tasks [1]. VEGA [3] and expiMap [4], which both evaluate on
-interferon-β-stimulated PBMCs, report masked decoders. Interferons are signalling proteins of antiviral defence that switch on hundreds of interferon-stimulated genes [49, 50]. Neither VEGA nor expiMap reports a random gene set control (a mask in which gene memberships are randomized) in its main text or Methods. The closest control, in
-MOFA-FLEX [10], swaps 30% of the genes of each set with random non-members and tests whether the original programs are
-recovered. It is not known whether the knowledge in the gene sets helps in unsupervised single-cell models (those trained without cell labels), or only the
-sparsity that the mask imposes. Earlier work leaves the questions below open, and each affects the design.
+- **Response:** the stimulation shift, the difference in gene expression between control and stimulated cells, which the decoder should reproduce.
+- **Model:** a VAE whose linear decoder is restricted by a binary mask, in six variants. These are the vanilla model, gene sets, three random masks of the same sparsity (fully random, within-set random and expression-matched, which controls for the strongest response genes), and groups of co-expressed genes found in the data. The gene sets are the Hallmark collection (50 sets refined for coherent expression) or 50 Reactome sets chosen from size, overlap and pathway hierarchy alone, without reference to expression.
+- **Benchmarks:** the six variants fit with 10 seeds on six benchmarks, each a pairing of a stimulation with a gene set collection (see the preprint).
+- **Evaluation:** four main measures (test loss, decoded response, cell-type classifier and stimulation classifier). The score of the latent labelled with the expected response, learning curves and a repeat without the 250 strongest stimulation genes are in the supplementary information of the preprint.
+- **Conclusion:** co-expressed groups found in the data match or exceed the Hallmark sets, so the improvement of the gene set mask over random masks is as well explained by genes that respond together as by curated biology.
 
 ### Research questions
 
-Each question below follows from a gap in earlier work and from the design choice that gap forces. Q1 is the core question. Each follow-up changes one thing about Q1 and keeps the design: the paired difference between the gene set mask and another mask on four main measures.
+One core question and six follow-ups. Each follow-up varies one element of Q1 and retains the design: the paired difference between the gene set mask and another mask on four main measures. The rationale, methods and results are in the preprint.
 
-- **Q1: knowledge or sparsity?** A gene set mask fixes 89% of the decoder weights at zero. Any improvement over a model without a mask could
-  come from the sparsity alone. A random mask preserves the size and overlaps of every set and changes only its
-  biology, which isolates the effect of the knowledge. Two versions are used ([Gene sets and masks](#gene-sets-and-masks)).
-- **Q1a: pre-specified sets or co-expressed genes found in the data?** A curated panel of 17 signatures, and most Hallmark sets, align with the principal components of expression (the directions along which expression varies most [51]) more than size-matched random sets do in bulk tumour data [12] (a preprint). The Hallmark sets were refined for coherent expression [20]. A
-  Hallmark mask could do better than a random one purely because its genes are co-expressed. Groups of co-expressed genes of the same
-  sizes, found in this data set, test whether pre-specified sets add anything beyond that.
-- **Q1b: less data needed?** expiMap was reported to outperform the linear-decoder VAE LDVAE [13] in a low-data regime, which its authors read as more sample-efficient learning [4]. The report has no random gene set control in its main text or Methods. Learning curves test this ([supplementary S3](docs/supplementary.md)).
-- **Q1c: does the improvement depend on the strongest response genes?** If the Hallmark improvement over random masks came only from those genes, it would say little about gene sets in general. Dropping the 250 genes with the strongest stimulation effect from the data, rebuilding every mask on the rest and repeating the comparison tests this ([supplementary S4](docs/supplementary.md)).
-- **Q1d: does it hold with a second collection?** The Hallmark sets were refined from expression data, whereas Reactome [26] is curated pathway by pathway and was not built from expression. Repeating the comparison with Reactome sets tests whether the result depends on the kind of knowledge ([supplementary S5](docs/supplementary.md)).
-- **Q1e: does it hold in a second data set?** The Kang et al. data are one experiment in which the stimulation is confounded with the sequencing run, and stimulation classification is close to its maximum for every variant. The same stimulus in other donors, each observed in both conditions, tests whether the result is specific to that data set ([supplementary S5](docs/supplementary.md)).
-- **Q1f: does it hold with a second stimulus?** An interferon is the response that both collections name most directly. A cytokine that is not an interferon tests whether the result is specific to interferon ([supplementary S5](docs/supplementary.md)).
+- **Q1: knowledge or sparsity?** Does the gene set mask improve on a model without a mask because of the knowledge in the sets, or because of the sparsity alone?
+- **Q1a:** Can pre-specified sets add anything over co-expressed genes found in the data?
+- **Q1b:** Can the gene set mask work with fewer training cells?
+- **Q1c:** Does the improvement depend on the strongest response genes?
+- **Q1d:** Is the result reproduced with a second collection (Reactome)?
+- **Q1e:** Is the result replicated in a second dataset?
+- **Q1f:** Is the result consistent for a second stimulus?
 
-The six benchmarks pair each stimulation with both collections. Q1d compares the Hallmark and Reactome rows within a stimulation. Q1e compares the Kang et al. data with the Theis et al. data for interferon-β. Q1f compares interferon-β with IL-2 in the Theis et al. data.
+The six benchmarks pair each stimulation with both collections. Q1d compares the Hallmark and Reactome rows within a stimulation, Q1e the Kang et al. data with the Theis et al. data for interferon-β, and Q1f interferon-β with IL-2 in the Theis et al. data.
 
-## Methods
+## Repository layout
 
-Detailed methods, including the equations, the architecture summary and the scoring code, are in [docs/methods.md](docs/methods.md).
+Where the files are and which table answers which question.
 
-### Study design
-
-Six variants share one architecture and one training setup and differ only in the decoder mask (overview, panel 3). Each is fit with 10 seeds on six benchmarks. Q1 and Q1a compare the gene set mask with the fully random, within-set random and co-expression masks, and Q1c adds the expression-matched random mask. Baselines and structure-preserving controls are included because randomized pathways and simple baselines can match more elaborate models [1, 15, 16].
-
-| Variant | Decoder mask | Tests |
-|---|---|---|
-| Vanilla (no mask, LDVAE [13]) | none | reference without knowledge |
-| Gene set mask | the 50 sets of the collection (Hallmark or Reactome) | knowledge + sparsity |
-| Fully random | the gene sets with the labels of all genes randomly permuted | sparsity alone; free latents can reach set genes |
-| Within-set random | the gene sets with the labels of set genes randomly permuted among set genes | sparsity alone; free latents reach the same genes as in the gene set mask |
-| Co-expression | groups of co-expressed genes found in this data, same sizes | data-derived structure (an alternative mask) |
-| Expression-matched random (Q1c) | the gene sets with the labels of set genes randomly permuted among set genes of similar expression level and stimulation effect | sparsity alone; every set keeps its genes of each response strength |
-
-The six benchmarks pair three stimulations with two collections of gene sets. The table lists the data set, donors, cells, genes and stimulus of each stimulation, then the collection and the expected-response set of each benchmark.
-
-<table>
-<thead><tr><th>Data</th><th>Donors</th><th>Cells</th><th>Genes</th><th>Stimulus</th><th>Collection</th><th>Expected-response set</th></tr></thead>
-<tbody>
-<tr><td rowspan="2">Kang et al. [17]</td><td rowspan="2">8 (lupus)</td><td rowspan="2">23,919</td><td rowspan="2">12,034</td><td rowspan="2">IFN-β, 6 h</td><td>Hallmark (main)</td><td>interferon-α response</td></tr>
-<tr><td>Reactome</td><td>interferon α/β signaling</td></tr>
-<tr><td rowspan="4">Theis et al. [41]</td><td rowspan="4">12 (healthy)</td><td rowspan="4">28,800</td><td rowspan="2">11,340</td><td rowspan="2">IFN-β, 24 h</td><td>Hallmark</td><td>interferon-α response</td></tr>
-<tr><td>Reactome</td><td>interferon α/β signaling</td></tr>
-<tr><td rowspan="2">11,344</td><td rowspan="2">IL-2, 24 h</td><td>Hallmark</td><td>IL-2 STAT5 signaling</td></tr>
-<tr><td>Reactome</td><td>interleukin-2 family signaling</td></tr>
-</tbody>
-</table>
-
-Two analyses use the main experiment only: learning curves (Q1b) and a repeat without the 250 strongest stimulation genes (Q1c). Figure 1 shows the pipeline of every benchmark. The collections and data sets are reported side by side without a ranking.
-
-The random masks differ in how they treat the 74% of genes that belong to no set (see Gene sets and masks).
-
-![Pipeline for every benchmark: data, design, model and evaluation, with the two extra analyses](reports/figures/pipeline.png)
-
-**Figure 1. Pipeline.** The analysis in four stages. Data: the single-cell data of Kang et al. and Theis et al. (interferon-β, and IL-2 for Theis et al.), cell quality control and the gene filter. Design: the split of the cells, the gene sets (Hallmark or Reactome) and the six masks. Model: the VAE. Evaluation: the measures (test loss, decoded response, cell-type and stimulation classifiers, and the labelled-latent and reference scores) and the tests. The grey boxes are the two analyses on the main experiment only: learning curves on subsamples of 500 to 16,749 cells and a repeat without the 250 strongest genes.
-
-### Data
-
-The main data set is from Kang et al. [17] (GEO GSE96583, batch 2). PBMCs from 8 patients with systemic lupus erythematosus
-(SLE; GEO lists "subject status: SLE patient" for both samples; called donors below) were cultured for 6 h without (ctrl)
-or with interferon-β (stim). Each condition was pooled and sequenced in one 10x run. Every donor appears in both
-conditions. The authors' genotype-based singlet calls (demuxlet) and cell-type labels are used as given.
-
-Cells were filtered for quality (QC) by removing those beyond 5 median absolute deviations in log total counts, log detected genes or share of counts in the top 20 genes. This is a median-absolute-deviation filter of the kind recommended in [18]; the threshold of 5, set per condition × cell type, is this study's choice. It was computed with scanpy [19]. This reduced 24,673 labelled singlets to 23,919 cells (3.1% removed; 0.8–5.0% per cell type, 20.8% of megakaryocytes). Genes detected in at least 20 cells were kept and all of them are modelled, which leaves 12,034 genes. Cells are split within every donor × condition × cell type group into 70% training, 15% validation and 15% test.
-
-Three preprocessing choices were made for this data set.
-
-- **QC thresholds per cell type** Thresholds per condition alone removed 5–7% of CD14+ monocytes, 9–18% of dendritic cells and 20–27% of
-  megakaryocytes but under 2% of lymphocytes. The RNA profiles of these cell types differ from those of lymphocytes.
-- **All genes in place of highly variable genes** Selecting 5,000 highly variable genes drops interferon-induced genes
-  such as PSMB9 and B2M and a third of the Hallmark interferon-α set.
-- **No ambient-RNA correction or mitochondrial filter** The data set has no empty droplets to estimate ambient RNA from. Mitochondrial genes have
-  no counts in the count matrices.
-
-#### Human Cytokine Dictionary
-
-The second data set is the Human Cytokine Dictionary of Theis et al. [41] (a preprint that has not been peer reviewed), distributed by Parse Biosciences as "10 Million Human PBMCs in a Single Experiment" [42]: 12 healthy donors, 90 cytokines and an unstimulated control, 24 h. The repository downloads the data and does not redistribute them. One cytokine is compared with the control, with every donor in both conditions.
-
-Cells were seeded in 96-well plates, 12 plates across all donors [42]. The published table of differentially expressed genes flags well-biased rows, which were excluded when the cytokine was chosen. The same donors serve every cytokine. The cytokines are not independent replications of each other.
-
-The cytokine other than interferon-β is IL-2, chosen from the published differential-expression table before any model was fitted. About 28,800 cells per cytokine are used, over 11,340 or 11,344 genes, and 13 of the 18 cell types have enough test cells to be scored. The selection rule, the cell reading, the QC and the gene filter are in [docs/methods.md](docs/methods.md#human-cytokine-dictionary-full-description).
-
-### Gene sets and masks
-
-The Hallmark mask uses the Hallmark collection [20] from the Molecular Signatures Database (MSigDB) v2024.1. It has 50 sets of at least 12 genes (median
-117.5) and no near-duplicate sets: the largest overlap, between the early and late estrogen responses, is a Jaccard
-index of 0.34. Its one unambiguous target for this data is the interferon-α response, with 95 of its 97 genes present.
-The Hallmark sets were built from many founder sets by automated overlap analysis and expert curation, so that each conveys one
-biological state or process with coherent expression. They were made as inputs for gene set enrichment analysis [20].
-They therefore draw on expression data, as the groups of co-expressed genes do.
-Gene symbols are matched through Ensembl IDs to current symbols of the HUGO Gene Nomenclature Committee (HGNC) [21].
-
-Three random masks (negative controls) replace the Hallmark sets with sets of the same sizes, and a fourth mask replaces them with groups of
-co-expressed genes found in the data. Each is built 10 times, and the run with seed k uses version k. In the Hallmark mask 8,847 genes (74%) belong to no set and only the 8 free latents reach them (Reactome: 8,947, 74%). A random mask must decide what to do with those genes, and the choice changes what the comparison measures.
-
-- **Fully random mask** (`04_build_masks.py`). Genes are put into 25 bins of equal size (481–482 genes) by their mean
-  count in training cells. Gene labels are then permuted within each bin: each gene takes over the set memberships
-  of another gene from its bin. Every set retains its size, its overlaps with other sets and its expression level. Only
-  its biology changes. A full shuffle changes 98% of set members; the rest are reassigned to a member of their own set. Genes in no set are shuffled too; set genes and genes in no set trade places. In the Hallmark mask 43 to 59 of the 95 interferon-α genes fall among the genes in no set, where no labelled latent can reach them. The Hallmark−random difference therefore partly measures where the interferon genes lie, in a set or in no set.
-- **Within-set random mask** (`04_build_masks.py`). The same bins, but only genes that are in at least one set are
-  permuted, and only among themselves. Genes in no set stay in no set. Every set preserves its size and its overlaps; 95% of set members change. The genes the free latents reach are identical to those of the gene set mask, and every interferon-α gene stays reachable by a labelled latent. This mask isolates the value of knowing which genes belong together.
-- **Expression-matched random mask** (`04b_build_responsematch.py`). Like the within-set random mask, but each set gene is permuted only within a bin that crosses 5 bins of expression level with 5 bins of stimulation effect (the rank of |t| of stimulated against control training cells, megakaryocytes excluded). Every set keeps its size, its overlaps and its number of genes of each response strength, including among the 250 strongest. It uses the stimulation labels of the training cells, so it is a stricter control than the other random masks. It serves Q1c (supplementary S4).
-- **Co-expression mask** (`05_build_coexpression_null.py`). This mask tests whether pre-specified sets add anything beyond
-  co-expressed genes found in this data set. It is a data-derived alternative to the Hallmark mask. It is built from the training cells alone, without condition or cell-type labels. For each seed,
-  50 seed genes are drawn at random from the 6,753 genes detected in ≥ 1% of training cells. Group j is seed gene j plus
-  the n − 1 genes most positively correlated with it (Pearson correlation of log-transformed, depth-scaled counts), where
-  n is the size of Hallmark set j (12–197 genes). A group has the size of the Hallmark set it replaces and none of its biology; groups are
-  built independently and may share genes. Three properties affect how the results are read.
-
-  - **Coherence** The median within-set correlation is 0.096 for the groups and 0.003 for Hallmark sets. The groups are a demanding
-    comparison for the Hallmark sets.
-  - **Overlap** The groups cover 2,338–3,233 genes (Hallmark: 3,187). Ribosomal-protein genes and PTMA are in up to 28
-    groups per seed; no Hallmark gene is in more than 10 sets.
-  - **Interferon** In every seed, the group most raised by IFN-β is enriched for Hallmark interferon genes (19–89% of
-    its genes, against a base rate of 1.8%). The data alone identify the core interferon response.
-
-  The full recipe is in [docs/methods.md](docs/methods.md#co-expression-mask-full-recipe).
-
-The three random masks are reported; each is a stricter control than the one before.
-
-### Reactome sets
-
-The comparison is repeated with Reactome [26] in place of Hallmark (`SC_SETS=reactome`), using the 1,736 sets of the MSigDB v2024.1 collection C2 CP:REACTOME. Reactome is curated pathway by pathway and was not built from expression data. It tests the same question with knowledge of another kind. The 50 sets are chosen from names, sizes, overlaps and Reactome's pathway hierarchy alone, without any use of expression or stimulation.
-
-- **Expected responses** Five Reactome sets take the slots of the five Hallmark sets that are the expected responses of a stimulus (interferon-α, interferon-γ, TNF-α, IL-6, IL-2). They are interferon alpha/beta signaling, interferon gamma signaling, TNF signaling, interleukin-6 family signaling and interleukin-2 family signaling. They are narrower than the Hallmark sets (62, 80, 52, 14 and 36 genes against 95, 192, 188, 74 and 167).
-- **Other 45 slots** Each slot takes a Reactome set of the size of its Hallmark set (within 10%), drawn at random from the sets that do not overlap the sets already chosen more than the Hallmark sets overlap each other, are mostly covered by the QC genes, and are not disease or stimulus-specific. The first draw with as many trainable decoder weights as the Hallmark mask (within 1%) was kept: 76,579 against 76,344. The full rules and the draw are in [docs/methods.md](docs/methods.md#reactome-sets-full-recipe).
-- **Controls** The fully random mask, the within-set random mask, the expression-matched random mask and the co-expression groups are built from the Reactome sets by the recipes above. The interferon α/β set is the target latent.
-
-The Reactome and Hallmark comparisons are tested separately, each with the four measures and its own Holm group of 12 tests.
-
-### Model
-
-Every variant uses the same VAE [37]. The numbers below are for the Kang et al. data, with the Hallmark sets unless stated. The encoder (one hidden layer of 128 units, ReLU, dropout 0.1) reads the 12,034 genes after a shifted-log transform, plus a one-hot code for the 8 donors. It proposes a mean and a variance for each of the 58 latents (50 named, 8 free). The decoder is linear. Each latent raises or lowers the genes that the mask lets it reach. The donor adds an offset. A softmax over genes gives each gene's share of the counts of the cell. The observed counts follow a negative binomial with a dispersion per gene. The loss is the negative log-likelihood plus the Kullback–Leibler (KL) divergence of the posterior from a standard normal prior. Figure 2 shows the layers. The equations and symbols are in [docs/methods.md](docs/methods.md#model-equations), the architecture summary and parameter counts below them.
-
-![Layers of the VAE: encoder with log transform, linear layer, ReLU, dropout, mean and log variance; sampling of the latent space; masked linear decoder with donor offsets and softmax](reports/figures/model.png)
-
-**Figure 2. Layers of the VAE.** A block is a layer or a parameter of the network. Data pass through the layers as matrices with one column per cell, so the height of a block suggests its number of units (rows) and its depth the number of cells; for the parameters $\mathbf{W}$, $\mathbf{M}$ and $\mathbf{V}$ the depth is the number of columns. Sizes are not to scale. $N$ is the number of cells, $G$ the number of genes and $D$ the number of donors. $\mathbf{S}$ ($D \times N$) is the one-hot code of the donor of each cell and is joined to the counts as input of the encoder. The counts are scaled to the median depth and log-transformed. The encoder (a linear layer of 128 units, ReLU, dropout) gives, for each of the 58 latents (50 named, 8 free), a mean $\bar{\mu}$ and a log variance $\log\sigma^2$. The latent matrix $\mathbf{Z}$ ($58 \times N$) holds, for each cell, $z = \bar{\mu} + \sigma \odot \epsilon$, with $\sigma = e^{(\log\sigma^2)/2}$ and $\epsilon$ from a standard normal. The decoder multiplies $\mathbf{Z}$ by the masked weights $\mathbf{W} \odot \mathbf{M}$, adds the donor offsets $\mathbf{V}\,\mathbf{S}$ ($\mathbf{V}$ is $G \times D$) and applies a softmax over genes. The mask is the only difference between the variants, and the vanilla model has none.
-
-The mask decides how many of the weights in `w` can be trained. The table gives the numbers for the Kang et al. data (12,034 genes and 58 latents, 697,972 weights in the vanilla model).
-
-| Variant | Hallmark | Reactome |
-|---|---|---|
-| Vanilla | 697,972 | 697,972 |
-| Gene set mask | 76,344 (5,568 set memberships + 8 free latents × 8,847 genes in no set) | 76,579 (5,003 + 8 × 8,947) |
-| Fully random | 76,344 (same sizes and overlaps as the gene set mask) | 76,579 |
-| Within-set random | 76,344 (same sizes and overlaps as the gene set mask) | 76,579 |
-| Expression-matched random | 76,344 | 76,579 |
-| Co-expression | 75,976–83,136 (by seed) | 77,251–83,827 |
-
-The Theis et al. data have 11,340 or 11,344 genes and 12 donors, which gives 657,720 or 657,952 weights, of which 70,956 to 71,155 can be trained in the gene set masks.
-
-Four design choices concern the decoder and its inputs.
-
-- **Linear decoder in every variant** Each latent has one weight for each gene. The mask is the only
-  architectural difference between variants.
-- **Named and free latents** In the masked variants, latents 1–50 may only use the genes of their set. The 8 free
-  latents may only use the genes in no set (8,847, or 74%, in the Hallmark and random masks) or, in the co-expression mask, in no group. Free latents that could reach all genes absorbed the
-  stimulation signal and the labelled latents became inactive. They are excluded from the set genes, a choice that followed trial runs.
-- **Covariates** Donor is a covariate in encoder and decoder. Condition is left out, because the stimulation is the signal the latents should find.
-- **Likelihood** Negative binomial on raw counts. The library size is the observed total count, and the
-  model has no zero inflation [22].
-
-All variants are trained with the same settings.
-
-| Setting | Value |
+| Path | Contents |
 |---|---|
-| Optimiser | Adam [38] |
-| Learning rate | 1e-3 |
-| Batch size | 128 |
-| KL warm-up | $\beta$ rises linearly from 0 to 1 over 10,000 steps at batch 64, counted in cells seen: ≈ 38 epochs at every training size (`--warmup-epochs`) |
-| Stopping | early stopping on validation loss with a patience of 3 epochs [14], counted after the KL warm-up; any decrease counts as an improvement (`--min-delta 0`); at most 2,000 epochs (`--max-epochs`) |
-| Encoder width | 128, chosen on the vanilla VAE |
-| Seeds | 10 per variant; each seed sets the initial weights, the batches and (for the random and co-expression masks) the mask. The train/validation/test split is fixed (seed 0) |
-| Validation loss | computed with the same latent draws at every epoch. Early stopping then follows the model and not the sampling noise |
-| Software | versions under Reproducing; the last digits of the losses differ between CPU and GPU |
-
-### Evaluation
-
-Four main measures are computed for every run on the test cells: test loss, decoded response, and a cell-type and a stimulation classifier. None of them depends on which latent is taken to represent the interferon response. Validation cells serve to fit the two classifiers (linear probes of the latent means) and for nothing else. Megakaryocytes are mostly platelets, which have no nucleus, and are excluded from all scores and kept in training. The interferon-α latent score, the reference scores without a VAE and the learning curves are described in the [supplementary results](docs/supplementary.md).
-
-| Asks | Measure | Computation |
-|---|---|---|
-| How well does the model reconstruct cells it was not trained on? | Test loss | Negative log-likelihood per test cell plus the KL term at weight 1 (natural logarithm, in nats), the training objective; lower is better |
-| Does the decoder reproduce the stimulation effect? | Decoded response | The decoder gives the expected share of every gene for a test cell from its latent means and donor. For each cell type on the test set, the mean decoded log expression (the encoder's shifted-log scale) of stimulated minus control cells is correlated across the 6,753 genes detected in ≥ 1% of training cells with the observed shift, and averaged over the scored cell types (7 for the Kang et al. data, 13 for the Theis et al. data). The labels define the observed shift and nothing else. A second value uses the 95 interferon-α genes alone |
-| Do the latents represent cell type, which the model did not see during training? | Cell-type classifier | Multinomial logistic regression on standardised latent means, fitted on validation cells, balanced accuracy on test cells. Descriptive variants: 10, 50 and 200 validation cells per type, and the AUROC between CD4 and CD8 T cells and between CD14+ and FCGR3A+ monocytes |
-| Does the representation reflect the stimulation response? | Stimulation classifier | Logistic regression on all 58 latents fitted on validation cells; AUROC [28] per cell type on test cells |
-
-**Expected response in the Theis et al. data** The four measures do not use an expected response. The score of the labelled latent does. For interferon-β it is the Hallmark interferon-α response set or the Reactome interferon-α/β set. For IL-2 it is the Hallmark IL-2 STAT5 signaling set or the Reactome interleukin-2 family signaling set. The labelled latent is oriented without labels, by the sign of its mean weight on its own genes.
-
-#### Statistics
-
-- **Design** Each variant has 10 seeds, paired by seed, and the replicate is the training run. The split, the donors and the cells are fixed. The tests therefore concern variation in training and in the random masks.
-- **Test and estimate** Every test is an exact two-sided Wilcoxon signed-rank test [35] of the paired differences (the smallest possible p with 10 pairs is 0.002). It is reported with the median of the paired differences and an exact distribution-free interval from the same test. The median is not moved by a single extreme seed, as the mean would be, and the random masks produce such seeds. Strictly, it is the Hodges–Lehmann estimate [36], the median of the averages of every pair of the 10 differences.
-- **Groups of tests** The 12 tests of the four measures above (gene set mask minus the three other masks) form one group per benchmark (it answers Q1, Q1a and, for each benchmark, Q1c to Q1f). The four tests of the expression-matched control (Hallmark minus the expression-matched mask on the same four measures) form a separate group per benchmark (family `responsematch` in `tests.csv`, supplementary S4). Each group is corrected with Holm [30] (family-wise error 0.05). The 18 learning-curve tests are many and correlated; their false discovery rate is controlled at 0.05 with the Benjamini–Hochberg procedure [32] (supplementary S3).
-- **Intervals** Holm has no matching interval. The intervals are therefore widened to the Bonferroni level [31], which holds their simultaneous coverage at 95% and makes them slightly wider than the tests imply.
-- **Reporting** `reports/tables/kang/hallmark/tests.csv` (`src/11_tests.py`) lists every test, and the text quotes adjusted p-values alone. The groups of tests in the supplementary results are described there.
-- **Symmetry check** An exact sign-test interval, which does not assume symmetric differences, gives the same decision as the signed-rank interval for 80 of the 84 comparisons (7 benchmarks × 12). The four that differ are listed in the [supplementary results](docs/supplementary.md#statistics).
-- **Order of decisions** The interferon-α latent and the Hallmark-versus-random comparison were fixed before the 10-seed runs. The within-set random mask, the restriction of the free latents to genes in no set, the four measures and the grouping of the tests came after looking at results. Later analyses are descriptive unless stated.
-
-## Results
-
-The main experiment answers Q1 and Q1a, two analyses on it answer Q1b and Q1c; the six benchmarks answer Q1d to Q1f. Figure 3 compares the gene sets with the other masks in test loss and decoded response in every benchmark.
-
-![Improvement of the gene sets over the other masks in test loss and decoded response in all benchmarks](reports/figures/advantage.png)
-
-**Figure 3. Gene sets against the other masks in test loss and decoded response.** Each line is the interval of the paired difference over 10 seeds (gene sets minus the other mask, at the Bonferroni level). A line right of zero means the gene sets are better. Test loss is flipped. Each line is drawn in the colour of the mask it is compared with. A black dot at the median marks an adjusted p below 0.05. The dot is open when the interval touches zero. Classification of cell type and stimulation is in Supplementary Figure 12.
-
-### Q1: sparsity worsens the fit, and the gene sets offset part of that
-
-The main experiment uses the Kang et al. data and the Hallmark sets. All 60 runs (6 variants × 10 seeds) stopped early. Values are mean ± SD over 10 seeds. The table lists the five variants of the main comparison; the expression-matched random mask is in Q1c. The overview (panel 4) shows the decoded response of every seed. The first row of Figure 3 shows the paired differences in test loss and decoded response.
-
-| Measure | Vanilla | Hallmark | Fully random | Within-set random | Co-expression |
-|---|---|---|---|---|---|
-| Test loss per cell | 1929.1 ± 1.0 | 1971.4 ± 1.2 | 1975.3 ± 1.5 | 1981.3 ± 1.4 | 1959.9 ± 1.5 |
-| Decoded response, all genes | 0.942 ± 0.001 | 0.873 ± 0.001 | 0.784 ± 0.034 | 0.746 ± 0.044 | 0.898 ± 0.008 |
-| Decoded response, interferon-α genes | 0.985 ± 0.001 | 0.972 ± 0.002 | 0.801 ± 0.075 | 0.734 ± 0.110 | 0.974 ± 0.007 |
-| Cell-type balanced accuracy | 0.885 ± 0.006 | 0.855 ± 0.004 | 0.855 ± 0.005 | 0.850 ± 0.010 | 0.864 ± 0.008 |
-| Stimulation classifier AUROC | 0.9989 ± 0.0003 | 0.9988 ± 0.0002 | 0.9979 ± 0.0007 | 0.9980 ± 0.0003 | 0.9988 ± 0.0002 |
-
-Hallmark minus each other mask over 10 seeds. The first two columns answer Q1 (random masks, same sparsity), the third Q1a (co-expressed groups). Each cell gives the median difference, the Holm-adjusted p [30] (12 tests) and the interval at the Bonferroni level.
-
-| Measure | Hallmark − fully random (Q1) | Hallmark − within-set random (Q1) | Hallmark − co-expression (Q1a) |
-|---|---|---|---|
-| Test loss per cell (lower is better) | −3.7<br>p = 0.023<br>[−6.3, −2.0] | −10.1<br>p = 0.023<br>[−12.4, −6.9] | +11.8<br>p = 0.023<br>[+9.2, +12.7] |
-| Decoded response (correlation) | +0.087<br>p = 0.023<br>[+0.045, +0.138] | +0.129<br>p = 0.023<br>[+0.062, +0.183] | −0.026<br>p = 0.023<br>[−0.035, −0.014] |
-| Cell-type balanced accuracy | +0.001<br>p = 1.000<br>[−0.006, +0.008] | +0.006<br>p = 0.697<br>[−0.005, +0.018] | −0.009<br>p = 0.029†<br>[−0.018, +0.000] |
-| Stimulation classifier (AUROC) | +0.0009<br>p = 0.039†<br>[−0.0002, +0.0019] | +0.0008<br>p = 0.023<br>[+0.0004, +0.0013] | +0.0001<br>p = 1.000<br>[−0.0004, +0.0005] |
-
-The value 0.023 is the smallest possible with 10 seeds and 12 tests (an exact p of 0.002 times 12): all 10 seeds differ in the same direction.
-
-† Adjusted p below 0.05 with an interval that touches or includes zero. The Holm test rejects at a looser threshold than the Bonferroni-level interval.
-
-- **Sparsity worsens the fit** Against the vanilla VAE, the masked variants have 31 to 52 more units of loss per cell, a decoded-response correlation that is lower by 0.04 to 0.20 and a cell-type balanced accuracy that is lower by 0.02 to 0.04. The vanilla VAE leads on all three. Its encoder width was chosen on it. Part of this gap may reflect the tuning; the comparisons among the masked variants are not affected.
-- **The gene sets offset part of the loss** The Hallmark mask has a lower test loss than the random masks, by 3.7 and 10.1 units. These are about 8% and 20% of the loss penalty of the random masks, each the median paired difference over the median paired difference between the random mask and the vanilla VAE. It also reproduces the stimulation shift better, with a correlation of 0.873 against 0.784 and 0.746 (about 55% and 64% of the gap between the random masks and the vanilla VAE, by the same definition). On the interferon-α genes alone the Hallmark decoder attains 0.972, the random masks 0.801 and 0.734. The latent labelled with the interferon-α set carries the response, whereas the random masks' latent at that position does so unreliably (supplementary S1).
-- **Cell-type classification does not separate the Hallmark mask from the random masks** (adjusted p 1.0 and 0.70). Classifiers trained on few cells and the two difficult cell type pairs show the same picture (supplementary S2).
-- **The stimulation classifier is close to its maximum** All variants score 0.998 to 0.999. The Hallmark mask exceeds the random masks by under 0.001, a difference that is detectable but of no practical size. Without any VAE, the best principal component scores 0.997 and the mean of the interferon-α genes 0.996 (supplementary S1).
-
-### Q1a: co-expressed genes do at least as well as the Hallmark sets
-
-The co-expression mask fits better (11.8 units), reproduces the shift better (0.898) and separates cell types slightly better (+0.009). On the interferon-α genes the two masks are nearly equal. The interferon-α latent of the Hallmark mask is equivalent to the highest-scoring latent of the co-expression mask within ±0.005 AUROC (supplementary S1). The groups are built from the training cells. This favours them on fit. The Hallmark sets alone give each latent a biological name chosen before training, such as "interferon-α response"; the meaning of a group has to be worked out after training.
-
-### Q1b: the vanilla VAE leads in decoded response at every training size
-
-Prior knowledge is expected to reduce the number of training cells needed, and Q1b tests this on subsamples from 500 to 16,749 cells. The interferon-α score is close to its maximum. With 500 training cells the vanilla VAE already scores 0.992 and the Hallmark mask 0.996. Hallmark and co-expression do not differ at any size (supplementary S3). The decoded response is not. With it the vanilla VAE is above the Hallmark mask at every size, by 0.07 to 0.09 from 500 to 16,749 cells. The Hallmark mask shows no sample-efficiency benefit over the vanilla linear VAE on the decoded response, at the encoder width chosen on it. The Hallmark mask is above the fully random mask at every size, by 0.12 at 500 cells and 0.09 at full size. The trend of that difference with size is negative in 8 of 10 seeds. These differences have no test (supplementary S3).
-
-### Q1c: the improvement depends largely on the strongest response genes
-
-![Relative decoded response in the six benchmarks and without the 250 strongest genes](reports/figures/share.png)
-
-**Figure 4. Decoded response relative to the fully random mask.** Each variant is placed between a fully random mask (0) and the vanilla VAE (100); the dot is the mean of 10 seeds and the line the range. The fully random mask is the zero reference. Its own spread is not shown. The difference column next to the plot is the decoded response of the vanilla VAE minus that of the fully random mask, the denominator of the scale. (a) The six benchmarks. (b) The main experiment with and without the 250 strongest response genes. The absolute values are in supplementary S4 and S5.
-
-The improvement of the Hallmark mask over the random masks could come from a few strongly responding genes, and it does depend largely on them. With the 250 strongest stimulation genes dropped, Hallmark no longer differs from the fully random mask in test loss or decoded response (adjusted p 1.0). Its improvement over the within-set random mask falls to about one fifth (test loss −2.1 units, decoded response +0.022; adjusted p 0.023; Figure 4b and supplementary S4).
-
-A random mask that retains the strong response genes among its set genes does not match the Hallmark mask. This expression-matched mask permutes the labels among the set genes only, inside bins of expression level and stimulation effect, which gives every set the same number of genes of each response strength (supplementary S4). Against it the Hallmark mask has a lower test loss (by 6.8 to 13.1 units) and a higher decoded response (by 0.019 to 0.130) in all six benchmarks, in every one of the 10 seeds (adjusted p 0.008). The decoded response of the expression-matched mask is within 0.009 of that of the fully random mask in five benchmarks and 0.034 above it in the Kang et al. data with Hallmark sets. Cell-type and stimulation classification differ little: four of the 12 tests are significant, three in favour of the Hallmark mask.
-
-Noise limits the decoded response. The noise bound, the highest correlation a noise-free model could reach with the observed shift (the square root of the split-half correlation of the test cells, corrected to full size), is 0.96 with all genes in the Kang et al. data and 0.84 without the 250 strongest genes. On the 90% of genes with the smaller shifts it is 0.38. Those genes cannot separate the masks. The vanilla VAE attains 0.94 of 0.96 with all genes and 0.77 of 0.84 without the 250 strongest. The noise bound does not explain the loss of the improvement. The mean of the gene set mask is above the fully random and within-set random masks on the rank correlation and on the correlation weighted by the size of the observed shift in all seven benchmarks (the six and the repeat without the 250 strongest genes; supplementary S4). In the Kang et al. data the improvement over the fully random mask is 0.108 on the 250 strongest genes (0.926 against 0.818) and 0.030 on all other genes (0.574 against 0.544); these are differences of means over 10 seeds, without a test.
-
-### Q1d: the response result holds in both collections, the test-loss result does not
-
-The comparison of Q1 was repeated with Reactome sets on the Kang et al. data, and with both collections on interferon-β and IL-2 of the Theis et al. data. Each benchmark has 10 seeds and the six variants. Each benchmark has its own Holm group of 12 tests; an asterisk marks an adjusted p below 0.05. Figure 4a shows the decoded response and Figure 3 the paired differences with their intervals. The tables of test loss and decoded response are in [supplementary S5](docs/supplementary.md#s5-reactome-and-the-human-cytokine-dictionary-q1d-q1e-q1f). Q1d is read by rows (Hallmark against Reactome within a stimulation), Q1e by data set (the Kang et al. data against Theis et al., interferon-β) and Q1f by stimulus (interferon-β against IL-2, Theis et al. data).
-
-Across the six benchmarks the gene set mask reproduces the stimulation shift better than the fully random and within-set random masks and worse than the co-expression mask. The adjusted p is 0.023 against the random masks and 0.023 to 0.041 against the co-expression mask. It fits better than the within-set random mask in every benchmark. The other results depend on the question.
-
-- **Decoded response** The ordering of Q1 holds with Reactome as with Hallmark. The improvement over the fully random mask is larger for Reactome in the Kang et al. data (+0.142 against +0.087) and smaller on both Theis et al. stimulations (+0.037 against +0.054, and +0.010 against +0.033).
-- **Test loss** The Reactome mask is better than the fully random mask in all three stimulations, by 8.5 to 10.8 units. The Hallmark mask does so only in the Kang et al. data. The co-expression mask fits better than the Hallmark mask in every benchmark (by 9 to 12 units; not significant for interferon-β). It fits about as well as the Reactome mask on the Theis et al. data.
-- **Reading** The decoded-response result does not depend on the collection, and the test-loss result does. The collections are two draws of 50 sets with different expected-response sets (narrower in Reactome).
-
-### Q1e: the response improvement is smaller in the second data set
-
-- **Decoded response** For interferon-β the gene set mask is above the fully random and within-set random masks in both data sets. The improvement is smaller in the Theis et al. data (over the fully random mask +0.054 and +0.037 against +0.087 and +0.142).
-- **Test loss** The Hallmark mask no longer differs from the fully random mask (−3.7 in the Kang et al. data, +0.8 in the Theis et al. data). The Reactome mask retains it (−10.8 and −8.5), and both do better than the within-set random mask in both data sets.
-- **Classification** Stimulation classification is not close to its maximum in the Theis et al. data (0.89 to 0.95). Only Reactome on interferon-β separates the gene set mask from the fully random one on it (+0.0073). It is also the only collection for which the cell-type classifier differs between the gene set mask and the random masks. The difference from the within-set random mask is borderline, because its sign-test interval includes zero.
-- **Labelled latent** The interferon-α/β latent of the gene set mask reflects the interferon-β response in the Theis et al. data (AUROC 0.87 to 0.89). In the Kang et al. data it scores 0.997 for Hallmark, with every variant near the maximum.
-
-### Q1f: the improvement is smaller for IL-2 than for interferon-β
-
-- **Decoded response** The improvement over the fully random mask is smaller for IL-2 than for interferon-β in the same data (+0.033 against +0.054 for Hallmark, +0.010 against +0.037 for Reactome). The value +0.010 is the smallest of the six.
-- **Test loss** Hallmark is worse than the fully random mask for IL-2 (+3.7) but no different for interferon-β. Reactome is better by 8.5 units for both.
-- **Labelled latent** The latent labelled with IL-2 does not follow the stimulation (AUROC 0.44 for Hallmark, 0.50 for Reactome). A free latent of the same model does (0.80 to 0.83). The sets most raised in the IL-2 stimulation are the interferon sets. The IL-2 benchmark therefore tests the IL-2 set alone. It does not work as a second interferon replication or as a clean test of a non-interferon stimulus (supplementary S5).
-
-## Discussion
-
-### Limitations
-
-- **Scope** The main analysis uses one data set, one stimulus and one target. The cells are PBMCs from 8 donors (patients with SLE, whose type I interferon activity is often raised at baseline [29]) stimulated with IFN-β. The target with an expected response is the Hallmark interferon-α response. The interferon-α and -γ sets share 71 of 95 genes. The target is not specific to type I interferon. The Theis et al. data add two stimulations from the same 12 donors and one experiment. These are not independent replications. The IL-2 stimulation is dominated by an interferon response, and its expected response is not specific either.
-- **Scores near the maximum** The stimulation is so strong that a principal component, the mean of the interferon-α genes and every variant separate the conditions (stimulation classification 0.998 to 0.999, best principal component 0.997, mean of the interferon-α genes 0.996; supplementary S1). Stimulation classification therefore cannot rank the variants. The learning curves of the interferon-α score cannot show a data-efficiency effect (supplementary S3).
-- **Stimulation and run are confounded** Each condition was pooled and sequenced in one 10x run, without ambient-RNA correction. Every stimulation score includes any run effect. Removing the strongest stimulation genes removes the separation. This argues against a diffuse shift, but run effects among those genes cannot be excluded. An independent data set with replicate runs would settle it.
-- **Source of the improvement over random masks** The better fit and decoded response of the Hallmark mask may come mainly from sets that respond to the stimulation, such as interferon, TNF-α and inflammatory response. Dropping the strongest genes (supplementary S4) shows that the improvement over the fully random mask depends on the strongest response genes. Whether the remaining improvement over the within-set random mask comes from other responsive sets was not separated. A data set without such sets could behave differently.
-- **Hallmark sets and co-expressed groups** The Hallmark sets were refined for coherent expression and made for enrichment analysis [20]. They are not independent of expression data. The groups of co-expressed genes are built from the training cells. This favours them on fit. The comparison is between sets named in advance and sets found in this data. Reactome, built by manual pathway curation and not from expression, adds a collection that is independent of expression data. It is compared with co-expressed groups built from the same data, which favour fit in the same way.
-- **One Reactome draw** The Reactome comparison uses one draw of 50 sets from about 950 eligible. A difference between the two collections refers to this draw and not to Reactome as a whole. The 10 seeds do not measure the draw. The expected-response sets of Reactome are narrower than those of Hallmark. A smaller Reactome improvement can reflect narrower sets.
-- **Seeds** The 10 seeds vary the training and one draw of each random mask. The split, the donors (8 for the Kang et al. data, 12 for the Theis et al. data) and the cells are fixed. The test cells share their donors with the training cells and no donor was held out. The intervals say nothing about new donors. The SD of the random masks (0.034 and 0.044 for the decoded response) mixes the draw of the mask with the training noise.
-- **Design** Hard mask and linear decoder only; soft masks, nonlinear decoders, gene set scores as input features and graph models were not tested. The 8 free latents reach only genes in no set, because with access to all genes they took over the response and the labelled latents became inactive. Learning rate (1e-3), encoder width (128, chosen on the vanilla VAE) and patience (3 epochs) are shared by all variants and were not tuned for each. Because the encoder width was chosen on the vanilla VAE, its lead over the masked variants may be overstated.
-- **Theis et al. subsample** About 28,800 cells of each stimulation are used (at most 1,200 per donor × condition group after QC). Five cell types with too few test cells are not scored.
-- **Preprocessing** The 2017 gene annotation (hg19), the cell-type labels and the demuxlet calls come from the authors of the data. Doublets of two cells from the same donor are not detected (an estimated 2% of cells). Ambient RNA is not corrected.
-
-### Future work
-
-The same comparison could be repeated on harder questions and other data. Data sets are listed in
-[docs/methods.md](docs/methods.md#data-sets-used-and-for-future-work).
-
-- **Known regulators** Do the explanations identify known regulators? B cell differentiation with IRF4 and PRDM1 perturbations offers such ground truth [23].
-- **Protein as reference** Does RNA-based pathway activity agree with CITE-seq surface protein, an independent
-  measurement?
-- **Imperfect gene sets** What is the effect of incomplete or species-transferred gene sets, for example human sets
-  applied to mouse gastrulation data [25]? And does a soft mask started from random sets refine to the same
-  gene sets?
-- **Held-out donors and further Reactome draws** Holding out donors of the Theis et al. data would test the result on unseen donors. Further draws of Reactome sets would measure the variation that one draw hides (Limitations).
+| `src/` | numbered scripts in run order, with the shared set-up in `scoring.py`; `06_fit.py` trains one model per call and is run by `07_experiment.sh` |
+| `src/gene_sets.py` | the dataset (`SC_DATA`), gene set collection (`SC_SETS`), benchmark (`SC_TAG`) and expected response (`SC_TARGET`) a script works on |
+| `src/extras/learning_curves/` | training subsamples and the runs on them (supplementary S3) |
+| `src/extras/hvg_inspection.py` | highly-variable-gene analysis behind the choice to model all genes |
+| `data/`, `results/` | created by the scripts and excluded from the repository; `results/<data>/<collection>/<variant>/seed<k>/`, for example `results/kang/hallmark/real/seed0/` |
+| `reports/tables/<data>/<collection>/` | the main experiment is `kang/hallmark`; scores per run, AUROCs per cell type, paired differences, every hypothesis test (`tests.csv`), robustness checks (`robustness_*.csv`) and diagnostics (`diagnostics_*.csv`) |
+| `reports/tables/*/*/tests.csv`, column `family` | `S1` (interferon-α latent, supplementary S1), `S3` (learning curves, Q1b), `latent-free` (Q1, Q1a and Q1d to Q1f: one table per benchmark, with the repeat without the 250 strongest genes for Q1c) and `responsematch` (the expression-matched control, Q1c) |
+| Questions and tables | Q1, Q1a, Q1b: `kang/hallmark`; Q1c: `kang_drop250/hallmark`; Q1d to Q1f: the six benchmarks `kang/{hallmark,reactome}`, `cytokine_ifn_beta/{hallmark,reactome}`, `cytokine_il_2/{hallmark,reactome}` |
+| `reports/figures/` | figures |
 
 ## Reproducing
 
-**Data** All data are public. The Kang et al. data [17] (8 donors, interferon-β) are in the Gene Expression Omnibus under GSE96583 (batch 2). The Theis et al. data [41] are the Parse Biosciences data set "10 Million Human PBMCs in a Single Experiment" [42], released under CC BY-NC 4.0. The scripts read that archive in place and do not redistribute it. The gene sets are the Hallmark collection [20] and the Reactome collection (C2 CP:REACTOME) of the Molecular Signatures Database v2024.1. The Reactome pathway hierarchy [26] is the release of 20 October 2026. Gene symbols follow the HGNC [21].
+**Data** All data are public. The Kang et al. data (8 donors, interferon-β) are in the Gene Expression Omnibus under GSE96583 (batch 2). The Theis et al. data are the Parse Biosciences dataset "10 Million Human PBMCs in a Single Experiment", released under CC BY-NC 4.0. The scripts read that archive in place without redistributing it. The gene sets are the Hallmark collection and the Reactome collection (C2 CP:REACTOME) of the Molecular Signatures Database v2024.1. The Reactome pathway hierarchy is the release of 20 October 2026. Gene symbols follow the HGNC.
 
-**Results** The tables behind every figure, test and number in this report (scores per run, paired differences and tests for each benchmark) are in the repository. Trained model outputs are recreated by the scripts and are not stored.
+**Results** The tables behind every figure, test and number in the preprint (scores per run, paired differences and tests for each benchmark) are in the repository. The scripts recreate the trained models.
 
 **Code** The code is at https://github.com/gmiliarakis/knowledge-or-sparsity-sc-vae under the MIT licence. The code is archived on Zenodo under [10.5281/zenodo.23571985](https://doi.org/10.5281/zenodo.23571985), which stands for all versions and resolves to the latest.
 
-The scripts are numbered in run order and run from the repository root in a fresh virtual environment. All results were produced on an Apple M1 Pro (16 GB) under macOS 15.7 with PyTorch [39], scikit-learn [40], scanpy [19], AnnData [43], NumPy [44], pandas [45], SciPy [46] and Matplotlib [47]; `requirements.txt` lists minimum versions. Exact versions:
+The scripts are numbered in run order and run from the repository root in a fresh virtual environment. All results were produced on an Apple M1 Pro (16 GB) under macOS 15.7 with PyTorch, scikit-learn, scanpy, AnnData, NumPy, pandas, SciPy and Matplotlib; `requirements.txt` pins these exact versions:
 
 ```
 python 3.13.15
@@ -413,188 +99,105 @@ bash src/07_experiment.sh
 python src/08_evaluate.py
 ```
 
-The options of `06_fit.py`, the commands for the learning curves, checks, tests, figures and the other benchmarks (Reactome, the 250 strongest genes dropped, the Theis et al. data), and the layout of the results and tables are in [docs/reproducing.md](docs/reproducing.md).
+The commands for the other analyses follow.
 
-## Back matter
+### Options of `06_fit.py`
 
-### Glossary
+`src/06_fit.py` trains one model per call and is run by `07_experiment.sh`. Its options and defaults:
 
-**Adjusted p-value:** A p-value corrected for the number of tests made together, here with the Holm procedure.
+| Option | Default | Meaning |
+|---|---|---|
+| `--mask` | `none` | `none`, `real`, `shuffled` (fully random mask), `setshuffle` (within-set random mask) or `coexpression` |
+| `--seed` | `0` | initial weights, batches and (for the random and co-expression masks) the mask |
+| `--train-size` | all training cells | number of training cells, for the learning curves |
+| `--max-epochs` | `2000` | safety limit; a run that reaches it fails |
+| `--warmup-epochs` | ≈ 38 | epochs for β to rise from 0 to 1; the default is 10,000 steps at batch 64, scaled to the training set |
+| `--min-delta` | `0` | relative drop in validation loss that counts as an improvement; `0` is the setting of all results in the preprint, and a value such as `1e-3` stops earlier |
+| `--results-dir` | `results` | output folder |
+| `--verbose` | off | progress bar over epochs; otherwise one line per run |
 
-**Area under the ROC curve (AUROC):** The probability that a classifier scores a randomly chosen stimulated cell above a randomly chosen control cell. 0.5 is chance and 1 is perfect separation.
+The defaults reproduce the results of the preprint: four runs (vanilla and Hallmark at full size, shuffled and co-expression at 500 cells) coincided with the original runs in every epoch and in the latent means.
 
-**Balanced accuracy:** The share of cells classified correctly, averaged over the classes so that rare classes count as much as common ones.
+### Learning curves, checks, tests and figures
 
-**Benchmark:** One pairing of a data set (a stimulation) and a gene set collection. The variants are fit with 10 seeds on each. This study has six: two collections on each of three stimulations.
+The learning curves, the checks, the tests and the figures run last, in this order. The tests read the learning-curve scores and the checks, and the figures read the tests.
 
-**Bulk sequencing:** RNA sequencing of the pooled RNA of everything in a sample, without resolving individual cells.
+```
+python src/extras/learning_curves/01_subsample.py
+bash src/extras/learning_curves/02_run.sh
+python src/08_evaluate.py --learning-curves
+python src/10_checks.py
+python src/11_tests.py
+python src/09_figures.py
+```
 
-**Cell type:** A class of cells with a shared identity and function, such as T cells or monocytes.
+`10_checks.py` reads the scored runs and adds the robustness checks, the reference scores, the principal-component check after removing genes and the classifier. `11_tests.py` runs every hypothesis test with its multiplicity correction. The
+tables label the vanilla VAE `vanilla`, and its results folder is `plain`.
 
-**Co-expressed genes:** Genes whose expression rises and falls together across cells.
+`10b_response_measures.py` (run after `10_checks.py`, trains nothing) adds the alternative decoded-response measures and the noise bound (`diagnostics_response_alt.csv`, `diagnostics_response_ceiling.csv`). For the main experiment, `python src/10b_response_measures.py --learning-curves` also scores the decoded response of the learning-curve runs. Like `10_checks.py`, it reads `SC_DATA`, `SC_SETS` and `SC_TAG` from the command itself.
 
-**Co-expression mask:** A mask whose sets are groups of co-expressed genes found in the data, with the sizes of the Hallmark sets.
+### Reactome sets
 
-**Control and stimulated cells:** Cells cultured without and with the stimulus.
+The Reactome analysis reuses the same scripts through `SC_SETS`; its results are in `results/kang/reactome/` and `reports/tables/kang/reactome/`, and only the latent-free tests are run on it. Each command reads its variables from its own line: set `SC_DATA`, `SC_SETS` and `SC_TAG` in the command itself and do not export them.
 
-**Decoded response:** The shift in expression between stimulated and control cells that the decoder reproduces, scored as its correlation with the observed shift.
+```
+python src/02_download_genesets.py
+SC_SETS=reactome python src/04_build_masks.py
+SC_SETS=reactome python src/05_build_coexpression_null.py
+SC_SETS=reactome bash src/07_experiment.sh
+SC_SETS=reactome python src/08_evaluate.py
+SC_SETS=reactome python src/10_checks.py
+SC_SETS=reactome python src/11_tests.py
+SC_SETS=reactome python src/09_figures.py
+```
 
-**Decoder, encoder:** In a VAE, the encoder maps the counts of a cell to its latent variables and the decoder maps the latent variables back to expected counts.
+### Without the 250 strongest genes
 
-**Donor:** A person from whom cells were taken.
+The analysis that removes the 250 genes with the largest stimulation effect
+reuses every script through the environment variable `SC_TAG`; its files have the suffix `_drop250` and the main files are not touched.
 
-**Expression-matched random mask:** A mask in which only the genes that are in at least one set are permuted, and only among genes of similar expression level and stimulation effect. Every set keeps its size, its overlaps and its number of genes of each response strength.
+```
+python src/03b_drop_genes.py 250
+SC_TAG=drop250 python src/04_build_masks.py
+SC_TAG=drop250 python src/05_build_coexpression_null.py
+SC_TAG=drop250 bash src/07_experiment.sh
+SC_TAG=drop250 python src/08_evaluate.py
+SC_TAG=drop250 python src/10_checks.py
+SC_TAG=drop250 python src/11_tests.py
+```
 
-**Free latents:** The 8 latent variables that belong to no gene set and may reach only genes that are in no set.
+### Theis et al. data
 
-**Fully random mask:** A mask in which gene labels are permuted among genes of similar expression level. Every set keeps its size and its overlaps, and loses its biology.
+The Theis et al. data are read by `src/03c_preprocess_cytokine.py`, which reads the published archive in place, and `SC_DATA` selects them in every later script (`cytokine_ifn_beta`, `cytokine_il_2`). Results and tables are in a folder per dataset and collection (`results/cytokine_il_2/reactome/`, `reports/tables/cytokine_il_2/reactome/`). For IL-2, `SC_TARGET=il2` sets the expected-response set of the evaluation and the checks to the IL-2 sets; it is not used for the masks, the co-expression groups or the fits. The learning curves and the checks that depend on them are not run on these data. `python src/03c_preprocess_cytokine.py --choose DEGs.csv` applies the rule for the second cytokine to the atlas's table of differentially expressed genes.
 
-**Gene program:** A coordinated set of biologically related genes. Some papers use the term for what this paper calls a gene set.
+```
+python src/03c_preprocess_cytokine.py IL-2     # or IFN-beta
+for c in reactome hallmark; do
+  SC_DATA=cytokine_il_2 SC_SETS=$c python src/04_build_masks.py
+  SC_DATA=cytokine_il_2 SC_SETS=$c python src/05_build_coexpression_null.py
+  SC_DATA=cytokine_il_2 SC_SETS=$c bash src/07_experiment.sh
+  SC_DATA=cytokine_il_2 SC_SETS=$c SC_TARGET=il2 python src/08_evaluate.py
+  SC_DATA=cytokine_il_2 SC_SETS=$c SC_TARGET=il2 python src/10_checks.py
+  SC_DATA=cytokine_il_2 SC_SETS=$c python src/11_tests.py
+  SC_DATA=cytokine_il_2 SC_SETS=$c python src/09_figures.py
+done
+```
 
-**Gene set:** A list of genes known to act together in a biological process or pathway.
+### Expression-matched random mask (Q1c)
 
-**Hallmark collection:** 50 gene sets of the Molecular Signatures Database, each representing a well-defined biological state or process.
+Run from the project root, one stage at a time. The runs cover the six benchmarks with 10 seeds each.
 
-**Holm correction:** A procedure that adjusts p-values for several tests made together and keeps the chance of any false positive at or below the chosen level.
+```
+bash src/extras/response_matched_control.sh build   # the masks, minutes
+bash src/extras/response_matched_control.sh fit     # 60 runs, about 4 to 5 hours
+bash src/extras/response_matched_control.sh check   # rewrites the diagnostics tables with the expression-matched runs
+for c in hallmark reactome; do
+  SC_DATA=kang SC_SETS=$c python src/11_tests.py
+  SC_DATA=cytokine_ifn_beta SC_SETS=$c python src/11_tests.py
+  SC_DATA=cytokine_il_2 SC_SETS=$c SC_TARGET=il2 python src/11_tests.py
+done
+```
 
-**Interferon:** A signalling protein of antiviral defence that switches on hundreds of interferon-stimulated genes. Interferon-β is a type I interferon, like interferon-α.
+## Citation and licence
 
-**Interleukin-2 (IL-2):** A signalling protein that activates T cells.
-
-**Latent variable:** A hidden factor that the model infers for every cell and that captures how its expression differs from that of other cells.
-
-**Learning curve:** A score plotted against the number of cells used for training.
-
-**Linear decoder:** A decoder in which the expected expression of a gene is a weighted sum of the latent variables.
-
-**Mask:** A table of zeros and ones that fixes to zero the decoder weights from a latent variable to the genes outside its gene set.
-
-**Negative binomial:** A distribution for counts that allows more variation than a Poisson distribution. It models the counts of each gene.
-
-**Noise bound:** The highest correlation with the observed shift that a model free of noise could reach.
-
-**PBMCs:** Peripheral blood mononuclear cells, the immune cells of blood with a single round nucleus.
-
-**Principal component:** A direction along which expression varies most across samples.
-
-**Random seed:** A number that sets the random initial weights, the batches and the random masks of one training run. Each variant is trained with 10 seeds.
-
-**Reactome:** A database of curated biological pathways.
-
-**Signature:** A set of genes whose joint expression marks a cell state or process.
-
-**Single-cell RNA sequencing:** RNA sequencing that measures the expression of thousands of genes in each cell separately.
-
-**Sparsity:** The property of a table of numbers, such as the decoder weights or a mask, that most of its entries are zero.
-
-**Supervised, unsupervised, self-supervised:** Models trained with cell labels, without cell labels, and without labels on a task derived from the data itself.
-
-**Test loss:** How poorly the model reconstructs cells it was not trained on. Lower is better.
-
-**Training, validation and test cells:** Cells used to fit the model, to choose its settings and stop training, and to score it.
-
-**Vanilla model:** The VAE with an unrestricted decoder, without a mask.
-
-**Variational autoencoder (VAE):** A neural network that compresses the counts of each cell into a few latent variables and reconstructs the counts from them.
-
-**Within-set random mask:** A mask in which only the genes that are in at least one set are permuted, and only among themselves. Genes in no set stay in no set.
-
-### Use of generative AI
-
-The author used Claude Opus 5.5 and Claude Sonnet 5.5 (Anthropic) between September and October 2026 to help write and debug analysis code and to improve the readability of the text. The author designed the study, ran all analyses, and wrote the text. The author reviewed all AI-assisted code and text and takes full responsibility for the accuracy, integrity and originality of this work.
-
-### References
-1. Caranzano I, et al. Sparsity is all you need: rethinking biologically informed neural networks. *Brief Bioinform*
-   (2026). [doi:10.1093/bib/bbag425](https://doi.org/10.1093/bib/bbag425)
-2. Thapa K, et al. Strategies to include prior knowledge in omics analysis with deep neural networks. *Patterns*
-   6, 101203 (2025). [doi:10.1016/j.patter.2025.101203](https://doi.org/10.1016/j.patter.2025.101203)
-3. Seninge L, et al. VEGA is an interpretable generative model for inferring biological network activity in
-   single-cell transcriptomics. *Nat Commun* (2021).
-   [doi:10.1038/s41467-021-26017-0](https://doi.org/10.1038/s41467-021-26017-0)
-4. Lotfollahi M, et al. Biologically informed deep learning to query gene programs in single-cell atlases.
-   *Nat Cell Biol* (2023). [doi:10.1038/s41556-022-01072-x](https://doi.org/10.1038/s41556-022-01072-x)
-5. Gut G, et al. pmVAE: learning interpretable single-cell representations with pathway modules. *bioRxiv* (2021).
-   [doi:10.1101/2021.01.28.428664](https://doi.org/10.1101/2021.01.28.428664)
-6. Buettner F, et al. f-scLVM: scalable and versatile factor analysis for single-cell RNA-seq. *Genome Biol* (2017).
-   [doi:10.1186/s13059-017-1334-8](https://doi.org/10.1186/s13059-017-1334-8)
-7. Mao W, et al. Pathway-level information extractor (PLIER) for gene expression data. *Nat Methods* (2019).
-   [doi:10.1038/s41592-019-0456-1](https://doi.org/10.1038/s41592-019-0456-1)
-8. Kunes RZ, et al. Supervised discovery of interpretable gene programs from single-cell data. *Nat Biotechnol*
-   (2024). [doi:10.1038/s41587-023-01940-3](https://doi.org/10.1038/s41587-023-01940-3)
-9. Fortelny N, Bock C. Knowledge-primed neural networks enable biologically interpretable deep learning on
-   single-cell sequencing data. *Genome Biol* (2020).
-   [doi:10.1186/s13059-020-02100-5](https://doi.org/10.1186/s13059-020-02100-5)
-10. Qoku A, et al. MOFA-FLEX: a factor model framework for integrating omics data with prior knowledge. *bioRxiv*
-    (2025). [doi:10.1101/2025.11.03.686250](https://doi.org/10.1101/2025.11.03.686250)
-11. Moullet M, et al. Self-supervised learning for a gene program-centric view of cell states. *bioRxiv* (2026).
-    [doi:10.64898/2026.03.24.713961](https://doi.org/10.64898/2026.03.24.713961)
-12. Zhu Y, et al. A residual-ratio framework for auditing transcriptomic gene signatures against background
-    expression structure. *bioRxiv* (2026). [doi:10.64898/2026.04.11.717907](https://doi.org/10.64898/2026.04.11.717907)
-13. Svensson V, et al. Interpretable factor models of single-cell RNA-seq via variational autoencoders.
-    *Bioinformatics* (2020). [doi:10.1093/bioinformatics/btaa169](https://doi.org/10.1093/bioinformatics/btaa169)
-14. Eltager M, et al. Benchmarking variational autoencoders on cancer transcriptomics data. *PLoS One* (2023).
-    [doi:10.1371/journal.pone.0292126](https://doi.org/10.1371/journal.pone.0292126)
-15. Makrodimitris S, et al. An in-depth comparison of linear and non-linear joint embedding methods for bulk and
-    single-cell multi-omics. *Brief Bioinform* (2024). [doi:10.1093/bib/bbad416](https://doi.org/10.1093/bib/bbad416)
-16. Ahlmann-Eltze C, et al. Deep-learning-based gene perturbation effect prediction does not yet outperform simple
-    linear baselines. *Nat Methods* (2025). [doi:10.1038/s41592-025-02772-6](https://doi.org/10.1038/s41592-025-02772-6)
-17. Kang HM, et al. Multiplexed droplet single-cell RNA-sequencing using natural genetic variation. *Nat Biotechnol*
-    (2018). [doi:10.1038/nbt.4042](https://doi.org/10.1038/nbt.4042)
-18. Heumos L, et al. Best practices for single-cell analysis across modalities. *Nat Rev Genet* (2023).
-    [doi:10.1038/s41576-023-00586-w](https://doi.org/10.1038/s41576-023-00586-w)
-19. Wolf FA, et al. SCANPY: large-scale single-cell gene expression data analysis. *Genome Biol* (2018).
-    [doi:10.1186/s13059-017-1382-0](https://doi.org/10.1186/s13059-017-1382-0)
-20. Liberzon A, et al. The Molecular Signatures Database (MSigDB) hallmark gene set collection. *Cell Syst* (2015).
-    [doi:10.1016/j.cels.2015.12.004](https://doi.org/10.1016/j.cels.2015.12.004)
-21. Seal RL, et al. Genenames.org: the HGNC resources in 2023. *Nucleic Acids Res* (2023).
-    [doi:10.1093/nar/gkac888](https://doi.org/10.1093/nar/gkac888)
-22. Svensson V. Droplet scRNA-seq is not zero-inflated. *Nat Biotechnol* (2020).
-    [doi:10.1038/s41587-019-0379-5](https://doi.org/10.1038/s41587-019-0379-5)
-23. Demela P, et al. Competing gene regulatory networks drive naive and memory B cell differentiation. *Mol Syst Biol*
-    (2026). [doi:10.1038/s44320-026-00207-8](https://doi.org/10.1038/s44320-026-00207-8)
-24. Massoni-Badosa R, et al. An atlas of cells in the human tonsil. *Immunity* (2024).
-    [doi:10.1016/j.immuni.2024.01.006](https://doi.org/10.1016/j.immuni.2024.01.006)
-25. Pijuan-Sala B, et al. A single-cell molecular map of mouse gastrulation and early organogenesis. *Nature* (2019).
-    [doi:10.1038/s41586-019-0933-9](https://doi.org/10.1038/s41586-019-0933-9)
-26. Milacic M, et al. The Reactome Pathway Knowledgebase 2024. *Nucleic Acids Res* (2024).
-    [doi:10.1093/nar/gkad1025](https://doi.org/10.1093/nar/gkad1025)
-27. Waddell SJ, et al. Dissecting interferon-induced transcriptional programs in human peripheral blood cells.
-    *PLoS One* (2010). [doi:10.1371/journal.pone.0009753](https://doi.org/10.1371/journal.pone.0009753)
-28. Hanley JA, McNeil BJ. The meaning and use of the area under a receiver operating characteristic (ROC) curve.
-    *Radiology* (1982). [doi:10.1148/radiology.143.1.7063747](https://doi.org/10.1148/radiology.143.1.7063747)
-29. Sim TM, et al. Type I interferons in systemic lupus erythematosus: a journey from bench to bedside. *Int J Mol Sci*
-    (2022). [doi:10.3390/ijms23052505](https://doi.org/10.3390/ijms23052505)
-30. Holm S. A simple sequentially rejective multiple test procedure. *Scand J Stat* 6, 65–70 (1979).
-    [jstor.org/stable/4615733](https://www.jstor.org/stable/4615733)
-31. Dunn OJ. Multiple comparisons among means. *J Am Stat Assoc* 56, 52–64 (1961).
-    [doi:10.1080/01621459.1961.10482090](https://doi.org/10.1080/01621459.1961.10482090)
-32. Benjamini Y, Hochberg Y. Controlling the false discovery rate: a practical and powerful approach to multiple
-    testing. *J R Stat Soc B* 57, 289–300 (1995).
-    [doi:10.1111/j.2517-6161.1995.tb02031.x](https://doi.org/10.1111/j.2517-6161.1995.tb02031.x)
-33. Benjamini Y, Yekutieli D. The control of the false discovery rate in multiple testing under dependency. *Ann Stat*
-    29, 1165–1188 (2001). [doi:10.1214/aos/1013699998](https://doi.org/10.1214/aos/1013699998)
-34. Benjamini Y, Yekutieli D. False discovery rate-adjusted multiple confidence intervals for selected parameters.
-    *J Am Stat Assoc* 100, 71–81 (2005). [doi:10.1198/016214504000001907](https://doi.org/10.1198/016214504000001907)
-35. Wilcoxon F. Individual comparisons by ranking methods. *Biometrics Bull* 1, 80–83 (1945).
-    [doi:10.2307/3001968](https://doi.org/10.2307/3001968)
-36. Hodges JL, Lehmann EL. Estimates of location based on rank tests. *Ann Math Stat* 34, 598–611 (1963).
-    [doi:10.1214/aoms/1177704172](https://doi.org/10.1214/aoms/1177704172)
-37. Kingma DP, Welling M. Auto-encoding variational Bayes. *arXiv* (2013), presented at ICLR 2014.
-    [doi:10.48550/arXiv.1312.6114](https://doi.org/10.48550/arXiv.1312.6114)
-38. Kingma DP, Ba J. Adam: a method for stochastic optimization. *arXiv* (2014), presented at ICLR 2015.
-    [doi:10.48550/arXiv.1412.6980](https://doi.org/10.48550/arXiv.1412.6980)
-39. Paszke A, et al. PyTorch: an imperative style, high-performance deep learning library. *arXiv* (2019), presented
-    at NeurIPS 2019. [doi:10.48550/arXiv.1912.01703](https://doi.org/10.48550/arXiv.1912.01703)
-40. Pedregosa F, et al. Scikit-learn: machine learning in Python. *J Mach Learn Res* 12, 2825–2830 (2011).
-    [jmlr.org/papers/v12/pedregosa11a.html](https://jmlr.org/papers/v12/pedregosa11a.html)
-41. Theis F, et al. A single-cell cytokine dictionary of human peripheral blood. *Research Square* (2025), preprint without peer review. [doi:10.21203/rs.3.rs-8337240/v1](https://doi.org/10.21203/rs.3.rs-8337240/v1)
-42. Parse Biosciences. 10 Million Human PBMCs in a Single Experiment (data set, CC BY-NC 4.0). https://www.parsebiosciences.com/datasets/10-million-human-pbmcs-in-a-single-experiment/ (accessed 21 October 2026).
-43. Virshup I, et al. anndata: access and store annotated data matrices. *J Open Source Softw* (2024). [doi:10.21105/joss.04371](https://doi.org/10.21105/joss.04371)
-44. Harris CR, et al. Array programming with NumPy. *Nature* (2020). [doi:10.1038/s41586-020-2649-2](https://doi.org/10.1038/s41586-020-2649-2)
-45. McKinney W. Data structures for statistical computing in Python. *Proc 9th Python in Science Conf* (2010). [doi:10.25080/Majora-92bf1922-00a](https://doi.org/10.25080/Majora-92bf1922-00a)
-46. Virtanen P, et al. SciPy 1.0: fundamental algorithms for scientific computing in Python. *Nat Methods* (2020). [doi:10.1038/s41592-019-0686-2](https://doi.org/10.1038/s41592-019-0686-2)
-47. Hunter JD. Matplotlib: a 2D graphics environment. *Comput Sci Eng* (2007). [doi:10.1109/MCSE.2007.55](https://doi.org/10.1109/MCSE.2007.55)
-48. Subramanian A, et al. Gene set enrichment analysis: a knowledge-based approach for interpreting genome-wide expression profiles. *Proc Natl Acad Sci USA* (2005). [doi:10.1073/pnas.0506580102](https://doi.org/10.1073/pnas.0506580102)
-49. Schneider WM, Chevillotte MD, Rice CM. Interferon-stimulated genes: a complex web of host defenses. *Annu Rev Immunol* (2014). [doi:10.1146/annurev-immunol-032713-120231](https://doi.org/10.1146/annurev-immunol-032713-120231)
-50. Ivashkiv LB, Donlin LT. Regulation of type I interferon responses. *Nat Rev Immunol* (2014). [doi:10.1038/nri3581](https://doi.org/10.1038/nri3581)
-51. Jolliffe IT, Cadima J. Principal component analysis: a review and recent developments. *Philos Trans A Math Phys Eng Sci* (2016). [doi:10.1098/rsta.2015.0202](https://doi.org/10.1098/rsta.2015.0202)
+Please cite the preprint and the code archive through [`CITATION.cff`](CITATION.cff) (Zenodo: [10.5281/zenodo.23571985](https://doi.org/10.5281/zenodo.23571985), which resolves to the latest version). The code is under the MIT licence ([`LICENSE`](LICENSE)). The Parse Biosciences data are under CC BY-NC 4.0.

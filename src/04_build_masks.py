@@ -1,4 +1,4 @@
-# Gene set masks (genes x sets, True = gene in set) and their shuffled versions (all-gene shuffle and sets-only shuffle). Choices are explained in the README.
+# Gene set masks (genes x sets, True = gene in set) and their shuffled versions (all-gene shuffle and sets-only shuffle). Choices are explained in the preprint.
 import re
 from pathlib import Path
 
@@ -20,7 +20,7 @@ if data == "kang":
     symbol = pd.Series(genes.map(hgnc), index=genes).fillna(adata.var["gene_symbols"])
     print("HGNC table:", hgnc_file.name)
     print("genes whose symbol changed since 2017:", (symbol != adata.var["gene_symbols"]).sum())
-else:  # the Oesinghaus data name genes by symbol
+else:  # the cytokine data name genes by symbol
     symbol = pd.Series(genes, index=genes)
 
 # 25 bins of equal size by mean expression in training cells (as in scanpy's score_genes),
