@@ -82,6 +82,8 @@ pandas 3.0.6
 scipy 1.18.1
 scikit-learn 1.9.1
 matplotlib 3.11.2
+h5py 3.16.0
+requests 2.34.2
 scikit-misc 0.5.2
 tqdm 4.70.1
 ```
@@ -107,7 +109,7 @@ The commands for the other analyses follow.
 
 | Option | Default | Meaning |
 |---|---|---|
-| `--mask` | `none` | `none`, `real`, `shuffled` (fully random mask), `setshuffle` (within-set random mask) or `coexpression` |
+| `--mask` | `none` | `none`, `real`, `shuffled` (fully random mask), `setshuffle` (within-set random mask), `coexpression` or `responsematch` (expression-matched random mask) |
 | `--seed` | `0` | initial weights, batches and (for the random and co-expression masks) the mask |
 | `--train-size` | all training cells | number of training cells, for the learning curves |
 | `--max-epochs` | `2000` | safety limit; a run that reaches it fails |
@@ -127,6 +129,8 @@ python src/extras/learning_curves/01_subsample.py
 bash src/extras/learning_curves/02_run.sh
 python src/08_evaluate.py --learning-curves
 python src/10_checks.py
+python src/10b_response_measures.py
+python src/10b_response_measures.py --learning-curves
 python src/11_tests.py
 python src/09_figures.py
 ```
