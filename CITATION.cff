@@ -14,8 +14,8 @@ abstract: >-
   Code, result tables and figures of a study that asks whether the knowledge in gene sets, or only the
   sparsity they impose, explains how well a variational autoencoder with a gene set mask in its linear
   decoder captures the response of single cells to a stimulus. Six decoder variants (a vanilla model,
-  the gene sets, three random masks and groups of co-expressed genes) are fit with 10 seeds on six
-  benchmarks from two public data sets of stimulated blood cells.
+  the gene sets, three random masks and groups of co-expressed genes) are fit with 10 seeds on four
+  benchmarks from two public datasets of stimulated blood cells.
 keywords:
   - gene sets
   - masked decoder
@@ -25,6 +25,6 @@ keywords:
   - negative controls
 license: MIT
 repository-code: "https://github.com/gmiliarakis/knowledge-or-sparsity-sc-vae"
-version: "1.2.0."
-date-released: "2026-10-26"
+version: "1.3.0"
+date-released: "2026-10-28"
 doi: "10.5281/zenodo.23571985"  # the concept DOI: all versions, resolves to the latest
