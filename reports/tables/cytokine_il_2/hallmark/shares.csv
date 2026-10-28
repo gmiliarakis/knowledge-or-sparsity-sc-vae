@@ -1,0 +1,5 @@
+quantity,measure,estimate,ci_low,ci_high
+"share of the gap to the vanilla VAE recovered, against the fully random mask (%)",spearman,9.7012,8.9471,10.9754
+"share of the gap to the vanilla VAE recovered, against the within-set random mask (%)",spearman,14.8105,13.8271,15.7216
+"share of the gap to the vanilla VAE recovered, against the fully random mask (%)",pearson,17.6234,15.7786,19.7661
+"share of the gap to the vanilla VAE recovered, against the within-set random mask (%)",pearson,32.2042,30.9857,33.4711

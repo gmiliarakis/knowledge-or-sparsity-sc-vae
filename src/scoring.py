@@ -1,4 +1,4 @@
-# Shared setup for the scoring and check scripts (imported by 08_evaluate.py and 10_checks.py, not run on its own).
+# Shared setup for the scoring and check scripts (imported by 06_evaluate.py and 07_checks.py, not run on its own).
 # The cells, the splits and the AUROC rule are defined here once. SC_TAG selects a derived benchmark (preprint, weaker-signal
 # benchmark): SC_TAG=drop250 reads data/processed/*_drop250.* and writes results/kang_drop250/ and reports/tables/kang_drop250/.
 from pathlib import Path

@@ -1,7 +1,7 @@
 # Weaker-signal benchmark: remove the n genes with the largest stimulation effect from the data. The genes are ranked by
 # |t| of stimulated vs control log expression in training cells (megakaryocytes excluded), so the choice comes from the data
 # and never from the gene sets. Writes data/processed/kang_drop<n>.h5ad; the other scripts read it when SC_TAG=drop<n>.
-# Usage: python src/03b_drop_genes.py 250
+# Usage: python src/extras/drop250/drop_genes.py 250
 import sys
 from pathlib import Path
 

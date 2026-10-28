@@ -1,6 +1,5 @@
-# Figures from the evaluation tables (src/08_evaluate.py) and the training logs, written to reports/figures/. The
-# learning-curve figure is drawn once its tables exist (src/08_evaluate.py --learning-curves). The comparison figures need src/10_checks.py,
-# and the tests in src/11_tests.py supply the intervals.
+# Figures from the evaluation tables (src/06_evaluate.py) and the training logs, written to reports/figures/. The
+# comparison figures need src/07_checks.py, and the tests in src/09_tests.py supply the intervals.
 from pathlib import Path
 
 import matplotlib
@@ -51,7 +50,7 @@ mask_name = "Reactome" if collection == "reactome" else "Hallmark"
 if True:  # one figure per benchmark (SC_DATA, SC_SETS); the main experiment (kang/hallmark) continues below, every other benchmark stops here
     # the four measures that choose no latent, one dot per seed
     ticks["real"] = mask_name
-    bench_label = {"kang": "Kang et al. IFN-β", "cytokine_ifn_beta": "Theis et al. IFN-β", "cytokine_il_2": "Theis et al. IL-2"}[data]
+    bench_label = {"kang": "Kang et al. IFN-β", "cytokine_ifn_beta": "Theis et al. IFN-β"}.get(data, data)
     tables, out = Path(f"reports/tables/{run}"), Path("reports/figures")
     out.mkdir(parents=True, exist_ok=True)
     offset = dict(zip(range(10), np.linspace(-0.18, 0.18, 10)))  # each seed keeps its position in every panel
@@ -73,7 +72,7 @@ if True:  # one figure per benchmark (SC_DATA, SC_SETS); the main experiment (ka
 
 
     measures = [("a  Test loss per cell", "diagnostics_fit.csv", "test_loss", "negative log-likelihood + KL\n(lower is better)"),
-                ("b  Decoded response", "diagnostics_response.csv", "lfc_corr", "correlation across genes with\nthe observed shift"),
+                ("b  Decoded response", "diagnostics_response.csv", "lfc_spearman", "Spearman correlation across genes\nwith the observed shift"),
                 ("c  Cell-type classifier", "diagnostics_celltype.csv", "balanced_acc_full", "balanced accuracy"),
                 ("d  Stimulation classifier", "diagnostics_probe.csv", "probe_auroc", "AUROC stim vs ctrl")]
     fig, axes = plt.subplots(2, 2, figsize=(7.4, 5.6), gridspec_kw={"hspace": 0.55, "wspace": 0.35})
@@ -91,7 +90,7 @@ if True:  # one figure per benchmark (SC_DATA, SC_SETS); the main experiment (ka
 tables, out = Path("reports/tables/kang/hallmark"), Path("reports/figures")
 out.mkdir(parents=True, exist_ok=True)
 scores = pd.read_csv(tables / "scores.csv")
-tests = pd.read_csv(tables / "tests.csv").set_index("test")  # intervals and corrected p-values (src/11_tests.py)
+tests = pd.read_csv(tables / "tests.csv").set_index("test")  # intervals and corrected p-values (src/09_tests.py)
 offset = dict(zip(range(10), np.linspace(-0.18, 0.18, 10)))  # each seed keeps its position in every panel
 
 
@@ -215,7 +214,7 @@ arrow(3.29, 3.49)
 # columns the 58 latents (50 named, then 8 free)
 hm = np.load("data/processed/masks_hallmark.npz")
 co = np.load("data/processed/coexpression_hallmark.npz")
-rm = np.load("data/processed/masks_hallmark_responsematch.npz")  # the expression-matched random masks (src/04b_build_responsematch.py)
+rm = np.load("data/processed/masks_hallmark_responsematch.npz")  # the expression-matched random masks (src/03_build_masks.py)
 ss = np.load("data/processed/masks_hallmark_setshuffle.npz")
 sets = hm["real"]
 
@@ -254,21 +253,26 @@ arrow(5.72, 5.92)
 # beeswarm, the mean printed under each bar
 response = pd.read_csv(tables / "diagnostics_response.csv")
 variants = ["real", "shuffled", "setshuffle", "responsematch", "coexpression", "vanilla"]  # same order as the masks in stage 3
-width_in, height_in, low, high = 2.3, 1.9, 0.66, 1.0
+width_in, height_in, low, high = 2.3, 1.9, 0.3, 1.0
 ax = inset(6.6, 0.45, width_in, height_in)
-dot_in = 0.04
-for i, v in enumerate(variants):
-    y_ = response[response["variant"] == v]["lfc_corr"].to_numpy()
-    x_ = i + swarm(y_, dot_in / (width_in / len(variants)), dot_in / (height_in / (high - low)))
-    seed_dots(ax, x_, y_, ov_colors[v])
-    mean_dot(ax, i, y_.mean())
-ax.set(xlim=(-0.5, len(variants) - 0.5), ylim=(low, high), yticks=[0.7, 0.8, 0.9, 1.0], yticklabels=["0.7", "0.8", "0.9", "1.0"])
+for i, v in enumerate(variants):  # circles, Spearman correlation; triangles, Pearson correlation
+    for column, marker, dx in (("lfc_spearman", "^", -0.2), ("lfc_pearson", "o", 0.2)):
+        y_ = response[response["variant"] == v][column].to_numpy()
+        ax.scatter(np.full(len(y_), i + dx), y_, s=SEED_S * 0.6, marker=marker, color=ov_colors[v], lw=0, zorder=3)
+        ax.scatter(i + dx, y_.mean(), s=MEAN_S * 0.5, marker=marker, color="black", lw=0, zorder=5)
+ax.set(xlim=(-0.5, len(variants) - 0.5), ylim=(low, high), yticks=[0.4, 0.6, 0.8, 1.0], yticklabels=["0.4", "0.6", "0.8", "1.0"])
 ax.set_ylabel("correlation")
 ax.yaxis.set_label_coords(-0.12, 0.5)
 ax.tick_params(axis="y", labelsize=6.5)
 for side in ("left", "bottom"):
     ax.spines[side].set_color(ink)
-ax.set_xticks(range(len(variants)), [ov_names[v] for v in variants], fontsize=5.5, rotation=45, ha="right", rotation_mode="anchor")
+bg.scatter([7.15], [0.04], s=12, marker="^", color="black", lw=0)
+label(7.22, 0.04, "Spearman", ha="left", size=6)
+bg.scatter([7.85], [0.04], s=12, marker="o", color="black", lw=0)
+label(7.92, 0.04, "Pearson", ha="left", size=6)
+wrapped = {"real": "Hallmark", "shuffled": "fully\nrandom", "setshuffle": "within-set\nrandom", "responsematch": "expression-\nmatched\nrandom",
+           "coexpression": "co-\nexpression", "vanilla": "vanilla"}
+ax.set_xticks(range(len(variants)), [wrapped[v] for v in variants], fontsize=5.0, linespacing=1.0)
 ax.grid(axis="x", visible=False)
 fig.savefig(out / "overview.png")
 plt.close(fig)
@@ -305,60 +309,26 @@ ax.set(title="c  Paired difference, median and 99.5% interval", xlabel="differen
 fig.savefig(out / "scores.png")
 plt.close(fig)
 
-# 2. Learning curves: mean and 95% t-interval over seeds at each training size, and the real - shuffled difference
-if (tables / "learning_curves_scores.csv").exists():
-    all_scores = pd.read_csv(tables / "learning_curves_scores.csv")
-    full = scores["train_size"].max()
-    sizes = sorted(all_scores["train_size"].unique())
-    fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.0), gridspec_kw={"wspace": 0.3})
-    ax = axes[0]
-    for v in [v for v in order if v != "setshuffle"]:  # the within-set random mask was run at full size only
-        g = all_scores[all_scores["variant"] == v].groupby("train_size")["ifn_alpha"]
-        mean, half = g.mean(), stats.t.ppf(0.975, g.count() - 1) * g.sem()
-        ax.fill_between(mean.index, mean - half, mean + half, color=colors[v], alpha=0.12, lw=0)
-        ax.plot(mean.index, mean, color=colors[v], lw=1, marker="o", ms=3, mec=surface, mew=0.5, label=names[v])
-    ax.set(title="a  Interferon-α score", ylabel="AUROC stim vs ctrl\nmean over 7 cell types")
-    ax.legend(loc="upper left", bbox_to_anchor=(0, -0.2), ncol=2, handletextpad=0.4, columnspacing=1.4)
-    ax = axes[1]
-    for n in sizes:  # one dot per seed (Hallmark - random of the same seed), the estimate and the corrected interval
-        wide = all_scores[all_scores["train_size"] == n].pivot(index="seed", columns="variant", values="ifn_alpha")
-        diff = (wide["real"] - wide["shuffled"]).dropna()
-        r = tests.loc["fixed latent: real - shuffled" if n == full else f"{n} cells: real - shuffled"]
-        seed_dots(ax, n * (1 + diff.index.map(offset) * 0.5), diff, ink, zorder=2)
-        ax.vlines(n, r["ci_low"], r["ci_high"], color=ink, lw=0.9, zorder=3)
-        ax.scatter(n, r["hodges_lehmann"], s=16, color=ink, edgecolor=surface, lw=0.5, zorder=4)
-    ax.axhline(0, color=baseline, lw=0.8, zorder=0)
-    ax.set(title="b  Hallmark−random, corrected interval", ylabel="difference in AUROC")
-    for ax in axes:
-        ax.set_xscale("log")
-        ax.set_xticks(sizes, [f"{n:,}" for n in sizes], fontsize=6, rotation=45, ha="right")
-        ax.minorticks_off()
-        ax.set_xlabel("training cells")
-        ax.grid(axis="x", visible=False)
-    fig.savefig(out / "learning_curves.png")
-    plt.close(fig)
-
 # 6. Pipeline: the phases of the analysis, one box per step; what varies between benchmarks under the step that varies it,
 # and the two extra analyses as dashed boxes under the step they change
 phases = {"Data": ("#e3eef7", "#5b9bd5"), "Design": ("#f1dfe8", "#882255"), "Model": ("#ecdcf0", "#a86fb5"),
           "Evaluation": ("#d6eeea", "#2a9d8f")}
 steps = [("Data", "Single-cell\ndata"), ("Data", "Cell QC"), ("Data", "Gene\nfilter"), ("Data", "Split"),
          ("Design", "Gene sets"), ("Design", "Six\nmasks"), ("Model", "VAE"), ("Evaluation", "Measures"), ("Evaluation", "Tests")]
-stacks = {0: [("Kang et al. IFN-β", 0), ("Theis et al.", 0), ("IFN-β", 1), ("IL-2", 1)], 4: [("Hallmark", 0), ("Reactome", 0)],
+stacks = {0: [("Kang et al.\nIFN-β", 0), ("Theis et al.\nIFN-β", 0)], 4: [("Hallmark", 0), ("Reactome", 0)],
           5: [("gene sets", 0), ("co-expression", 0), ("random", 0), ("fully random", 1), ("within-set random", 1), ("expression-\nmatched", 1), ("vanilla", 0)],
-          2: [("Without the 250\nstrongest genes", 0)],
-          3: [("train 70%", 0), ("learning curves", 1), ("validation 15%", 0), ("test 15%", 0)],
+          3: [("train 70%", 0), ("validation 15%", 0), ("test 15%", 0)],
           7: [("test loss", 0), ("decoded response", 0), ("classifiers", 0), ("cell-type", 1), ("stimulation", 1),
               ("labelled-latent and\nreference scores", 0)]}  # (label, level): level 1 hangs under the box above it
 # The stage figure of the data has room to the right of the split: the learning curves branch off the training part there
 sizes = [("500 cells", 1), ("1,000 cells", 1), ("2,000 cells", 1), ("4,000 cells", 1), ("8,000 cells", 1), ("all 16,749", 1)]
-lateral = {3: ("train 70%", [("Learning curves", 0)] + sizes)}
-stage_stacks = {**stacks, 3: [("train 70%", 0), ("validation 15%", 0), ("test 15%", 0)]}
-extra_items = {"learning curves", "Learning curves"} | {i for i, _ in sizes}  # the two extra analyses are drawn in grey
+lateral = {}
+stage_stacks = stacks
+extra_items = set()  # the two extra analyses are drawn in grey
 
 
 def is_extra(k, item):
-    return k == 2 or item in extra_items
+    return item in extra_items
 
 
 bw, bh, gap, gap_phase = 1.0, 0.52, 0.17, 0.3
@@ -490,15 +460,16 @@ stage_figure(4, 5, "stage_design.png")
 stage_figure(6, 8, "stage_evaluation.png")
 
 
-# 7. Overarching figures: the six benchmarks side by side (Q1c to Q1f). One line weight and one point size for every line plot.
+# 7. Overarching figures: the benchmarks side by side (Q1b and Q1c). One line weight and one point size for every line plot.
 import matplotlib.transforms as mtransforms
 
 LW, PT = 1.0, 3  # line weight and point size
 grey = "#9a9a9a"
 vcolor = {**colors, "vanilla": grey}
 vnames = {**names, "real": "gene sets"}
+DATASETS = [("kang", "Kang et al. IFN-β"), ("cytokine_ifn_beta", "Theis et al. IFN-β")]
 bench_rows, bench_groups, y_ = [], [], 0.0
-for d_, label_ in [("kang", "Kang et al. IFN-β"), ("cytokine_ifn_beta", "Theis et al. IFN-β"), ("cytokine_il_2", "Theis et al. IL-2")]:
+for d_, label_ in DATASETS:
     first = y_
     for c_ in ("hallmark", "reactome"):
         bench_rows.append((f"{d_}/{c_}", c_.capitalize(), y_))
@@ -519,7 +490,7 @@ def advantage_figure(measures, name, size):
     # advantage of the gene sets over each other mask, with the interval of the paired test
     others = [(v, names[v], vcolor[v]) for v in ("shuffled", "setshuffle", "coexpression")]  # each line in the colour of the mask it is compared with
     rows, groups, ya = [], [], 0.0
-    for d_, label_ in [("kang", "Kang et al. IFN-β"), ("cytokine_ifn_beta", "Theis et al. IFN-β"), ("cytokine_il_2", "Theis et al. IL-2")]:
+    for d_, label_ in DATASETS:
         first = ya
         for c_ in ("hallmark", "reactome"):
             rows.append((f"{d_}/{c_}", c_.capitalize(), ya))
@@ -542,6 +513,8 @@ def advantage_figure(measures, name, size):
                         ax.plot(sign * r["hodges_lehmann"], yy, "o", color=ink, markerfacecolor=ink if excludes else surface, zorder=3)
             ax.set_title(title, fontsize=8, loc="left")
             ax.tick_params(axis="y", length=0)
+            if key == "stimulation probe AUROC":  # the range is narrow, so every 0.01 keeps the labels apart
+                ax.set_xticks([-0.01, 0, 0.01])
             ax.grid(axis="x", color=grid, lw=0.6)
         axs[0].set_yticks([y for _, _, y in rows], [l for _, l, _ in rows], fontsize=7.5)
         axs[0].set_ylim(rows[-1][2] + 0.7, -0.7)
@@ -553,143 +526,100 @@ def advantage_figure(measures, name, size):
         plt.close(fig)
 
 
-def share_scores(path):
+def share_scores(path, column="lfc_spearman"):
     # decoded response of each variant, as the position between the fully random mask (0) and vanilla VAE (100)
-    w = pd.read_csv(f"reports/tables/{path}/diagnostics_response.csv").pivot(index="seed", columns="variant", values="lfc_corr")
+    w = pd.read_csv(f"reports/tables/{path}/diagnostics_response.csv").pivot(index="seed", columns="variant", values=column)
     zero = w["shuffled"].mean()
     return {v: (w[v] - zero) / (w["vanilla"].mean() - zero) * 100 for v in ("real", "coexpression", "setshuffle")}
 
 
-def share_gap(path):
+def share_gap(path, column="lfc_spearman"):
     # the denominator of the relative scale: decoded response of the vanilla VAE minus that of the fully random mask
-    w = pd.read_csv(f"reports/tables/{path}/diagnostics_response.csv").pivot(index="seed", columns="variant", values="lfc_corr")
+    w = pd.read_csv(f"reports/tables/{path}/diagnostics_response.csv").pivot(index="seed", columns="variant", values=column)
     return w["vanilla"].mean() - w["shuffled"].mean()
 
 
-def share_panel(ax, rows, groups, title):
-    # one panel: each variant placed between the fully random mask (0) and vanilla VAE (100)
-    top = rows[0][2] - 0.8
-    ax.axvline(0, color=colors["shuffled"], lw=0.6, zorder=1)
-    ax.axvline(100, color=grey, lw=0.6, zorder=1)
-    for path, _, y in rows:
-        s = share_scores(path)
-        for j, v in enumerate(("real", "coexpression", "setshuffle")):
-            yy = y + (j - 1) * 0.28
-            ax.plot([s[v].min(), s[v].max()], [yy, yy], color=vcolor[v], zorder=2)
-            ax.plot(s[v].mean(), yy, "o", color=vcolor[v], zorder=3)
-    ax.text(1.5, top, "fully random mask", va="center", ha="left", fontsize=7, color=colors["shuffled"])
-    ax.text(101.5, top, "vanilla", va="center", ha="left", fontsize=7, color=grey)
-    ax.set_yticks([y for _, _, y in rows], [l for _, l, _ in rows], fontsize=7.5)
-    # the difference of each row (vanilla minus fully random decoded response, the scale of the row) in a column between the row labels and the plot
-    diff_at = mtransforms.offset_copy(ax.get_yaxis_transform(), fig=ax.figure, x=-0.08, units="inches")
-    ax.text(0, top, "difference", ha="right", va="center", fontsize=7.5, color=ink, transform=diff_at)
-    for p, _, y in rows:
-        ax.text(0, y, f"{share_gap(p):.2f}", ha="right", va="center", fontsize=7.5, color=ink, transform=diff_at)
-    ax.tick_params(axis="y", length=0, pad=27)  # room for the difference column
-    ax.set_xticks([-50, -25, 0, 25, 50, 75, 100])
-    ax.set_xlim(-70, 125)
-    ax.set_ylim(max(y for _, _, y in rows) + 0.7, top - 0.5)
-    ax.grid(axis="x", color=grid, lw=0.6)
-    ax.set_title(title, fontsize=8, loc="left")
-    if groups:
-        group_names(ax, groups, inches=0.95)
-
-
 def share_figure(name):
-    # a: the six benchmarks (Q1d to Q1f); b: the main experiment with and without the 250 strongest genes (Q1c)
+    # one panel: each variant between the fully random mask (0) and the vanilla VAE (100); circle, Spearman correlation; triangle, Pearson correlation
     with plt.rc_context({"lines.linewidth": LW, "lines.markersize": PT, "axes.grid": False, "axes.spines.left": False}):
-        fig, (ax_a, ax_b) = plt.subplots(2, 1, figsize=(6.4, 5.0), gridspec_kw={"height_ratios": [3.4, 1.6], "hspace": 0.35})
-        share_panel(ax_a, bench_rows, bench_groups, "a  Six benchmarks")
-        share_panel(ax_b, [("kang/hallmark", "all 12,034 genes", 0.0), ("kang_drop250/hallmark", "250 strongest\nresponse genes\ndropped", 1.2)], [],
-                    "b  Kang et al. data, Hallmark sets, without the 250 strongest genes")
-        ax_b.set_xlabel("relative decoded response (%)")
+        fig, ax = plt.subplots(figsize=(7.0, 4.6))
+        top = bench_rows[0][2] - 0.8
+        ax.axvline(0, color=colors["shuffled"], lw=0.6, zorder=1)
+        ax.axvline(100, color=grey, lw=0.6, zorder=1)
+        for path, _, y in bench_rows:
+            for j, v in enumerate(("real", "coexpression", "setshuffle")):
+                for column, marker, dy in (("lfc_spearman", "^", -0.075), ("lfc_pearson", "o", 0.075)):
+                    sc = share_scores(path, column)[v]
+                    yy = y + (j - 1) * 0.32 + dy
+                    ax.plot([sc.min(), sc.max()], [yy, yy], color=vcolor[v], zorder=2)
+                    ax.plot(sc.mean(), yy, marker, color=vcolor[v], zorder=3)
+        ax.text(1.5, top, "fully random mask", va="center", ha="left", fontsize=7, color=colors["shuffled"])
+        ax.text(101.5, top, "vanilla", va="center", ha="left", fontsize=7, color=grey)
+        ax.set_yticks([y for _, _, y in bench_rows], [l for _, l, _ in bench_rows], fontsize=7.5)
+        # the scale of each row (vanilla minus fully random decoded response) in two columns between the row labels and the plot
+        for column, inches in (("lfc_spearman", -0.55), ("lfc_pearson", -0.08)):
+            at = mtransforms.offset_copy(ax.get_yaxis_transform(), fig=fig, x=inches, units="inches")
+            ax.text(0, top, "Spearman" if column == "lfc_spearman" else "Pearson", ha="right", va="center", fontsize=7.5, color=ink, transform=at)
+            for path, _, y in bench_rows:
+                ax.text(0, y, f"{share_gap(path, column):.2f}", ha="right", va="center", fontsize=7.5, color=ink, transform=at)
+        ax.tick_params(axis="y", length=0, pad=80)
+        ax.set_xticks([-50, -25, 0, 25, 50, 75, 100])
+        ax.set_xlim(-70, 125)
+        ax.set_ylim(max(y for _, _, y in bench_rows) + 0.7, top - 0.5)
+        ax.grid(axis="x", color=grid, lw=0.6)
+        group_names(ax, bench_groups, inches=1.95)
+        ax.set_xlabel("relative decoded response (%)")
         for v in ("real", "coexpression", "setshuffle"):
-            ax_a.plot([], [], color=vcolor[v], label=vnames[v])
-        fig.legend(*ax_a.get_legend_handles_labels(), frameon=False, fontsize=7.5, ncol=3, loc="upper center", bbox_to_anchor=(0.55, -0.005))
+            ax.plot([], [], color=vcolor[v], label=vnames[v])
+        ax.plot([], [], "^", color=ink, label="Spearman correlation")
+        ax.plot([], [], "o", color=ink, label="Pearson correlation")
+        fig.legend(*ax.get_legend_handles_labels(), frameon=False, fontsize=7.5, ncol=3, loc="upper center", bbox_to_anchor=(0.55, 0.0))
         fig.savefig(out / name)
         plt.close(fig)
 
 
 def levels_figures():
-    # decoded response of every seed (small point) and its mean (black point), for every variant
+    # decoded response of every variant: range over seeds (line) and mean (point); circle, Spearman correlation; triangle, Pearson correlation
     order_ = ["real", "coexpression", "setshuffle", "shuffled", "vanilla"]
-    offsets = np.linspace(-0.17, 0.17, 10)
     with plt.rc_context({"lines.linewidth": LW, "axes.grid": False}):
-        fig, ax = plt.subplots(figsize=(7.4, 3.4))
+        fig, ax = plt.subplots(figsize=(7.4, 3.8))
         for gi, (path, label, _) in enumerate(bench_rows):
             d = pd.read_csv(f"reports/tables/{path}/diagnostics_response.csv")
             for k, v in enumerate(order_):
-                vals = d[d["variant"] == v]["lfc_corr"]
-                ax.plot([gi * 6 + k] * 2, [vals.min(), vals.max()], color=vcolor[v], lw=LW)
-                ax.plot(gi * 6 + k, vals.mean(), "o", color=vcolor[v], markersize=PT)
-        ax.set_xticks([gi * 6 + 2 for gi in range(6)], [l for _, l, _ in bench_rows], fontsize=7.5)
-        ax.set_xlim(-1, 35)
-        ax.set_ylim(0.45, 1.0)
+                for column, marker, dx in (("lfc_spearman", "^", -0.2), ("lfc_pearson", "o", 0.2)):
+                    vals = d[d["variant"] == v][column]
+                    ax.plot([gi * 6 + k + dx] * 2, [vals.min(), vals.max()], color=vcolor[v], lw=LW)
+                    ax.plot(gi * 6 + k + dx, vals.mean(), marker, color=vcolor[v], markersize=PT)
+            # the noise bound of each correlation (square root of the reliability of the observed shift) as an open symbol after the variants
+            ceiling = pd.read_csv(f"reports/tables/{path}/diagnostics_response_ceiling.csv").set_index("measure")["ceiling"]
+            for column, marker, dx in (("spearman", "^", -0.2), ("pearson", "o", 0.2)):
+                ax.plot(gi * 6 + 5 + dx, np.sqrt(ceiling[column]), marker, markerfacecolor=surface, markeredgecolor=ink, markersize=PT, markeredgewidth=0.8)
+        ax.set_xticks([gi * 6 + 2 for gi in range(4)], [l for _, l, _ in bench_rows], fontsize=7.5)
+        ax.set_xlim(-1, 24)
+        ax.set_ylim(0.2, 1.0)
         ax.set_ylabel("decoded response (correlation)")
-        ax.grid(axis="y", color=grid, lw=0.6)
-        belows = mtransforms.blended_transform_factory(ax.transData, ax.transAxes)
-        for ci, (_, label, _) in enumerate(zip(range(3), [g[0] for g in bench_groups], range(3))):
-            ax.text(ci * 12 + 5, -0.16, label, ha="center", va="top", fontsize=8, fontweight="bold", transform=belows)
-        for v in order_:
-            ax.plot([], [], "o", color=vcolor[v], markersize=PT, label=vnames[v])
-        ax.legend(frameon=False, fontsize=7.5, ncol=5, loc="upper center", bbox_to_anchor=(0.5, -0.3))
-        fig.savefig(out / "levels_benchmarks.png")
-        plt.close(fig)
-        fig, ax = plt.subplots(figsize=(4.6, 3.0))
-        for gi, path in enumerate(["kang/hallmark", "kang_drop250/hallmark"]):
-            d = pd.read_csv(f"reports/tables/{path}/diagnostics_response.csv")
-            for k, v in enumerate(order_):
-                vals = d[d["variant"] == v].sort_values("seed")["lfc_corr"].to_numpy()
-                seed_dots(ax, gi * 6 + k + offsets, vals, vcolor[v])
-                mean_dot(ax, gi * 6 + k, vals.mean())
-        ax.set_xticks([2, 8], ["all 12,034 genes", "250 strongest\nresponse genes dropped"], fontsize=7.5)
-        ax.set_xlim(-0.8, 10.8)
-        ax.set_ylim(0.45, 1.0)
-        ax.set_ylabel("decoded response (correlation)")
-        ax.grid(axis="y", color=grid, lw=0.6)
-        for v in order_:
-            ax.plot([], [], "o", color=vcolor[v], markersize=PT, label=vnames[v])
-        ax.legend(frameon=False, fontsize=7, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.2), columnspacing=1, handletextpad=0.2)
-        fig.savefig(out / "levels_Q1c.png")
-        plt.close(fig)
-
-
-def named_latent_figure():
-    # score of the latent at the position of the expected-response set (real and random masks) or of the highest-scoring latent (co-expression, vanilla)
-    order_ = ["real", "coexpression", "setshuffle", "shuffled", "vanilla"]
-    with plt.rc_context({"lines.linewidth": LW, "lines.markersize": PT, "axes.grid": False}):
-        fig, ax = plt.subplots(figsize=(7.4, 3.4))
-        for gi, (path, _, _) in enumerate(bench_rows):
-            d = pd.read_csv(f"reports/tables/{path}/scores.csv")
-            d = d[d["train_size"] == d["train_size"].max()]
-            for k, v in enumerate(order_):
-                vals = d[d["variant"] == v]["ifn_alpha"]
-                ax.plot([gi * 6 + k] * 2, [vals.min(), vals.max()], color=vcolor[v], lw=LW)
-                ax.plot(gi * 6 + k, vals.mean(), "o", color=vcolor[v], markersize=PT)
-        ax.set_xticks([gi * 6 + 2 for gi in range(6)], [l for _, l, _ in bench_rows], fontsize=7.5)
-        ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
-        ax.set_xlim(-1, 35)
-        ax.set_ylim(0, 1.02)
-        ax.set_ylabel("score of the latent (AUROC)")
         ax.grid(axis="y", color=grid, lw=0.6)
         belows = mtransforms.blended_transform_factory(ax.transData, ax.transAxes)
         for ci, (label, _, _) in enumerate(bench_groups):
             ax.text(ci * 12 + 5, -0.16, label, ha="center", va="top", fontsize=8, fontweight="bold", transform=belows)
         for v in order_:
             ax.plot([], [], "o", color=vcolor[v], markersize=PT, label=vnames[v])
-        ax.legend(frameon=False, fontsize=7.5, ncol=5, loc="upper center", bbox_to_anchor=(0.5, -0.3))
-        fig.savefig(out / "named_latent.png")
+        ax.plot([], [], "^", color=ink, markersize=PT, label="Spearman correlation")
+        ax.plot([], [], "o", color=ink, markersize=PT, label="Pearson correlation")
+        ax.plot([], [], "o", markerfacecolor=surface, markeredgecolor=ink, markersize=PT, markeredgewidth=0.8, label="noise bound (open symbols)")
+        ax.legend(frameon=False, fontsize=7.5, ncol=4, loc="upper center", bbox_to_anchor=(0.5, -0.3))
+        fig.savefig(out / "levels_benchmarks.png")
         plt.close(fig)
 
 
 MEASURES = {"loss": ("test loss per cell (lower is better)", "test loss per cell\n(loss units)", -1),
-            "response": ("decoded response correlation", "decoded response\n(correlation)", 1),
+            "response": ("decoded response, Spearman correlation", "decoded response\n(Spearman correlation)", 1),
+            "pearson": ("decoded response, Pearson correlation", "decoded response\n(Pearson correlation)", 1),
             "celltype": ("cell-type balanced accuracy", "cell-type classifier\n(balanced accuracy)", 1),
             "probe": ("stimulation probe AUROC", "stimulation classifier\n(AUROC)", 1)}
-advantage_figure([MEASURES["loss"], MEASURES["response"]], "advantage.png", (6.6, 3.9))
+advantage_figure([MEASURES["loss"], MEASURES["response"], MEASURES["pearson"]], "advantage.png", (9.0, 3.9))
 advantage_figure([MEASURES["celltype"], MEASURES["probe"]], "advantage_probes.png", (6.6, 3.9))
 share_figure("share.png")
 levels_figures()
-named_latent_figure()
 
 print("saved", *sorted(p.name for p in out.glob("*.png")))

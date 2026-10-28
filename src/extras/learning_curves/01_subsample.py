@@ -1,5 +1,5 @@
 # Training subsamples for the learning curves, with the shuffled masks and co-expression modules rebuilt on each, as in
-# src/04_build_masks.py and src/05_build_coexpression_null.py. One nested series of subsamples per seed; validation
+# src/03_build_masks.py. One nested series of subsamples per seed; validation
 # and test cells stay fixed. Choices are explained in the preprint.
 import anndata as ad
 import numpy as np

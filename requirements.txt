@@ -9,5 +9,5 @@ scikit-learn==1.9.1
 matplotlib==3.11.2
 h5py==3.16.0
 requests==2.34.2
-tqdm==4.70.1  # progress bar in src/06_fit.py
+tqdm==4.70.1  # progress bar in src/04_fit.py
 scikit-misc==0.5.2  # seurat_v3 HVGs in src/extras/hvg_inspection.py

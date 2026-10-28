@@ -9,9 +9,15 @@ collection = os.environ.get("SC_SETS", "hallmark")
 targets = {"hallmark": ("HALLMARK_INTERFERON_ALPHA_RESPONSE", "HALLMARK_INTERFERON_GAMMA_RESPONSE"),
            "reactome": ("REACTOME_INTERFERON_ALPHA_BETA_SIGNALING", "REACTOME_INTERFERON_GAMMA_SIGNALING")}
 assert collection in targets, f"SC_SETS must be one of {list(targets)}"
-alpha_name, gamma_name = targets[collection]
-if os.environ.get("SC_TARGET") == "il2":  # IL-2 contrast: the known answer is the IL-2 set, not the type I interferon set (only for 08_evaluate.py)
-    alpha_name = {"hallmark": "HALLMARK_IL2_STAT5_SIGNALING", "reactome": "REACTOME_INTERLEUKIN_2_FAMILY_SIGNALING"}[collection]
+def names_for(name):
+    """The known-answer sets of a collection: the type I and the type II interferon set."""
+    alpha, gamma = targets[name]
+    if os.environ.get("SC_TARGET") == "il2":  # IL-2 contrast: the known answer is the IL-2 set, not the type I interferon set (only for 06_evaluate.py)
+        alpha = {"hallmark": "HALLMARK_IL2_STAT5_SIGNALING", "reactome": "REACTOME_INTERLEUKIN_2_FAMILY_SIGNALING"}[name]
+    return alpha, gamma
+
+
+alpha_name, gamma_name = names_for(collection)
 
 data = os.environ.get("SC_DATA", "kang")
 tag = "_" + os.environ["SC_TAG"] if os.environ.get("SC_TAG") else ""

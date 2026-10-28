@@ -1,15 +1,15 @@
-# Decoded response, alternative measures and noise ceiling. Run after 10_checks.py. Reads the saved runs
+# Decoded response, alternative measures and noise ceiling. Run after 07_checks.py. Reads the saved runs
 # (model.npz), trains nothing, and writes to reports/tables/<data>/<collection>/:
-#   diagnostics_response_alt.csv      one row per run: the decoded response of 10_checks.py (Pearson) and five other measures
+#   diagnostics_response_alt.csv      one row per run: the decoded response of 07_checks.py (Spearman and Pearson correlation) and five other measures
 #   diagnostics_response_ceiling.csv  the same measures between two random halves of the test cells, with and without the
 #                                     Spearman-Brown correction to full size, mean and SD over 50 random splits
-#   python src/10b_response_measures.py --learning-curves   (main benchmark) learning_curves_response.csv: the decoded response of
+#   python src/08_response_measures.py --learning-curves   (main benchmark) learning_curves_response.csv: the decoded response of
 #                                     every run on a training subsample, and of the full-size runs
-# The decoded response is the one of 10_checks.py (I): within a cell type, the mean decoded log expression of stimulated minus
+# The decoded response is the one of 07_checks.py (I): within a cell type, the mean decoded log expression of stimulated minus
 # control test cells, correlated across the genes detected in at least 1% of training cells with the observed shift, and averaged
 # over the scored cell types. The labels define only the observed shift. No p-values are computed here.
-#   pearson        the measure of the preprint
-#   spearman       rank correlation
+#   spearman       Spearman correlation, one of the two decoded-response measures of the preprint
+#   pearson        Pearson correlation
 #   pearson_top    Pearson on the 10% of genes with the largest absolute observed shift in each cell type
 #   pearson_rest   Pearson on the other 90%
 #   pearson_w      Pearson weighted by the absolute observed shift
@@ -40,7 +40,7 @@ train = np.flatnonzero(split == "train")
 logx = counts.multiply(1 / total[:, None]).tocsr()
 logx.data = np.log1p(logx.data * np.median(total[train]))  # the shifted log of the encoder
 detected = np.asarray((counts[train] > 0).mean(axis=0)).ravel() >= 0.01
-donor_onehot = pd.get_dummies(adata.obs["donor"]).values.astype(np.float32)  # as in 06_fit.py
+donor_onehot = pd.get_dummies(adata.obs["donor"]).values.astype(np.float32)  # as in 04_fit.py
 median_total = float(np.median(total[train]))
 test_rows = np.flatnonzero(split == "test")
 groups = {(t, c): test_rows[(cell_type[test_rows] == t) & (stim[test_rows] == c)] for t in types for c in (True, False)}

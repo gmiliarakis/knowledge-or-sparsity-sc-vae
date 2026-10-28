@@ -56,7 +56,7 @@ for folder, variant in variants.items():
 scores = pd.DataFrame(scores).sort_values("train_size", kind="stable")
 print(scores.groupby(["train_size", "variant"], sort=False)[["ifn_alpha", "active_latents"]].agg(["mean", "count"]).round(3))
 
-# Paired differences by seed (descriptive). Hypothesis tests, intervals and multiplicity correction are in src/11_tests.py.
+# Paired differences by seed (descriptive). Hypothesis tests, intervals and multiplicity correction are in src/09_tests.py.
 comparisons = []
 for size in scores["train_size"].unique():
     wide = scores[scores["train_size"] == size].pivot(index="seed", columns="variant", values="ifn_alpha")

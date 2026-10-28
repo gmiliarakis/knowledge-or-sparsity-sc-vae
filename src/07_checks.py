@@ -1,4 +1,4 @@
-# Checks on the scored runs. Run after 08_evaluate.py (and 08_evaluate.py --learning-curves for the slopes). Rules and
+# Checks on the scored runs. Run after 06_evaluate.py (and 06_evaluate.py --learning-curves for the slopes). Rules and
 # reasons are in the preprint (Robustness checks). Tables go to reports/tables/<data>/<collection>/ (reports/tables/kang/hallmark/ for the main experiment).
 #   robustness_best_latent.csv, robustness_donors*.csv, robustness_slopes.csv
 #     A. every variant scored on its best active latent (chosen on validation cells) and on its named latent;
@@ -11,15 +11,17 @@
 #   diagnostics_probe.csv         G. logistic regression on all latents (stimulation).
 #   diagnostics_fit.csv           H. test negative log-likelihood per cell, the model's own objective on the test cells.
 #   diagnostics_response.csv      I. decoded response: the stimulation shift in gene expression that the decoder reproduces,
-#                                    correlated across genes with the observed shift (no latent is chosen).
+#                                    rank-correlated (Spearman) across genes with the observed shift (no latent is chosen);
+#                                    lfc_pearson is the same with the Pearson correlation.
 #   diagnostics_celltype.csv      J. what the latents learned about cell type, which the model never saw: balanced accuracy of a
 #                                    linear probe (all validation cells, and 10/50/200 per type) and two hard pairs.
-# Hypothesis tests, intervals and multiplicity correction are in 11_tests.py; nothing here carries a p-value.
+# Hypothesis tests, intervals and multiplicity correction are in 09_tests.py; nothing here carries a p-value.
 import json
 
 import anndata as ad
 import numpy as np
 import pandas as pd
+from scipy.stats import spearmanr
 from sklearn.decomposition import TruncatedSVD
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import balanced_accuracy_score, roc_auc_score
@@ -76,16 +78,18 @@ by_donor.round(4).to_csv(out / "robustness_donors_mean.csv")
 
 # C ---------------------------------------------------------------------------------------------------------------
 if main_benchmark:
-    lc = pd.read_csv(out / "learning_curves_scores.csv")
-    wide = lc.pivot_table(index=["seed", "train_size"], columns="variant", values="ifn_alpha")
-    slopes = []  # per-seed slopes (descriptive)
-    for other in ["shuffled", "vanilla", "coexpression"]:
-        per_seed = []
-        for seed, g in wide.groupby(level=0):
-            diff = (g["real"] - g[other]).droplevel(0)
-            per_seed.append(np.polyfit(np.log2(diff.index.values), diff.values, 1)[0])
-        slopes.append({"comparison": f"real - {other}", "seeds": len(per_seed), "mean_slope_per_doubling": np.mean(per_seed)})
-    pd.DataFrame(slopes).to_csv(out / "robustness_slopes.csv", index=False, float_format="%.6g")
+    # Learning-curve slopes (not reported in the paper): uncomment after running src/extras/learning_curves and 06_evaluate.py --learning-curves.
+    # lc = pd.read_csv(out / "learning_curves_scores.csv")
+    # wide = lc.pivot_table(index=["seed", "train_size"], columns="variant", values="ifn_alpha")
+    # slopes = []  # per-seed slopes (descriptive)
+    # for other in ["shuffled", "vanilla", "coexpression"]:
+    #     per_seed = []
+    #     for seed, g in wide.groupby(level=0):
+    #         diff = (g["real"] - g[other]).droplevel(0)
+    #         per_seed.append(np.polyfit(np.log2(diff.index.values), diff.values, 1)[0])
+    #     slopes.append({"comparison": f"real - {other}", "seeds": len(per_seed), "mean_slope_per_doubling": np.mean(per_seed)})
+    # pd.DataFrame(slopes).to_csv(out / "robustness_slopes.csv", index=False, float_format="%.6g")
+    pass
 
 # Expression for E, F, G ------------------------------------------------------------------------------------------
 adata = ad.read_h5ad(f"data/processed/{data}{tag}.h5ad")
@@ -203,7 +207,7 @@ print(fit.groupby("variant")[["val_loss", "test_loss"]].agg(["mean", "std"]).rou
 # latent is chosen and the gene sets play no part; the labels only define the observed shift. The second column uses the
 # interferon-alpha genes alone.
 detected = np.asarray((counts[train] > 0).mean(axis=0)).ravel() >= 0.01
-donor_onehot = pd.get_dummies(adata.obs["donor"]).values.astype(np.float32)  # as in 06_fit.py
+donor_onehot = pd.get_dummies(adata.obs["donor"]).values.astype(np.float32)  # as in 04_fit.py
 median_total = float(np.median(total[train]))
 groups = {(t, c): rows["test"][(cell_type[rows["test"]] == t) & (stim[rows["test"]] == c)] for t in types for c in (True, False)}
 observed = {key: np.asarray(logx[idx].mean(axis=0)).ravel() for key, idx in groups.items()}
@@ -232,15 +236,17 @@ for folder, variant in variants:
         info = json.load(open(run / "run.json"))
         model = np.load(run / "model.npz")
         means = decoded_means(model["latents"], model["w"], model["v"])
-        r_all, r_ifn = [], []
+        r_all, r_pearson, r_ifn = [], [], []
         for t in types:
             shift = means[(t, True)] - means[(t, False)]
-            r_all.append(np.corrcoef(shift[detected], observed_shift[t][detected])[0, 1])
-            r_ifn.append(np.corrcoef(shift[ifn_present], observed_shift[t][ifn_present])[0, 1])
-        response.append({"variant": variant, "seed": info["seed"], "lfc_corr": np.mean(r_all), "lfc_corr_ifn": np.mean(r_ifn)})
+            r_all.append(spearmanr(shift[detected], observed_shift[t][detected])[0])
+            r_pearson.append(np.corrcoef(shift[detected], observed_shift[t][detected])[0, 1])
+            r_ifn.append(spearmanr(shift[ifn_present], observed_shift[t][ifn_present])[0])
+        response.append({"variant": variant, "seed": info["seed"], "lfc_spearman": np.mean(r_all), "lfc_pearson": np.mean(r_pearson),
+                         "lfc_spearman_ifn": np.mean(r_ifn)})
 response = pd.DataFrame(response)
 response.to_csv(out / "diagnostics_response.csv", index=False, float_format="%.6g")
-print(response.groupby("variant")[["lfc_corr", "lfc_corr_ifn"]].agg(["mean", "std"]).round(3))
+print(response.groupby("variant")[["lfc_spearman", "lfc_pearson", "lfc_spearman_ifn"]].agg(["mean", "std"]).round(3))
 
 # J. Cell type ------------------------------------------------------------------------------------------------------------
 # Cell-type labels were never used in training (only for QC thresholds and for scoring within types). A linear probe on the

@@ -91,7 +91,7 @@ def build_mask(kind, var_names, seed, train_size, subsamples):
         assert not train_size, "setshuffle masks are built for the full training set only"
         sets = sets[np.load(f"data/processed/masks_{collection}_setshuffle{file_tag}.npz")["perms"][seed]]
     elif kind == "responsematch":
-        # labels permuted among set genes only, inside bins of expression level x stimulation effect (04b_build_responsematch.py): every set keeps
+        # labels permuted among set genes only, inside bins of expression level x stimulation effect (03_build_masks.py): every set keeps
         # its size, overlaps, expression level and number of strongly responding genes. It uses the stimulation labels of the training cells
         assert not train_size, "responsematch masks are built for the full training set only"
         sets = sets[np.load(f"data/processed/masks_{collection}_responsematch{file_tag}.npz")["perms"][seed]]
