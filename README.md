@@ -1,6 +1,7 @@
 # Knowledge or sparsity? Gene set masks in a single-cell VAE
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23571985.svg)](https://doi.org/10.5281/zenodo.23571985)
+[![Preprint DOI](https://img.shields.io/badge/Research_Square-10.21203%2Frs.3.rs--11542814%2Fv1-0b5fa5)](https://doi.org/10.21203/rs.3.rs-11542814/v1)
 
 ![From stimulated cells to a masked VAE: the six decoder masks and the decoded response each one reached](reports/figures/overview.png)
 
@@ -185,4 +186,4 @@ Add the two interleukin-2 benchmarks to the list in `src/extras/response_matched
 
 ## Citation and licence
 
-Please cite the preprint and the code archive through [`CITATION.cff`](CITATION.cff) (Zenodo: [10.5281/zenodo.23571985](https://doi.org/10.5281/zenodo.23571985); the DOI resolves to the latest version). The code is under the MIT licence ([`LICENSE`](LICENSE)). The Parse Biosciences data are under CC BY-NC 4.0.
+The preprint is on Research Square: [10.21203/rs.3.rs-11542814/v1](https://doi.org/10.21203/rs.3.rs-11542814/v1). Please cite the preprint and the code archive through [`CITATION.cff`](CITATION.cff) (Zenodo: [10.5281/zenodo.23571985](https://doi.org/10.5281/zenodo.23571985); the DOI resolves to the latest version). The code is under the MIT licence ([`LICENSE`](LICENSE)). The Parse Biosciences data are under CC BY-NC 4.0.
