@@ -40,7 +40,7 @@ The four benchmarks pair each stimulation with both collections. Q1b compares th
 
 **Results** The tables behind every figure, test and number in the preprint (scores per run, paired differences and tests for each benchmark) are in the repository. The scripts recreate the trained models.
 
-**Code** The code is at https://github.com/gmiliarakis/knowledge-or-sparsity-sc-vae under the MIT licence. The code is archived on Zenodo under [10.5281/zenodo.23571985](https://doi.org/10.5281/zenodo.23571985). The DOI covers all versions and resolves to the latest.
+**Code** The code is at https://github.com/gmiliarakis/knowledge-or-sparsity-sc-vae under the MIT licence. The code is archived on Zenodo under [10.5281/zenodo.23896023](https://doi.org/10.5281/zenodo.23896023). The DOI covers all versions and resolves to the latest.
 
 The scripts are numbered in run order and run from the repository root in a fresh virtual environment. All results were produced on an Apple M1 Pro (16 GB) under macOS 15.7 with PyTorch, scikit-learn, scanpy, AnnData, NumPy, pandas, SciPy and Matplotlib; `requirements.txt` pins these exact versions:
 
@@ -186,4 +186,4 @@ Add the two interleukin-2 benchmarks to the list in `src/extras/response_matched
 
 ## Citation and licence
 
-The preprint is on Research Square: [10.21203/rs.3.rs-11542814/v1](https://doi.org/10.21203/rs.3.rs-11542814/v1). Please cite the preprint and the code archive through [`CITATION.cff`](CITATION.cff) (Zenodo: [10.5281/zenodo.23571985](https://doi.org/10.5281/zenodo.23571985); the DOI resolves to the latest version). The code is under the MIT licence ([`LICENSE`](LICENSE)). The Parse Biosciences data are under CC BY-NC 4.0.
+The preprint is on Research Square: [10.21203/rs.3.rs-11542814/v1](https://doi.org/10.21203/rs.3.rs-11542814/v1). Please cite the preprint and the code archive through [`CITATION.cff`](CITATION.cff) (Zenodo: [10.5281/zenodo.23896023](https://doi.org/10.5281/zenodo.23896023); the DOI resolves to the latest version). The code is under the MIT licence ([`LICENSE`](LICENSE)). The Parse Biosciences data are under CC BY-NC 4.0.
