@@ -1,6 +1,6 @@
 # Knowledge or sparsity? Gene set masks in a single-cell VAE
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23571985.svg)](https://doi.org/10.5281/zenodo.23571985)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23896023.svg)](https://doi.org/10.5281/zenodo.23896023)
 [![Preprint DOI](https://img.shields.io/badge/Research_Square-10.21203%2Frs.3.rs--11542814%2Fv1-0b5fa5)](https://doi.org/10.21203/rs.3.rs-11542814/v1)
 
 ![From stimulated cells to a masked VAE: the six decoder masks and the decoded response each one reached](reports/figures/overview.png)
